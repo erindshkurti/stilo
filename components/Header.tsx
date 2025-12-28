@@ -87,7 +87,7 @@ export function Header() {
     }, [profileDropdownOpen]);
 
     return (
-        <View className="bg-white border-b border-neutral-100" style={{ overflow: 'visible' }}>
+        <View className="bg-white border-b border-neutral-100" style={{ overflow: 'visible', zIndex: 50 }}>
             <View className="px-6 py-4" style={{ overflow: 'visible' }}>
                 <View className="flex-row items-center justify-between max-w-7xl mx-auto w-full" style={{ overflow: 'visible' }}>
                     {/* Logo */}
@@ -126,31 +126,28 @@ export function Header() {
                                                             top: 48,
                                                             width: 192,
                                                             zIndex: 10000,
-                                                            pointerEvents: 'auto',
+                                                            // @ts-ignore - web only style
+                                                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
                                                         }}
-                                                        className="bg-white rounded-xl shadow-lg border border-neutral-200 py-2"
+                                                        className="bg-white rounded-xl border border-neutral-200 py-2"
+                                                        // @ts-ignore - stop propagation to prevent closing when clicking inside
+                                                        onClick={(e: any) => e.stopPropagation()}
                                                     >
-                                                        <TouchableOpacity
-                                                            onPress={() => {
-                                                                console.log('Settings clicked');
-                                                                router.push('/business/settings');
-                                                            }}
-                                                            className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
-                                                            style={{ cursor: 'pointer' }}
-                                                        >
-                                                            <Feather name="settings" size={18} color="#737373" />
-                                                            <Text className="ml-3 text-neutral-900">Settings</Text>
-                                                        </TouchableOpacity>
+                                                        <Link href="/business/settings" asChild>
+                                                            <TouchableOpacity
+                                                                onPress={() => setProfileDropdownOpen(false)}
+                                                                className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
+                                                            >
+                                                                <Feather name="settings" size={18} color="#737373" />
+                                                                <Text className="ml-3 text-neutral-900">Settings</Text>
+                                                            </TouchableOpacity>
+                                                        </Link>
 
                                                         <View className="h-px bg-neutral-200 my-1" />
 
                                                         <TouchableOpacity
-                                                            onPress={() => {
-                                                                console.log('Sign out clicked');
-                                                                handleSignOut();
-                                                            }}
+                                                            onPress={handleSignOut}
                                                             className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
-                                                            style={{ cursor: 'pointer' }}
                                                         >
                                                             <Feather name="log-out" size={18} color="#737373" />
                                                             <Text className="ml-3 text-neutral-900">Sign Out</Text>
