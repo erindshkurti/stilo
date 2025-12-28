@@ -106,7 +106,15 @@ export default function BusinessDashboard() {
                                 <View className={isLargeScreen ? 'flex-1' : undefined}>
                                     {/* Business Overview */}
                                     <View className="bg-neutral-50 rounded-2xl p-6 mb-6">
-                                        <Text className="text-lg font-semibold mb-4">Business Overview</Text>
+                                        <View className="flex-row items-center justify-between mb-4">
+                                            <Text className="text-lg font-semibold">Business Overview</Text>
+                                            <TouchableOpacity
+                                                onPress={() => router.push('/business/edit/details')}
+                                                className="w-8 h-8 bg-white rounded-full items-center justify-center border border-neutral-200"
+                                            >
+                                                <Feather name="edit-2" size={14} color="#737373" />
+                                            </TouchableOpacity>
+                                        </View>
                                         <View>
                                             <View className="flex-row items-center mb-3">
                                                 <Feather name="map-pin" size={18} color="#737373" />
@@ -132,7 +140,15 @@ export default function BusinessDashboard() {
                                     {/* Business Hours */}
                                     {hours.length > 0 ? (
                                         <View className="bg-neutral-50 rounded-2xl p-6 mb-6">
-                                            <Text className="text-lg font-semibold mb-4">Business Hours</Text>
+                                            <View className="flex-row items-center justify-between mb-4">
+                                                <Text className="text-lg font-semibold">Business Hours</Text>
+                                                <TouchableOpacity
+                                                    onPress={() => router.push('/business/edit/hours')}
+                                                    className="w-8 h-8 bg-white rounded-full items-center justify-center border border-neutral-200"
+                                                >
+                                                    <Feather name="edit-2" size={14} color="#737373" />
+                                                </TouchableOpacity>
+                                            </View>
                                             <>
                                                 {hours.map((hour) => (
                                                     <View key={hour.id} className="flex-row justify-between mb-2">
@@ -149,7 +165,15 @@ export default function BusinessDashboard() {
                                     {/* Team Members */}
                                     {stylists.length > 0 ? (
                                         <View className="bg-neutral-50 rounded-2xl p-6 mb-6">
-                                            <Text className="text-lg font-semibold mb-4">Team Members ({stylists.length})</Text>
+                                            <View className="flex-row items-center justify-between mb-4">
+                                                <Text className="text-lg font-semibold">Team Members ({stylists.length})</Text>
+                                                <TouchableOpacity
+                                                    onPress={() => router.push('/business/edit/team')}
+                                                    className="w-8 h-8 bg-white rounded-full items-center justify-center border border-neutral-200"
+                                                >
+                                                    <Feather name="edit-2" size={14} color="#737373" />
+                                                </TouchableOpacity>
+                                            </View>
                                             <View className="flex-row flex-wrap gap-2">
                                                 {stylists.map((stylist) => (
                                                     <View key={stylist.id} className="bg-white border border-neutral-200 rounded-full px-4 py-2">
@@ -163,7 +187,15 @@ export default function BusinessDashboard() {
                                     {/* Services */}
                                     {services.length > 0 ? (
                                         <View className="bg-neutral-50 rounded-2xl p-6 mb-6">
-                                            <Text className="text-lg font-semibold mb-4">Services ({services.length})</Text>
+                                            <View className="flex-row items-center justify-between mb-4">
+                                                <Text className="text-lg font-semibold">Services ({services.length})</Text>
+                                                <TouchableOpacity
+                                                    onPress={() => router.push('/business/edit/services')}
+                                                    className="w-8 h-8 bg-white rounded-full items-center justify-center border border-neutral-200"
+                                                >
+                                                    <Feather name="edit-2" size={14} color="#737373" />
+                                                </TouchableOpacity>
+                                            </View>
                                             <>
                                                 {services.map((service) => (
                                                     <View key={service.id} className="flex-row justify-between items-center mb-3">
@@ -197,57 +229,6 @@ export default function BusinessDashboard() {
                                                 <Text className="text-2xl font-bold">$0</Text>
                                                 <Text className="text-neutral-600 text-sm">Revenue</Text>
                                             </View>
-                                        </View>
-                                    </View>
-
-                                    {/* Quick Actions */}
-                                    <View>
-                                        <Text className="text-lg font-semibold mb-4">Quick Actions</Text>
-                                        <View>
-                                            <TouchableOpacity
-                                                onPress={() => router.push('/business/edit/hours')}
-                                                className="bg-white border border-neutral-200 rounded-2xl p-4 flex-row items-center justify-between mb-3"
-                                            >
-                                                <View className="flex-row items-center">
-                                                    <View className="w-10 h-10 bg-black rounded-full items-center justify-center">
-                                                        <Feather name="clock" size={20} color="white" />
-                                                    </View>
-                                                    <Text className="ml-3 font-medium">
-                                                        {hours.length > 0 ? 'Edit Business Hours' : 'Set Business Hours'}
-                                                    </Text>
-                                                </View>
-                                                <Feather name="chevron-right" size={20} color="#737373" />
-                                            </TouchableOpacity>
-
-                                            <TouchableOpacity
-                                                onPress={() => router.push('/business/edit/team')}
-                                                className="bg-white border border-neutral-200 rounded-2xl p-4 flex-row items-center justify-between mb-3"
-                                            >
-                                                <View className="flex-row items-center">
-                                                    <View className="w-10 h-10 bg-black rounded-full items-center justify-center">
-                                                        <Feather name="users" size={20} color="white" />
-                                                    </View>
-                                                    <Text className="ml-3 font-medium">
-                                                        {stylists.length > 0 ? 'Manage Team Members' : 'Add Team Members'}
-                                                    </Text>
-                                                </View>
-                                                <Feather name="chevron-right" size={20} color="#737373" />
-                                            </TouchableOpacity>
-
-                                            <TouchableOpacity
-                                                onPress={() => router.push('/business/edit/services')}
-                                                className="bg-white border border-neutral-200 rounded-2xl p-4 flex-row items-center justify-between"
-                                            >
-                                                <View className="flex-row items-center">
-                                                    <View className="w-10 h-10 bg-black rounded-full items-center justify-center">
-                                                        <Feather name="scissors" size={20} color="white" />
-                                                    </View>
-                                                    <Text className="ml-3 font-medium">
-                                                        {services.length > 0 ? 'Manage Services' : 'Add Services'}
-                                                    </Text>
-                                                </View>
-                                                <Feather name="chevron-right" size={20} color="#737373" />
-                                            </TouchableOpacity>
                                         </View>
                                     </View>
                                 </View>
