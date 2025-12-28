@@ -5,6 +5,43 @@ import { ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, Vie
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../components/Button';
 import { Header } from '../components/Header';
+import { StylistCard } from '../components/StylistCard';
+
+// Mock data for featured stylists
+const FEATURED_STYLISTS = [
+    {
+        id: '1',
+        name: 'Bella Hair Studio',
+        location: 'New York, NY',
+        rating: 4.9,
+        reviewCount: 127,
+        imageUrl: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop',
+    },
+    {
+        id: '2',
+        name: 'The Cut Above',
+        location: 'Los Angeles, CA',
+        rating: 4.8,
+        reviewCount: 203,
+        imageUrl: 'https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=400&h=300&fit=crop',
+    },
+    {
+        id: '3',
+        name: 'Style & Grace',
+        location: 'Chicago, IL',
+        rating: 5.0,
+        reviewCount: 89,
+        imageUrl: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&h=300&fit=crop',
+    },
+    {
+        id: '4',
+        name: 'Urban Cuts',
+        location: 'Miami, FL',
+        rating: 4.7,
+        reviewCount: 156,
+        imageUrl: 'https://images.unsplash.com/photo-1633681926022-84c23e8cb2d6?w=400&h=300&fit=crop',
+    },
+];
 
 export default function LandingPage() {
     const { width } = useWindowDimensions();
@@ -114,6 +151,39 @@ export default function LandingPage() {
                                             </TouchableOpacity>
                                         ))}
                                     </View>
+                                </View>
+                            </View>
+                        </View>
+
+                        {/* Featured Stylists Section */}
+                        <View className="px-6 py-12 bg-white/50">
+                            <View style={{ maxWidth: 1200, width: '100%', marginHorizontal: 'auto' }}>
+                                <View className="mb-8">
+                                    <Text className={`font-bold text-center mb-2 ${isLargeScreen ? 'text-3xl' : 'text-2xl'}`}>
+                                        Featured Stylists
+                                    </Text>
+                                    <Text className="text-neutral-600 text-center text-base">
+                                        Discover top-rated professionals in your area
+                                    </Text>
+                                </View>
+
+                                {/* Stylist Grid */}
+                                <View className={`${isLargeScreen ? 'flex-row flex-wrap -mx-3' : 'space-y-4'}`}>
+                                    {FEATURED_STYLISTS.map((stylist) => (
+                                        <View
+                                            key={stylist.id}
+                                            className={isLargeScreen ? 'w-1/2 lg:w-1/4 px-3 mb-6' : 'w-full'}
+                                        >
+                                            <StylistCard
+                                                name={stylist.name}
+                                                location={stylist.location}
+                                                rating={stylist.rating}
+                                                reviewCount={stylist.reviewCount}
+                                                imageUrl={stylist.imageUrl}
+                                                onPress={() => console.log('Stylist pressed:', stylist.name)}
+                                            />
+                                        </View>
+                                    ))}
                                 </View>
                             </View>
                         </View>
