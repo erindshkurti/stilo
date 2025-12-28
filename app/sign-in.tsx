@@ -1,0 +1,113 @@
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Alert, ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Button } from '../components/Button';
+import { GoogleLogo } from '../components/GoogleLogo';
+import { Header } from '../components/Header';
+import { supabase } from '../lib/supabase';
+
+export default function SignInScreen() {
+    const router = useRouter();
+    const { width } = useWindowDimensions();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [isSignUp, setIsSignUp] = useState(false);
+
+    // Responsive sizing
+    const isLargeScreen = width > 768;
+    const containerMaxWidth = isLargeScreen ? 480 : width - 48;
+
+    async function handleEmailAuth() {
+        setLoading(true);
+        const { error } = isSignUp
+            ? await supabase.auth.signUp({ email, password })
+            : await supabase.auth.signInWithPassword({ email, password });
+
+        if (error) {
+            Alert.alert('Error', error.message);
+        } else {
+            router.replace('/(tabs)');
+        }
+        setLoading(false);
+    }
+
+    async function handleGoogleAuth() {
+        Alert.alert("Coming Soon", "Google Auth configuration requires a bit more setup.");
+    }
+
+    return (
+        <SafeAreaView className="flex-1 bg-white">
+            <Header />
+
+            <ScrollView
+                contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 32 }}
+                showsVerticalScrollIndicator={false}
+            >
+                <View style={{ maxWidth: containerMaxWidth, width: '100%' }}>
+                    <View className="items-center mb-10">
+                        <Text className={`font-bold mb-2 ${isLargeScreen ? 'text-4xl' : 'text-3xl'}`}>
+                            {isSignUp ? 'Create Account' : 'Welcome Back'}
+                        </Text>
+                        <Text className={`text-neutral-500 text-center ${isLargeScreen ? 'text-lg' : 'text-base'}`}>
+                            {isSignUp ? 'Sign up to book appointments' : 'Sign in to manage your bookings'}
+                        </Text>
+                    </View>
+
+                    <View className="space-y-4">
+                        <Button
+                            label="Continue with Google"
+                            variant="google"
+                            icon={<GoogleLogo size={20} />}
+                            onPress={handleGoogleAuth}
+                        />
+
+                        <View className="flex-row items-center my-4">
+                            <View className="flex-1 h-[1px] bg-neutral-100" />
+                            <Text className="mx-4 text-neutral-400 text-sm">Or continue with email</Text>
+                            <View className="flex-1 h-[1px] bg-neutral-100" />
+                        </View>
+
+                        <View className="space-y-3">
+                            <TextInput
+                                placeholder="Email"
+                                value={email}
+                                onChangeText={setEmail}
+                                autoCapitalize="none"
+                                keyboardType="email-address"
+                                className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-100 focus:border-neutral-300 text-base"
+                            />
+                            <TextInput
+                                placeholder="Password"
+                                value={password}
+                                onChangeText={setPassword}
+                                secureTextEntry
+                                className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-100 focus:border-neutral-300 text-base"
+                            />
+                        </View>
+
+                        <Button
+                            label={isSignUp ? "Create account" : "Sign in"}
+                            loading={loading}
+                            onPress={handleEmailAuth}
+                            className="mt-2"
+                        />
+
+                        <TouchableOpacity
+                            onPress={() => setIsSignUp(!isSignUp)}
+                            className="items-center mt-4 py-2"
+                        >
+                            <Text className={`text-neutral-500 ${isLargeScreen ? 'text-base' : 'text-sm'}`}>
+                                {isSignUp ? "Already have an account? " : "Don't have an account? "}
+                                <Text className="font-semibold text-black">
+                                    {isSignUp ? "Sign in" : "Sign up"}
+                                </Text>
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </ScrollView>
+        </SafeAreaView>
+    );
+}
