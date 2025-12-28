@@ -1,3 +1,4 @@
+import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from 'react-native';
@@ -7,45 +8,42 @@ import { GoogleLogo } from '../components/GoogleLogo';
 import { Header } from '../components/Header';
 import { supabase } from '../lib/supabase';
 
-export default function SignInScreen() {
+export default function BusinessSignUpScreen() {
     const router = useRouter();
     const { width } = useWindowDimensions();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [businessName, setBusinessName] = useState('');
     const [loading, setLoading] = useState(false);
-    const [isSignUp, setIsSignUp] = useState(false);
 
     // Responsive sizing
     const isLargeScreen = width > 768;
-    const containerMaxWidth = isLargeScreen ? 480 : width - 48;
+    const containerMaxWidth = isLargeScreen ? 520 : width - 48;
 
-    async function handleEmailAuth() {
+    async function handleSignUp() {
+        if (!businessName.trim()) {
+            Alert.alert('Error', 'Please enter your business name');
+            return;
+        }
+
         setLoading(true);
 
-        if (isSignUp) {
-            const { data, error } = await supabase.auth.signUp({
-                email,
-                password,
-                options: {
-                    data: {
-                        user_type: 'client',
-                    }
+        const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+                data: {
+                    user_type: 'business',
+                    business_name: businessName,
                 }
-            });
-
-            if (error) {
-                Alert.alert('Error', error.message);
-            } else {
-                router.replace('/(tabs)');
             }
+        });
+
+        if (error) {
+            Alert.alert('Error', error.message);
         } else {
-            const { error } = await supabase.auth.signInWithPassword({ email, password });
-
-            if (error) {
-                Alert.alert('Error', error.message);
-            } else {
-                router.replace('/(tabs)');
-            }
+            // TODO: Create business profile in database
+            router.replace('/(tabs)');
         }
 
         setLoading(false);
@@ -64,13 +62,35 @@ export default function SignInScreen() {
                 showsVerticalScrollIndicator={false}
             >
                 <View style={{ maxWidth: containerMaxWidth, width: '100%' }}>
+                    {/* Header */}
                     <View className="items-center mb-10">
+                        <View className="w-16 h-16 bg-black rounded-2xl items-center justify-center mb-4">
+                            <Feather name="briefcase" size={32} color="white" />
+                        </View>
                         <Text className={`font-bold mb-2 ${isLargeScreen ? 'text-4xl' : 'text-3xl'}`}>
-                            {isSignUp ? 'Create Account' : 'Welcome Back'}
+                            List Your Business
                         </Text>
                         <Text className={`text-neutral-500 text-center ${isLargeScreen ? 'text-lg' : 'text-base'}`}>
-                            {isSignUp ? 'Sign up to book appointments' : 'Sign in to manage your bookings'}
+                            Join Stilo and start accepting bookings today
                         </Text>
+                    </View>
+
+                    {/* Benefits */}
+                    <View className="bg-neutral-50 rounded-2xl p-6 mb-6">
+                        <Text className="font-semibold text-base mb-3">What you'll get:</Text>
+                        <View className="space-y-2">
+                            {[
+                                'Manage your services and pricing',
+                                'Accept online bookings 24/7',
+                                'Build your client base',
+                                'Get discovered by new customers'
+                            ].map((benefit, index) => (
+                                <View key={index} className="flex-row items-center">
+                                    <Feather name="check-circle" size={18} color="#22c55e" />
+                                    <Text className="text-neutral-700 ml-2 flex-1">{benefit}</Text>
+                                </View>
+                            ))}
+                        </View>
                     </View>
 
                     <View className="space-y-4">
@@ -83,11 +103,17 @@ export default function SignInScreen() {
 
                         <View className="flex-row items-center my-4">
                             <View className="flex-1 h-[1px] bg-neutral-100" />
-                            <Text className="mx-4 text-neutral-400 text-sm">Or continue with email</Text>
+                            <Text className="mx-4 text-neutral-400 text-sm">Or sign up with email</Text>
                             <View className="flex-1 h-[1px] bg-neutral-100" />
                         </View>
 
                         <View className="space-y-3">
+                            <TextInput
+                                placeholder="Business Name"
+                                value={businessName}
+                                onChangeText={setBusinessName}
+                                className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-100 focus:border-neutral-300 text-base"
+                            />
                             <TextInput
                                 placeholder="Email"
                                 value={email}
@@ -106,38 +132,21 @@ export default function SignInScreen() {
                         </View>
 
                         <Button
-                            label={isSignUp ? "Create account" : "Sign in"}
+                            label="Create Business Account"
                             loading={loading}
-                            onPress={handleEmailAuth}
+                            onPress={handleSignUp}
                             className="mt-2"
                         />
 
                         <TouchableOpacity
-                            onPress={() => setIsSignUp(!isSignUp)}
+                            onPress={() => router.push('/sign-in')}
                             className="items-center mt-4 py-2"
                         >
                             <Text className={`text-neutral-500 ${isLargeScreen ? 'text-base' : 'text-sm'}`}>
-                                {isSignUp ? "Already have an account? " : "Don't have an account? "}
-                                <Text className="font-semibold text-black">
-                                    {isSignUp ? "Sign in" : "Sign up"}
-                                </Text>
+                                Already have an account?
+                                <Text className="font-semibold text-black"> Sign in</Text>
                             </Text>
                         </TouchableOpacity>
-
-                        {/* Business Sign Up Link */}
-                        {isSignUp && (
-                            <View className="mt-6 pt-6 border-t border-neutral-100">
-                                <TouchableOpacity
-                                    onPress={() => router.push('/business-signup')}
-                                    className="items-center py-3"
-                                >
-                                    <Text className="text-neutral-600 text-center">
-                                        Want to list your business?{' '}
-                                        <Text className="font-semibold text-black">Create a business account</Text>
-                                    </Text>
-                                </TouchableOpacity>
-                            </View>
-                        )}
                     </View>
                 </View>
             </ScrollView>

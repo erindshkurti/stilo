@@ -31,11 +31,18 @@ export function Header() {
                             </Link>
                         </>
                     ) : (
-                        <Link href="/sign-in" asChild>
-                            <TouchableOpacity className="bg-black px-6 py-2.5 rounded-xl">
-                                <Text className="text-white font-medium">Sign In</Text>
-                            </TouchableOpacity>
-                        </Link>
+                        <>
+                            <Link href="/business-signup" asChild>
+                                <TouchableOpacity>
+                                    <Text className="text-neutral-700 font-medium">For Businesses</Text>
+                                </TouchableOpacity>
+                            </Link>
+                            <Link href="/sign-in" asChild>
+                                <TouchableOpacity className="bg-black px-6 py-2.5 rounded-xl">
+                                    <Text className="text-white font-medium">Sign In</Text>
+                                </TouchableOpacity>
+                            </Link>
+                        </>
                     )}
                 </View>
             </View>
