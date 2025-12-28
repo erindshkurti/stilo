@@ -1,0 +1,319 @@
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { Alert, ScrollView, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Button } from '../../components/Button';
+import { Header } from '../../components/Header';
+import { ProgressIndicator } from '../../components/ProgressIndicator';
+import { BusinessDetailsForm } from '../../components/onboarding/BusinessDetailsForm';
+import { BusinessHoursForm, type BusinessHours } from '../../components/onboarding/BusinessHoursForm';
+import { LocationForm } from '../../components/onboarding/LocationForm';
+import { ServicesForm, type Service } from '../../components/onboarding/ServicesForm';
+import { StylistForm, type Stylist } from '../../components/onboarding/StylistForm';
+import { useAuth } from '../../lib/auth';
+import { supabase } from '../../lib/supabase';
+
+const STEPS = ['Details', 'Location', 'Hours', 'Team', 'Services'];
+
+export default function BusinessOnboardingScreen() {
+    const router = useRouter();
+    const { step: stepParam } = useLocalSearchParams();
+    const { width } = useWindowDimensions();
+    const { user } = useAuth();
+    const isLargeScreen = width > 768;
+    const containerMaxWidth = isLargeScreen ? 600 : width - 48;
+
+    const [currentStep, setCurrentStep] = useState(1);
+    const [loading, setLoading] = useState(false);
+
+    // Form state
+    const [businessData, setBusinessData] = useState({
+        name: '',
+        description: '',
+        address: '',
+        city: '',
+        state: '',
+        zip_code: '',
+        phone: '',
+        email: '',
+    });
+
+    const [businessHours, setBusinessHours] = useState<BusinessHours[]>([]);
+    const [stylists, setStylists] = useState<Stylist[]>([]);
+    const [services, setServices] = useState<Service[]>([]);
+
+    // Auto-fill business name from user metadata
+    useEffect(() => {
+        if (user?.user_metadata?.business_name) {
+            setBusinessData(prev => ({
+                ...prev,
+                name: user.user_metadata.business_name
+            }));
+        }
+    }, [user]);
+
+    // Set initial step from URL parameter
+    useEffect(() => {
+        if (stepParam && typeof stepParam === 'string') {
+            const step = parseInt(stepParam);
+            if (step >= 1 && step <= 5) {
+                setCurrentStep(step);
+            }
+        }
+    }, [stepParam]);
+
+    const canProceed = () => {
+        switch (currentStep) {
+            case 1:
+                return businessData.name.trim() !== '';
+            case 2:
+                return businessData.address.trim() !== '' && businessData.city.trim() !== '';
+            default:
+                return true;
+        }
+    };
+
+    const handleNext = () => {
+        if (!canProceed()) {
+            Alert.alert('Required Fields', 'Please fill in all required fields before continuing.');
+            return;
+        }
+
+        if (currentStep < STEPS.length) {
+            setCurrentStep(currentStep + 1);
+        } else {
+            handleComplete();
+        }
+    };
+
+    const handleBack = () => {
+        if (currentStep > 1) {
+            setCurrentStep(currentStep - 1);
+        }
+    };
+
+    const handleFieldChange = (field: string, value: string) => {
+        setBusinessData(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleComplete = async () => {
+        setLoading(true);
+
+        try {
+            // Check if user is authenticated
+            if (!user) {
+                throw new Error('You must be signed in to create a business');
+            }
+
+            // Get current session to ensure we're authenticated
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+            if (sessionError || !session) {
+                throw new Error('Session expired. Please sign in again.');
+            }
+
+            console.log('Creating business for user:', user.id);
+
+            // Step 1: Create business
+            const { data: business, error: businessError } = await supabase
+                .from('businesses')
+                .insert([
+                    {
+                        owner_id: user.id,
+                        name: businessData.name,
+                        description: businessData.description,
+                        address: businessData.address,
+                        city: businessData.city,
+                        state: businessData.state,
+                        zip_code: businessData.zip_code,
+                        phone: businessData.phone,
+                        email: businessData.email,
+                    }
+                ])
+                .select()
+                .single();
+
+            if (businessError) throw businessError;
+
+            console.log('Business created:', business.id);
+
+            // Step 2: Create business hours (if any)
+            if (businessHours.length > 0) {
+                const hoursToInsert = businessHours.map(hour => ({
+                    business_id: business.id,
+                    day_of_week: hour.day_of_week,
+                    open_time: hour.open_time,
+                    close_time: hour.close_time,
+                    is_closed: hour.is_closed,
+                }));
+
+                const { error: hoursError } = await supabase
+                    .from('business_hours')
+                    .insert(hoursToInsert);
+
+                if (hoursError) console.error('Error creating hours:', hoursError);
+            }
+
+            // Step 3: Create stylists (if any)
+            if (stylists.length > 0) {
+                const stylistsToInsert = stylists.map(stylist => ({
+                    business_id: business.id,
+                    name: stylist.name,
+                    bio: stylist.bio,
+                    specialties: stylist.specialties,
+                }));
+
+                const { error: stylistsError } = await supabase
+                    .from('stylists')
+                    .insert(stylistsToInsert);
+
+                if (stylistsError) console.error('Error creating stylists:', stylistsError);
+            }
+
+            // Step 4: Create services (if any)
+            if (services.length > 0) {
+                const servicesToInsert = services.map(service => ({
+                    business_id: business.id,
+                    name: service.name,
+                    description: service.description,
+                    duration_minutes: service.duration_minutes,
+                    price: service.price,
+                    category: service.category,
+                }));
+
+                const { error: servicesError } = await supabase
+                    .from('services')
+                    .insert(servicesToInsert);
+
+                if (servicesError) console.error('Error creating services:', servicesError);
+            }
+
+            console.log('Business setup complete!');
+
+            // Redirect to dashboard
+            router.replace('/business/dashboard');
+        } catch (error: any) {
+            console.error('Error creating business:', error);
+            Alert.alert('Error', error.message || 'Failed to create business');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const renderStep = () => {
+        switch (currentStep) {
+            case 1:
+                return (
+                    <BusinessDetailsForm
+                        data={{
+                            name: businessData.name,
+                            description: businessData.description,
+                        }}
+                        onChange={handleFieldChange}
+                    />
+                );
+            case 2:
+                return (
+                    <LocationForm
+                        data={{
+                            address: businessData.address,
+                            city: businessData.city,
+                            state: businessData.state,
+                            zip_code: businessData.zip_code,
+                            phone: businessData.phone,
+                            email: businessData.email,
+                        }}
+                        onChange={handleFieldChange}
+                    />
+                );
+            case 3:
+                return (
+                    <BusinessHoursForm
+                        data={businessHours}
+                        onChange={setBusinessHours}
+                    />
+                );
+            case 4:
+                return (
+                    <StylistForm
+                        data={stylists}
+                        onChange={setStylists}
+                    />
+                );
+            case 5:
+                return (
+                    <ServicesForm
+                        data={services}
+                        onChange={setServices}
+                    />
+                );
+            default:
+                return null;
+        }
+    };
+
+    return (
+        <SafeAreaView className="flex-1 bg-white">
+            <Header />
+
+            <ScrollView
+                contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24, paddingVertical: 32 }}
+                showsVerticalScrollIndicator={false}
+            >
+                <View style={{ maxWidth: containerMaxWidth, width: '100%', marginHorizontal: 'auto' }}>
+                    {/* Header */}
+                    <View className="items-center mb-8">
+                        <Text className={`font - bold mb - 2 ${isLargeScreen ? 'text-3xl' : 'text-2xl'} `}>
+                            Set Up Your Business
+                        </Text>
+                        <Text className="text-neutral-500 text-center">
+                            Step {currentStep} of {STEPS.length}
+                        </Text>
+                    </View>
+
+                    {/* Progress Indicator */}
+                    <ProgressIndicator
+                        currentStep={currentStep}
+                        totalSteps={STEPS.length}
+                        steps={STEPS}
+                    />
+
+                    {/* Step Content */}
+                    <View className="mb-8">
+                        {renderStep()}
+                    </View>
+
+                    {/* Navigation Buttons */}
+                    <View className="flex-row gap-3">
+                        {currentStep > 1 && (
+                            <Button
+                                label="Back"
+                                variant="outline"
+                                onPress={handleBack}
+                                className="flex-1"
+                            />
+                        )}
+                        <Button
+                            label={currentStep === STEPS.length ? 'Complete' : 'Next'}
+                            onPress={handleNext}
+                            loading={loading}
+                            className="flex-1"
+                        />
+                    </View>
+
+                    {/* Skip Option for Optional Steps */}
+                    {currentStep >= 4 && (
+                        <TouchableOpacity
+                            onPress={() => router.replace('/business/dashboard')}
+                            className="items-center mt-6"
+                        >
+                            <Text className="text-neutral-500">
+                                Skip for now, I'll add this later
+                            </Text>
+                        </TouchableOpacity>
+                    )}
+                </View>
+            </ScrollView>
+        </SafeAreaView>
+    );
+}

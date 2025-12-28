@@ -21,32 +21,80 @@ export default function BusinessSignUpScreen() {
     const containerMaxWidth = isLargeScreen ? 520 : width - 48;
 
     async function handleSignUp() {
+        // Validate business name
         if (!businessName.trim()) {
             Alert.alert('Error', 'Please enter your business name');
             return;
         }
 
-        setLoading(true);
-
-        const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-                data: {
-                    user_type: 'business',
-                    business_name: businessName,
-                }
-            }
-        });
-
-        if (error) {
-            Alert.alert('Error', error.message);
-        } else {
-            // TODO: Create business profile in database
-            router.replace('/(tabs)');
+        // Validate email
+        if (!email.trim() || !email.includes('@')) {
+            Alert.alert('Error', 'Please enter a valid email address');
+            return;
         }
 
-        setLoading(false);
+        // Validate password
+        if (password.length < 6) {
+            Alert.alert('Error', 'Password must be at least 6 characters long');
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            console.log('Attempting signup with:', { email, businessName, passwordLength: password.length });
+
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        user_type: 'business',
+                        business_name: businessName,
+                    }
+                }
+            });
+
+            console.log('Signup response:', {
+                user: data.user?.id,
+                session: !!data.session,
+                error: error?.message,
+                errorDetails: error
+            });
+
+            if (error) throw error;
+
+            // Check if email confirmation is required
+            if (data.user && !data.session) {
+                // Email confirmation required
+                Alert.alert(
+                    'Confirm Your Email',
+                    `We've sent a confirmation email to ${email}. Please check your inbox and click the confirmation link to continue setting up your business.`,
+                    [
+                        {
+                            text: 'OK',
+                            onPress: () => router.replace('/sign-in')
+                        }
+                    ]
+                );
+                setLoading(false);
+                return;
+            }
+
+            // Successfully signed up with session (no email confirmation needed)
+            if (data.session) {
+                console.log('User signed up successfully with session:', data.user?.id);
+                router.replace('/business/onboarding');
+            } else {
+                // Unexpected state
+                throw new Error('Signup completed but no session was created. Please try signing in.');
+            }
+        } catch (error: any) {
+            console.error('Signup error:', error);
+            Alert.alert('Signup Error', error.message || 'Failed to create account. Please try a different email address.');
+        } finally {
+            setLoading(false);
+        }
     }
 
     async function handleGoogleAuth() {
@@ -129,6 +177,9 @@ export default function BusinessSignUpScreen() {
                                 secureTextEntry
                                 className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-100 focus:border-neutral-300 text-base"
                             />
+                            <Text className="text-xs text-neutral-500 -mt-2 px-1">
+                                Must be at least 6 characters
+                            </Text>
                         </View>
 
                         <Button

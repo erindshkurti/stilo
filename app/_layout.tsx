@@ -21,6 +21,9 @@ export default function RootLayout() {
           <Stack.Screen name="index" />
           <Stack.Screen name="sign-in" />
           <Stack.Screen name="business-signup" />
+          <Stack.Screen name="business/onboarding" />
+          <Stack.Screen name="business/dashboard" />
+          <Stack.Screen name="business/settings" />
           <Stack.Screen name="(tabs)" />
         </Stack>
         <StatusBar style="auto" />

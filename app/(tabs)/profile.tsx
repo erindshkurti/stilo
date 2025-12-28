@@ -1,25 +1,33 @@
-import { Text, useWindowDimensions, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button } from '../../components/Button';
+import { Header } from '../../components/Header';
+import { useAuth } from '../../lib/auth';
 import { supabase } from '../../lib/supabase';
 
 export default function ProfileScreen() {
-    const { width } = useWindowDimensions();
-    const isLargeScreen = width > 768;
-    const containerMaxWidth = isLargeScreen ? 480 : width - 48;
+    const { user } = useAuth();
+    const router = useRouter();
+
+    const handleSignOut = async () => {
+        await supabase.auth.signOut();
+        router.replace('/');
+    };
 
     return (
-        <SafeAreaView className="flex-1 bg-white items-center justify-center p-6">
-            <View style={{ maxWidth: containerMaxWidth, width: '100%' }} className="items-center">
-                <Text className={`font-bold mb-6 ${isLargeScreen ? 'text-2xl' : 'text-xl'}`}>
-                    Your Profile
-                </Text>
-                <Button
-                    label="Sign Out"
-                    variant="outline"
-                    onPress={() => supabase.auth.signOut()}
-                    className="w-full"
-                />
+        <SafeAreaView className="flex-1 bg-white">
+            <Header />
+
+            <View className="flex-1 items-center justify-center px-6">
+                <Text className="text-2xl font-bold mb-4">Profile</Text>
+                <Text className="text-neutral-600 mb-8">{user?.email}</Text>
+
+                <TouchableOpacity
+                    onPress={handleSignOut}
+                    className="bg-black px-8 py-3 rounded-xl"
+                >
+                    <Text className="text-white font-medium">Sign Out</Text>
+                </TouchableOpacity>
             </View>
         </SafeAreaView>
     );
