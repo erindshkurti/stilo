@@ -14,6 +14,7 @@ export default function SignInScreen() {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [isSignUp, setIsSignUp] = useState(false);
+    const [error, setError] = useState('');
 
     // Responsive sizing
     const isLargeScreen = width > 768;
@@ -21,9 +22,29 @@ export default function SignInScreen() {
 
     async function handleEmailAuth() {
         setLoading(true);
+        setError('');
+
+        // Basic validation
+        if (!email || !password) {
+            setError('Please enter both email and password');
+            setLoading(false);
+            return;
+        }
+
+        if (!email.includes('@')) {
+            setError('Please enter a valid email address');
+            setLoading(false);
+            return;
+        }
+
+        if (password.length < 6) {
+            setError('Password must be at least 6 characters');
+            setLoading(false);
+            return;
+        }
 
         if (isSignUp) {
-            const { data, error } = await supabase.auth.signUp({
+            const { data, error: signUpError } = await supabase.auth.signUp({
                 email,
                 password,
                 options: {
@@ -33,16 +54,23 @@ export default function SignInScreen() {
                 }
             });
 
-            if (error) {
-                Alert.alert('Error', error.message);
+            if (signUpError) {
+                setError(signUpError.message);
             } else {
                 router.replace('/(tabs)');
             }
         } else {
-            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
-            if (error) {
-                Alert.alert('Error', error.message);
+            if (signInError) {
+                // Provide user-friendly error messages
+                if (signInError.message.includes('Invalid login credentials')) {
+                    setError('Invalid email or password. Please try again.');
+                } else if (signInError.message.includes('Email not confirmed')) {
+                    setError('Please confirm your email address before signing in.');
+                } else {
+                    setError(signInError.message);
+                }
             } else {
                 router.replace('/(tabs)');
             }
@@ -104,6 +132,16 @@ export default function SignInScreen() {
                                 className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-100 focus:border-neutral-300 text-base"
                             />
                         </View>
+
+                        {/* Error Message - Right above the action button */}
+                        {error ? (
+                            <View className="bg-red-50 border border-red-300 rounded-xl p-4 flex-row items-center">
+                                <View className="w-6 h-6 bg-red-500 rounded-full items-center justify-center mr-3">
+                                    <Text className="text-white text-sm font-bold">✕</Text>
+                                </View>
+                                <Text className="text-red-700 flex-1 font-medium">{error}</Text>
+                            </View>
+                        ) : null}
 
                         <Button
                             label={isSignUp ? "Create account" : "Sign in"}
