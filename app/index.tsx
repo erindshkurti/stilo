@@ -34,7 +34,7 @@ export default function LandingPage() {
                         </View>
 
                         {/* Search Card - Horizontal on large screens, vertical on mobile */}
-                        <View className="bg-white rounded-3xl shadow-lg border border-neutral-100 p-6">
+                        <View className="bg-white rounded-3xl shadow-sm border border-neutral-100 p-6">
                             <View className={isLargeScreen ? 'flex-row gap-3' : 'space-y-3'}>
                                 {/* Location Input */}
                                 <View className={isLargeScreen ? 'flex-1' : 'w-full'}>
