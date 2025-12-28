@@ -57,10 +57,11 @@ export default function SignInScreen() {
             if (signUpError) {
                 setError(signUpError.message);
             } else {
+                // New users are always clients, redirect to tabs
                 router.replace('/(tabs)');
             }
         } else {
-            const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+            const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
             if (signInError) {
                 // Provide user-friendly error messages
@@ -72,7 +73,15 @@ export default function SignInScreen() {
                     setError(signInError.message);
                 }
             } else {
-                router.replace('/(tabs)');
+                // Check user type and redirect accordingly
+                const { data: { user } } = await supabase.auth.getUser();
+                const userType = user?.user_metadata?.user_type;
+
+                if (userType === 'business') {
+                    router.replace('/business/dashboard');
+                } else {
+                    router.replace('/(tabs)');
+                }
             }
         }
 
