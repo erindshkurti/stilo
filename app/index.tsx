@@ -8,44 +8,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../components/Button';
 import { Header } from '../components/Header';
 import { StylistCard } from '../components/StylistCard';
+import { STYLISTS } from '../data/stylists';
 import { useAuth } from '../lib/auth';
 import { supabase } from '../lib/supabase';
 
-// Mock data for featured stylists
-const FEATURED_STYLISTS = [
-    {
-        id: '1',
-        name: 'Bella Hair Studio',
-        location: 'New York, NY',
-        rating: 4.9,
-        reviewCount: 127,
-        imageUrl: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop',
-    },
-    {
-        id: '2',
-        name: 'The Cut Above',
-        location: 'Los Angeles, CA',
-        rating: 4.8,
-        reviewCount: 203,
-        imageUrl: 'https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=400&h=300&fit=crop',
-    },
-    {
-        id: '3',
-        name: 'Style & Grace',
-        location: 'Chicago, IL',
-        rating: 5.0,
-        reviewCount: 89,
-        imageUrl: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&h=300&fit=crop',
-    },
-    {
-        id: '4',
-        name: 'Urban Cuts',
-        location: 'Miami, FL',
-        rating: 4.7,
-        reviewCount: 156,
-        imageUrl: 'https://images.unsplash.com/photo-1633681926022-84c23e8cb2d6?w=400&h=300&fit=crop',
-    },
-];
 
 export default function LandingPage() {
     const router = useRouter();
@@ -262,8 +228,10 @@ export default function LandingPage() {
                                                 variant="primary"
                                                 size="md"
                                                 onPress={() => {
-                                                    // TODO: Implement search
-                                                    console.log('Search:', { location, service, date });
+                                                    router.push({
+                                                        pathname: '/search',
+                                                        params: { location, service, date }
+                                                    });
                                                 }}
                                                 className={isLargeScreen ? '' : 'w-full'}
                                             />
@@ -303,7 +271,7 @@ export default function LandingPage() {
 
                                 {/* Stylist Grid */}
                                 <View className={`${isLargeScreen ? 'flex-row flex-wrap -mx-3' : 'space-y-4'}`}>
-                                    {FEATURED_STYLISTS.map((stylist) => (
+                                    {STYLISTS.slice(0, 4).map((stylist) => (
                                         <View
                                             key={stylist.id}
                                             className={isLargeScreen ? 'w-1/2 lg:w-1/4 px-3 mb-6' : 'w-full'}

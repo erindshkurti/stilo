@@ -329,7 +329,7 @@ export function Header() {
                                 {/* For Customers Section */}
                                 <View>
                                     <Text className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-3 px-4">
-                                        For Customers and Businesses
+                                        For Current Customers And Businesses
                                     </Text>
                                     <Link href="/sign-in" asChild>
                                         <TouchableOpacity
@@ -344,7 +344,7 @@ export function Header() {
                                 {/* For Businesses Section */}
                                 <View>
                                     <Text className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-3 px-4">
-                                        For Businesses
+                                        For New Businesses
                                     </Text>
                                     <Link href="/business-signup" asChild>
                                         <TouchableOpacity
