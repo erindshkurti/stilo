@@ -207,11 +207,6 @@ export default function BusinessPage() {
                                             />
                                         )}
                                         {business.logo_url && isLargeScreen && !router.canGoBack() && (
-                                            // Optional: Keep logo on desktop if you want, but user asked for button alignment. 
-                                            // I'll keep the logo above the button if it exists, or maybe side-by-side?
-                                            // The previous code had logo above. Let's keep it but `items-center` on parent might center the whole right block.
-                                            // Actually, `items-center` on parent centers the BLOCK vertically.
-                                            // Inside the block, we can stack Logo and Button consistently.
                                             <Image
                                                 source={{ uri: business.logo_url }}
                                                 className="w-16 h-16 rounded-full border-2 border-white shadow-sm mb-4"
@@ -219,7 +214,10 @@ export default function BusinessPage() {
                                         )}
 
                                         {isLargeScreen && (
-                                            <TouchableOpacity className="bg-black px-6 py-3 rounded-xl shadow-md active:opacity-90">
+                                            <TouchableOpacity
+                                                onPress={() => router.push(`/booking/${id}`)}
+                                                className="bg-black px-6 py-3 rounded-xl shadow-md active:opacity-90"
+                                            >
                                                 <Text className="text-white font-bold text-base">Book an Appointment</Text>
                                             </TouchableOpacity>
                                         )}
@@ -270,7 +268,10 @@ export default function BusinessPage() {
                                         </View>
                                         <View className="items-end">
                                             <Text className="font-bold text-neutral-900 text-base">${service.price}</Text>
-                                            <TouchableOpacity className="mt-2 bg-black px-3 py-1.5 rounded-lg">
+                                            <TouchableOpacity
+                                                onPress={() => router.push(`/booking/${id}`)}
+                                                className="mt-2 bg-black px-3 py-1.5 rounded-lg"
+                                            >
                                                 <Text className="text-white text-xs font-bold">Book</Text>
                                             </TouchableOpacity>
                                         </View>
@@ -322,7 +323,10 @@ export default function BusinessPage() {
                 <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-neutral-100 shadow-lg">
                     <View className="w-full items-center">
                         <View style={{ width: '100%', maxWidth: 1200, padding: 24, paddingBottom: 32 }}>
-                            <TouchableOpacity className="w-full bg-black py-4 rounded-xl items-center shadow-md active:opacity-90">
+                            <TouchableOpacity
+                                onPress={() => router.push(`/booking/${id}`)}
+                                className="w-full bg-black py-4 rounded-xl items-center shadow-md active:opacity-90"
+                            >
                                 <Text className="text-white font-bold text-lg">Book an Appointment</Text>
                             </TouchableOpacity>
                         </View>
