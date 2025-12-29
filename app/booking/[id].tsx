@@ -5,7 +5,7 @@ import { ActivityIndicator, Alert, Image, ScrollView, Text, TouchableOpacity, Vi
 import { supabase } from '../../lib/supabase';
 
 // Types
-type Step = 1 | 2 | 3 | 4;
+type Step = 1 | 2 | 3 | 4 | 5;
 
 interface Service {
     id: string;
@@ -268,10 +268,7 @@ export default function BookingScreen() {
             }
 
             console.log('Booking Success:', data);
-
-            Alert.alert('Success', 'Booking confirmed!', [
-                { text: 'OK', onPress: () => router.push('/profile') }
-            ]);
+            setStep(5);
 
         } catch (error: any) {
             Alert.alert('Booking Error', error.message || 'An unknown error occurred.');
@@ -441,6 +438,46 @@ export default function BookingScreen() {
         </ScrollView>
     );
 
+    const renderStep5_Success = () => (
+        <View className="flex-1 px-6 items-center justify-center -mt-20">
+            <View className="w-24 h-24 bg-green-100 rounded-full items-center justify-center mb-6">
+                <Feather name="check" size={48} color="#16a34a" />
+            </View>
+            <Text className="text-2xl font-bold text-neutral-900 mb-2 text-center">Booking Confirmed!</Text>
+            <Text className="text-neutral-500 text-center mb-8 leading-6">
+                Your appointment has been successfully scheduled.
+            </Text>
+
+            <View className="w-full bg-neutral-50 p-6 rounded-2xl border border-neutral-100 mb-8">
+                <View className="flex-row justify-between mb-2">
+                    <Text className="text-neutral-500">Service</Text>
+                    <Text className="font-semibold text-neutral-900">{selectedService?.name}</Text>
+                </View>
+
+                <View className="flex-row justify-between mb-2">
+                    <Text className="text-neutral-500">Date</Text>
+                    <Text className="font-semibold text-neutral-900">
+                        {selectedDate?.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at {selectedTime}
+                    </Text>
+                </View>
+            </View>
+
+            <TouchableOpacity
+                onPress={() => router.push('/profile')}
+                className="w-full bg-black py-4 rounded-xl items-center mb-4"
+            >
+                <Text className="text-white font-bold text-lg">View My Appointments</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+                onPress={() => router.back()}
+                className="py-4"
+            >
+                <Text className="text-neutral-900 font-semibold">Done</Text>
+            </TouchableOpacity>
+        </View>
+    );
+
     if (loading) return <View className="flex-1 bg-white items-center justify-center"><ActivityIndicator color="#000" /></View>;
 
     return (
@@ -448,68 +485,75 @@ export default function BookingScreen() {
             <Stack.Screen options={{ headerShown: false }} />
 
             <View style={{ width: '100%', maxWidth: 1200 }} className="flex-1 w-full">
-                {/* Custom Header */}
-                <View className="flex-row items-center justify-between px-6 py-4 border-b border-neutral-100 bg-white">
-                    <View className="w-10" />
-                    <Text className="text-lg font-bold text-neutral-900">Book Appointment</Text>
-                    <TouchableOpacity onPress={() => router.back()} className="w-10 h-10 items-center justify-center rounded-full active:bg-neutral-100">
-                        <Feather name="x" size={24} color="#000" />
-                    </TouchableOpacity>
-                </View>
+                {/* Custom Header - Hide on Success Step */}
+                {step !== 5 && (
+                    <View className="flex-row items-center justify-between px-6 py-4 border-b border-neutral-100 bg-white">
+                        <View className="w-10" />
+                        <Text className="text-lg font-bold text-neutral-900">Book Appointment</Text>
+                        <TouchableOpacity onPress={() => router.back()} className="w-10 h-10 items-center justify-center rounded-full active:bg-neutral-100">
+                            <Feather name="x" size={24} color="#000" />
+                        </TouchableOpacity>
+                    </View>
+                )}
 
-                {/* Progress Bar */}
-                <View className="flex-row h-1 bg-neutral-100 w-full">
-                    <View className="h-full bg-black" style={{ width: `${(step / 4) * 100}%` }} />
-                </View>
+                {/* Progress Bar - Hide on Success Step */}
+                {step !== 5 && (
+                    <View className="flex-row h-1 bg-neutral-100 w-full">
+                        <View className="h-full bg-black" style={{ width: `${(step / 4) * 100}%` }} />
+                    </View>
+                )}
 
                 {step === 1 && renderStep1_Services()}
                 {step === 2 && renderStep2_Stylists()}
                 {step === 3 && renderStep3_DateTime()}
                 {step === 4 && renderStep4_Confirm()}
+                {step === 5 && renderStep5_Success()}
 
-                {/* Footer Buttons */}
-                <View className="p-6 border-t border-neutral-100">
-                    <View className="flex-row gap-4">
-                        {step > 1 && (
+                {/* Footer Buttons - Hide on Success Step */}
+                {step !== 5 && (
+                    <View className="p-6 border-t border-neutral-100">
+                        <View className="flex-row gap-4">
+                            {step > 1 && (
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        setStep(prev => prev - 1 as Step);
+                                        // Clear downstream selections
+                                        if (step === 3) { setSelectedDate(null); setSelectedTime(null); }
+                                    }}
+                                    className="flex-1 py-4 rounded-xl bg-neutral-100 items-center justify-center"
+                                >
+                                    <Text className="font-bold text-neutral-900">Back</Text>
+                                </TouchableOpacity>
+                            )}
+
                             <TouchableOpacity
                                 onPress={() => {
-                                    setStep(prev => prev - 1 as Step);
-                                    // Clear downstream selections
-                                    if (step === 3) { setSelectedDate(null); setSelectedTime(null); }
+                                    if (step === 4) handleBook();
+                                    else setStep(prev => prev + 1 as Step);
                                 }}
-                                className="flex-1 py-4 rounded-xl bg-neutral-100 items-center justify-center"
+                                disabled={
+                                    (step === 1 && !selectedService) ||
+                                    (step === 2 && !selectedStylist) ||
+                                    (step === 3 && (!selectedDate || !selectedTime)) ||
+                                    submitting
+                                }
+                                className={`flex-1 py-4 rounded-xl items-center justify-center ${((step === 1 && !selectedService) || (step === 2 && !selectedStylist) || (step === 3 && (!selectedDate || !selectedTime)))
+                                        ? 'bg-neutral-200'
+                                        : 'bg-black'
+                                    }`}
+                                style={{ flex: 2 }}
                             >
-                                <Text className="font-bold text-neutral-900">Back</Text>
+                                {submitting ? (
+                                    <ActivityIndicator color="white" />
+                                ) : (
+                                    <Text className={`font-bold ${((step === 1 && !selectedService) || (step === 2 && !selectedStylist) || (step === 3 && (!selectedDate || !selectedTime))) ? 'text-neutral-400' : 'text-white'}`}>
+                                        {step === 4 ? 'Confirm Booking' : 'Next'}
+                                    </Text>
+                                )}
                             </TouchableOpacity>
-                        )}
-
-                        <TouchableOpacity
-                            onPress={() => {
-                                if (step === 4) handleBook();
-                                else setStep(prev => prev + 1 as Step);
-                            }}
-                            disabled={
-                                (step === 1 && !selectedService) ||
-                                (step === 2 && !selectedStylist) ||
-                                (step === 3 && (!selectedDate || !selectedTime)) ||
-                                submitting
-                            }
-                            className={`flex-1 py-4 rounded-xl items-center justify-center ${((step === 1 && !selectedService) || (step === 2 && !selectedStylist) || (step === 3 && (!selectedDate || !selectedTime)))
-                                    ? 'bg-neutral-200'
-                                    : 'bg-black'
-                                }`}
-                            style={{ flex: 2 }}
-                        >
-                            {submitting ? (
-                                <ActivityIndicator color="white" />
-                            ) : (
-                                <Text className={`font-bold ${((step === 1 && !selectedService) || (step === 2 && !selectedStylist) || (step === 3 && (!selectedDate || !selectedTime))) ? 'text-neutral-400' : 'text-white'}`}>
-                                    {step === 4 ? 'Confirm Booking' : 'Next'}
-                                </Text>
-                            )}
-                        </TouchableOpacity>
+                        </View>
                     </View>
-                </View>
+                )}
             </View>
         </View>
     );
