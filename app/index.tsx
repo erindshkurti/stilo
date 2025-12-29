@@ -13,6 +13,17 @@ import { useAuth } from '../lib/auth';
 import { supabase } from '../lib/supabase';
 
 
+// Match DB Schema
+interface Business {
+    id: string;
+    name: string;
+    city: string; // Using city as location
+    rating: number;
+    review_count: number;
+    cover_image_url: string; // Using cover image for card
+    is_featured: boolean;
+}
+
 export default function LandingPage() {
     const router = useRouter();
     const { width } = useWindowDimensions();
@@ -24,7 +35,36 @@ export default function LandingPage() {
     const [redirecting, setRedirecting] = useState(false);
     const [isChecking, setIsChecking] = useState(false);
 
+    // Featured Businesses State
+    const [featuredBusinesses, setFeaturedBusinesses] = useState<Business[]>([]);
+    const [isLoadingFeatured, setIsLoadingFeatured] = useState(true);
+
     const [lastCheckedUserId, setLastCheckedUserId] = useState<string | null>(null);
+
+    // Fetch Featured Businesses
+    useEffect(() => {
+        async function fetchFeatured() {
+            try {
+                const { data, error } = await supabase
+                    .from('businesses')
+                    .select('id, name, city, rating, review_count, cover_image_url, is_featured')
+                    .eq('is_featured', true)
+                    .limit(4);
+
+                if (error) {
+                    console.error('Error fetching featured businesses:', error);
+                } else if (data) {
+                    setFeaturedBusinesses(data);
+                }
+            } catch (err) {
+                console.error('Unexpected error fetching featured:', err);
+            } finally {
+                setIsLoadingFeatured(false);
+            }
+        }
+
+        fetchFeatured();
+    }, []);
 
     // Redirect authenticated users to their dashboard
     useEffect(() => {
@@ -150,6 +190,20 @@ export default function LandingPage() {
         );
     }
 
+    // Fallback to mock data if no DB data found (or while loading to prevent jump, though we have explicit loading state)
+    // Mixing: Show DB results first, then fill remainder with mock data if needed? 
+    // For now, simpler: If DB has data, use it. Else use mock.
+    const displayStylists = featuredBusinesses.length > 0
+        ? featuredBusinesses.map(b => ({
+            id: b.id,
+            name: b.name,
+            location: b.city,
+            rating: b.rating || 0, // Handle nulls from DB defaults if needed
+            reviewCount: b.review_count || 0,
+            imageUrl: b.cover_image_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=2574&auto=format&fit=crop', // Fallback image
+        }))
+        : STYLISTS.slice(0, 4);
+
     return (
         <View className="flex-1">
             <LinearGradient
@@ -271,7 +325,7 @@ export default function LandingPage() {
 
                                 {/* Stylist Grid */}
                                 <View className={`${isLargeScreen ? 'flex-row flex-wrap -mx-3' : 'space-y-4'}`}>
-                                    {STYLISTS.slice(0, 4).map((stylist) => (
+                                    {displayStylists.map((stylist) => (
                                         <View
                                             key={stylist.id}
                                             className={isLargeScreen ? 'w-1/2 lg:w-1/4 px-3 mb-6' : 'w-full'}
