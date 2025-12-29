@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Switch, Text, TouchableOpacity, View } from 'react-native';
 
 interface BusinessHoursFormProps {
@@ -38,6 +38,13 @@ export function BusinessHoursForm({ data, onChange }: BusinessHoursFormProps) {
             ...DEFAULT_HOURS,
         }))
     );
+
+    // Propagate defaults to parent if data was empty
+    useEffect(() => {
+        if (data.length === 0) {
+            onChange(hours);
+        }
+    }, []);
 
     const toggleDay = (dayIndex: number) => {
         const newHours = [...hours];

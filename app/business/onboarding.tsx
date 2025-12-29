@@ -279,13 +279,14 @@ export default function BusinessOnboardingScreen() {
             console.log('Business created:', business.id);
 
             // Upload cover image if one was selected
-            if (businessData.coverImageUrl && businessData.coverImageUrl.startsWith('file://')) {
+            if (businessData.coverImageUrl) {
                 try {
+                    console.log('Attempting to upload cover image from URI:', businessData.coverImageUrl);
                     await uploadCoverImageToBusiness(business.id, businessData.coverImageUrl);
                     console.log('Cover image uploaded successfully');
                 } catch (error) {
                     console.error('Error uploading cover image:', error);
-                    // Don't fail the entire onboarding if cover image upload fails
+                    alert('Business created, but cover image upload failed. You can update it later in your dashboard.');
                 }
             }
 
