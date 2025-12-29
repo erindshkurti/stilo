@@ -15,6 +15,7 @@ export default function BusinessSignUpScreen() {
     const [password, setPassword] = useState('');
     const [businessName, setBusinessName] = useState('');
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     // Responsive sizing
     const isLargeScreen = width > 768;
@@ -23,23 +24,24 @@ export default function BusinessSignUpScreen() {
     async function handleSignUp() {
         // Validate business name
         if (!businessName.trim()) {
-            Alert.alert('Error', 'Please enter your business name');
+            setError('Please enter your business name');
             return;
         }
 
         // Validate email
         if (!email.trim() || !email.includes('@')) {
-            Alert.alert('Error', 'Please enter a valid email address');
+            setError('Please enter a valid email address');
             return;
         }
 
         // Validate password
         if (password.length < 6) {
-            Alert.alert('Error', 'Password must be at least 6 characters long');
+            setError('Password is too short');
             return;
         }
 
         setLoading(true);
+        setError(null); // Clear any previous errors
 
         try {
             console.log('Attempting signup with:', { email, businessName, passwordLength: password.length });
@@ -91,7 +93,7 @@ export default function BusinessSignUpScreen() {
             }
         } catch (error: any) {
             console.error('Signup error:', error);
-            Alert.alert('Signup Error', error.message || 'Failed to create account. Please try a different email address.');
+            setError(error.message || 'Failed to create account. Please try a different email address.');
         } finally {
             setLoading(false);
         }
@@ -177,10 +179,17 @@ export default function BusinessSignUpScreen() {
                                 secureTextEntry
                                 className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-100 focus:border-neutral-300 text-base"
                             />
-                            <Text className="text-xs text-neutral-500 -mt-2 px-1">
-                                Must be at least 6 characters
-                            </Text>
                         </View>
+
+                        {/* Error Display */}
+                        {error && (
+                            <View className="mb-4 bg-red-50 border border-red-200 rounded-xl p-4">
+                                <View className="flex-row items-center">
+                                    <Feather name="alert-circle" size={20} color="#dc2626" />
+                                    <Text className="text-red-600 ml-3 flex-1">{error}</Text>
+                                </View>
+                            </View>
+                        )}
 
                         <Button
                             label="Create Business Account"

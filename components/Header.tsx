@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { Link, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { Animated, Image, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { useAuth } from '../lib/auth';
 import { supabase } from '../lib/supabase';
 
@@ -11,6 +11,7 @@ export function Header() {
     const { width } = useWindowDimensions();
     const [menuOpen, setMenuOpen] = useState(false);
     const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const isMobile = width < 768;
 
     // Check if user is a business owner
@@ -60,6 +61,32 @@ export function Header() {
         setProfileDropdownOpen(false);
         router.replace('/');
     };
+
+    // Load user profile data
+    useEffect(() => {
+        async function loadProfile() {
+            if (!user) {
+                setAvatarUrl(null);
+                return;
+            }
+
+            try {
+                const { data } = await supabase
+                    .from('profiles')
+                    .select('avatar_url')
+                    .eq('id', user.id)
+                    .single();
+
+                if (data?.avatar_url) {
+                    setAvatarUrl(data.avatar_url);
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error);
+            }
+        }
+
+        loadProfile();
+    }, [user]);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -113,9 +140,21 @@ export function Header() {
                                             <View style={{ position: 'relative', zIndex: 9999 }} data-dropdown="profile">
                                                 <TouchableOpacity
                                                     onPress={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                                                    className="w-10 h-10 bg-neutral-100 rounded-full items-center justify-center"
+                                                    className="w-10 h-10 rounded-full overflow-hidden items-center justify-center"
+                                                    style={{
+                                                        backgroundColor: avatarUrl ? 'transparent' : '#f5f5f5',
+                                                        borderWidth: 2,
+                                                        borderColor: '#e5e5e5',
+                                                    }}
                                                 >
-                                                    <Feather name="user" size={20} color="#000" />
+                                                    {avatarUrl ? (
+                                                        <Image
+                                                            source={{ uri: avatarUrl }}
+                                                            style={{ width: 36, height: 36, borderRadius: 18 }}
+                                                        />
+                                                    ) : (
+                                                        <Feather name="user" size={20} color="#000" />
+                                                    )}
                                                 </TouchableOpacity>
 
                                                 {profileDropdownOpen ? (
@@ -275,7 +314,7 @@ export function Header() {
                                 {/* For Customers Section */}
                                 <View>
                                     <Text className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-3 px-4">
-                                        For Customers
+                                        For Customers and Businesses
                                     </Text>
                                     <Link href="/sign-in" asChild>
                                         <TouchableOpacity

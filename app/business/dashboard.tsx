@@ -1,8 +1,9 @@
 import { Feather } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
+import { Image, ScrollView, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../../components/Header';
 import { useAuth } from '../../lib/auth';
@@ -16,6 +17,9 @@ export default function BusinessDashboard() {
     const [hours, setHours] = useState<any[]>([]);
     const [stylists, setStylists] = useState<any[]>([]);
     const [services, setServices] = useState<any[]>([]);
+    const [portfolioImages, setPortfolioImages] = useState<any[]>([]);
+    const [uploadingPortfolio, setUploadingPortfolio] = useState(false);
+    const [uploadingCover, setUploadingCover] = useState(false);
     const [loading, setLoading] = useState(true);
 
     const isLargeScreen = width > 1024;
@@ -68,11 +72,181 @@ export default function BusinessDashboard() {
                     .eq('business_id', businessData.id);
 
                 if (servicesData) setServices(servicesData);
+
+                // Load portfolio images
+                const { data: portfolioData } = await supabase
+                    .from('business_portfolio_images')
+                    .select('*')
+                    .eq('business_id', businessData.id)
+                    .order('display_order', { ascending: true });
+
+                if (portfolioData) setPortfolioImages(portfolioData);
             }
         } catch (error) {
             console.error('Error:', error);
         } finally {
             setLoading(false);
+        }
+    }
+
+    async function pickPortfolioImage() {
+        try {
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 0.8,
+            });
+
+            if (!result.canceled && result.assets[0]) {
+                await uploadPortfolioImage(result.assets[0].uri);
+            }
+        } catch (error) {
+            console.error('Error picking image:', error);
+        }
+    }
+
+    async function uploadPortfolioImage(uri: string) {
+        try {
+            setUploadingPortfolio(true);
+
+            if (!user || !business?.id) return;
+
+            const response = await fetch(uri);
+            const blob = await response.blob();
+
+            const fileExt = uri.split('.').pop()?.toLowerCase() || 'jpg';
+            const fileName = `${business.id}/${Date.now()}.${fileExt}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('stilo.business.portfolio')
+                .upload(fileName, blob, {
+                    contentType: `image/${fileExt}`,
+                    upsert: true,
+                });
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('stilo.business.portfolio')
+                .getPublicUrl(fileName);
+
+            const { error: insertError } = await supabase
+                .from('business_portfolio_images')
+                .insert({
+                    business_id: business.id,
+                    image_url: publicUrl,
+                    display_order: portfolioImages.length,
+                });
+
+            if (insertError) throw insertError;
+
+            await loadBusinessData();
+        } catch (error) {
+            console.error('Error uploading portfolio image:', error);
+        } finally {
+            setUploadingPortfolio(false);
+        }
+    }
+
+    async function deletePortfolioImage(imageId: string, imageUrl: string) {
+        try {
+            const { error } = await supabase
+                .from('business_portfolio_images')
+                .delete()
+                .eq('id', imageId);
+
+            if (error) throw error;
+
+            const urlParts = imageUrl.split('stilo.business.portfolio/');
+            if (urlParts[1]) {
+                await supabase.storage
+                    .from('stilo.business.portfolio')
+                    .remove([urlParts[1]]);
+            }
+
+            await loadBusinessData();
+        } catch (error) {
+            console.error('Error deleting image:', error);
+        }
+    }
+
+    async function setFeaturedImage(imageId: string) {
+        try {
+            if (!business?.id) return;
+
+            await supabase
+                .from('business_portfolio_images')
+                .update({ is_featured: false })
+                .eq('business_id', business.id);
+
+            const { error } = await supabase
+                .from('business_portfolio_images')
+                .update({ is_featured: true })
+                .eq('id', imageId);
+
+            if (error) throw error;
+
+            await loadBusinessData();
+        } catch (error) {
+            console.error('Error setting featured image:', error);
+        }
+    }
+
+    async function pickCoverImage() {
+        try {
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [16, 9],
+                quality: 0.8,
+            });
+
+            if (!result.canceled && result.assets[0]) {
+                await uploadCoverImage(result.assets[0].uri);
+            }
+        } catch (error) {
+            console.error('Error picking cover image:', error);
+        }
+    }
+
+    async function uploadCoverImage(uri: string) {
+        try {
+            setUploadingCover(true);
+
+            if (!user || !business?.id) return;
+
+            const response = await fetch(uri);
+            const blob = await response.blob();
+
+            const fileExt = uri.split('.').pop()?.toLowerCase() || 'jpg';
+            const fileName = `${business.id}/cover.${fileExt}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('stilo.business.portfolio')
+                .upload(fileName, blob, {
+                    contentType: `image/${fileExt}`,
+                    upsert: true,
+                });
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('stilo.business.portfolio')
+                .getPublicUrl(fileName);
+
+            const { error: updateError } = await supabase
+                .from('businesses')
+                .update({ cover_image_url: publicUrl })
+                .eq('id', business.id);
+
+            if (updateError) throw updateError;
+
+            await loadBusinessData();
+        } catch (error) {
+            console.error('Error uploading cover image:', error);
+        } finally {
+            setUploadingCover(false);
         }
     }
 
@@ -184,6 +358,7 @@ export default function BusinessDashboard() {
                                         </View>
                                     ) : null}
 
+
                                     {/* Services */}
                                     {services.length > 0 ? (
                                         <View className="bg-neutral-50 rounded-2xl p-6 mb-6">
@@ -230,6 +405,124 @@ export default function BusinessDashboard() {
                                                 <Text className="text-neutral-600 text-sm">Revenue</Text>
                                             </View>
                                         </View>
+                                    </View>
+
+                                    {/* Cover Image */}
+                                    <View className="bg-neutral-50 rounded-2xl p-6 mb-6">
+                                        <Text className="text-lg font-semibold mb-4">Cover Image</Text>
+                                        <Text className="text-sm text-neutral-600 mb-4">
+                                            Upload a cover image for your business profile (16:9 aspect ratio recommended).
+                                        </Text>
+
+                                        {business?.cover_image_url ? (
+                                            <View className="mb-4">
+                                                <Image
+                                                    source={{ uri: business.cover_image_url }}
+                                                    style={{
+                                                        width: '100%',
+                                                        height: isLargeScreen ? 200 : 150,
+                                                        borderRadius: 12
+                                                    }}
+                                                    resizeMode="cover"
+                                                />
+                                            </View>
+                                        ) : (
+                                            <View className="bg-white rounded-xl p-8 mb-4 items-center" style={{ height: isLargeScreen ? 200 : 150, justifyContent: 'center' }}>
+                                                <Feather name="image" size={48} color="#d4d4d4" />
+                                                <Text className="text-neutral-500 mt-2">No cover image</Text>
+                                            </View>
+                                        )}
+
+                                        <TouchableOpacity
+                                            onPress={pickCoverImage}
+                                            disabled={uploadingCover}
+                                            className={`py-4 rounded-xl ${uploadingCover ? 'bg-neutral-300' : 'bg-black'}`}
+                                        >
+                                            <Text className="text-white font-medium text-center">
+                                                {uploadingCover ? 'Uploading...' : business?.cover_image_url ? 'Update Cover Image' : 'Upload Cover Image'}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </View>
+
+                                    {/* Portfolio Gallery */}
+                                    <View className="bg-neutral-50 rounded-2xl p-6 mb-6">
+                                        <Text className="text-lg font-semibold mb-4">Portfolio Gallery</Text>
+                                        <Text className="text-sm text-neutral-600 mb-4">
+                                            Showcase your work. Select one image as featured to display on your business profile.
+                                        </Text>
+
+                                        {portfolioImages.length > 0 ? (
+                                            <View className="mb-4">
+                                                <View className="flex-row flex-wrap gap-3">
+                                                    {portfolioImages.map((image) => (
+                                                        <View
+                                                            key={image.id}
+                                                            className="relative"
+                                                            style={{
+                                                                width: isLargeScreen ? '30%' : '45%',
+                                                                aspectRatio: 4 / 3
+                                                            }}
+                                                        >
+                                                            <Image
+                                                                source={{ uri: image.image_url }}
+                                                                style={{ width: '100%', height: '100%', borderRadius: 12 }}
+                                                            />
+
+                                                            {/* Featured Badge */}
+                                                            {image.is_featured && (
+                                                                <View className="absolute top-2 left-2 bg-black px-2 py-1 rounded-lg flex-row items-center">
+                                                                    <Feather name="star" size={12} color="#FFD700" />
+                                                                    <Text className="text-white text-xs ml-1 font-medium">Featured</Text>
+                                                                </View>
+                                                            )}
+
+                                                            {/* Action Buttons */}
+                                                            <View className="absolute top-2 right-2 flex-row gap-1">
+                                                                {!image.is_featured && (
+                                                                    <TouchableOpacity
+                                                                        onPress={() => setFeaturedImage(image.id)}
+                                                                        className="bg-white p-2 rounded-lg"
+                                                                        style={{ opacity: 0.9 }}
+                                                                    >
+                                                                        <Feather name="star" size={16} color="#000" />
+                                                                    </TouchableOpacity>
+                                                                )}
+                                                                <TouchableOpacity
+                                                                    onPress={() => {
+                                                                        if (typeof window !== 'undefined' && window.confirm) {
+                                                                            if (window.confirm('Are you sure you want to delete this image?')) {
+                                                                                deletePortfolioImage(image.id, image.image_url);
+                                                                            }
+                                                                        } else {
+                                                                            deletePortfolioImage(image.id, image.image_url);
+                                                                        }
+                                                                    }}
+                                                                    className="bg-white p-2 rounded-lg"
+                                                                    style={{ opacity: 0.9 }}
+                                                                >
+                                                                    <Feather name="trash-2" size={16} color="#ef4444" />
+                                                                </TouchableOpacity>
+                                                            </View>
+                                                        </View>
+                                                    ))}
+                                                </View>
+                                            </View>
+                                        ) : (
+                                            <View className="bg-white rounded-xl p-8 mb-4 items-center">
+                                                <Feather name="image" size={48} color="#d4d4d4" />
+                                                <Text className="text-neutral-500 mt-2">No portfolio images yet</Text>
+                                            </View>
+                                        )}
+
+                                        <TouchableOpacity
+                                            onPress={pickPortfolioImage}
+                                            disabled={uploadingPortfolio}
+                                            className={`py-4 rounded-xl ${uploadingPortfolio ? 'bg-neutral-300' : 'bg-black'}`}
+                                        >
+                                            <Text className="text-white font-medium text-center">
+                                                {uploadingPortfolio ? 'Uploading...' : 'Add Image'}
+                                            </Text>
+                                        </TouchableOpacity>
                                     </View>
                                 </View>
                             </View>

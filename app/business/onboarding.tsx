@@ -1,6 +1,7 @@
+import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/Button';
 import { Header } from '../../components/Header';
@@ -25,6 +26,7 @@ export default function BusinessOnboardingScreen() {
 
     const [currentStep, setCurrentStep] = useState(1);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     // Form state
     const [businessData, setBusinessData] = useState({
@@ -74,8 +76,10 @@ export default function BusinessOnboardingScreen() {
     };
 
     const handleNext = () => {
+        setError(null); // Clear any previous errors
+
         if (!canProceed()) {
-            Alert.alert('Required Fields', 'Please fill in all required fields before continuing.');
+            setError('Please fill in all required fields before continuing.');
             return;
         }
 
@@ -100,6 +104,8 @@ export default function BusinessOnboardingScreen() {
         setLoading(true);
 
         try {
+            setError(null); // Clear any previous errors
+
             // Check if user is authenticated
             if (!user) {
                 throw new Error('You must be signed in to create a business');
@@ -194,7 +200,7 @@ export default function BusinessOnboardingScreen() {
             router.replace('/business/dashboard');
         } catch (error: any) {
             console.error('Error creating business:', error);
-            Alert.alert('Error', error.message || 'Failed to create business');
+            setError(error.message || 'Failed to create business. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -277,6 +283,16 @@ export default function BusinessOnboardingScreen() {
                         totalSteps={STEPS.length}
                         steps={STEPS}
                     />
+
+                    {/* Error Display */}
+                    {error && (
+                        <View className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4">
+                            <View className="flex-row items-center">
+                                <Feather name="alert-circle" size={20} color="#dc2626" />
+                                <Text className="text-red-600 ml-3 flex-1">{error}</Text>
+                            </View>
+                        </View>
+                    )}
 
                     {/* Step Content */}
                     <View className="mb-8">
