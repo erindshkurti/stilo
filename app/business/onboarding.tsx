@@ -1,4 +1,5 @@
 import { Feather } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
@@ -38,6 +39,7 @@ export default function BusinessOnboardingScreen() {
         zip_code: '',
         phone: '',
         email: '',
+        coverImageUrl: '',
     });
 
     const [businessHours, setBusinessHours] = useState<BusinessHours[]>([]);
@@ -100,6 +102,60 @@ export default function BusinessOnboardingScreen() {
         setBusinessData(prev => ({ ...prev, [field]: value }));
     };
 
+    async function pickCoverImage() {
+        try {
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [16, 9],
+                quality: 0.8,
+            });
+
+            if (!result.canceled && result.assets[0]) {
+                // Store the URI locally, will upload after business creation
+                setBusinessData(prev => ({ ...prev, coverImageUrl: result.assets[0].uri }));
+            }
+        } catch (error) {
+            console.error('Error picking cover image:', error);
+        }
+    }
+
+    async function uploadCoverImageToBusiness(businessId: string, imageUri: string) {
+        try {
+            const response = await fetch(imageUri);
+            const blob = await response.blob();
+
+            const fileExt = imageUri.split('.').pop()?.toLowerCase() || 'jpg';
+            const fileName = `${businessId}/cover.${fileExt}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('stilo.business.portfolio')
+                .upload(fileName, blob, {
+                    contentType: `image/${fileExt}`,
+                    upsert: true,
+                });
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('stilo.business.portfolio')
+                .getPublicUrl(fileName);
+
+            // Update business with cover image URL
+            const { error: updateError } = await supabase
+                .from('businesses')
+                .update({ cover_image_url: publicUrl })
+                .eq('id', businessId);
+
+            if (updateError) throw updateError;
+
+            return publicUrl;
+        } catch (error) {
+            console.error('Error uploading cover image:', error);
+            throw error;
+        }
+    }
+
     const handleComplete = async () => {
         setLoading(true);
 
@@ -142,6 +198,17 @@ export default function BusinessOnboardingScreen() {
             if (businessError) throw businessError;
 
             console.log('Business created:', business.id);
+
+            // Upload cover image if one was selected
+            if (businessData.coverImageUrl && businessData.coverImageUrl.startsWith('file://')) {
+                try {
+                    await uploadCoverImageToBusiness(business.id, businessData.coverImageUrl);
+                    console.log('Cover image uploaded successfully');
+                } catch (error) {
+                    console.error('Error uploading cover image:', error);
+                    // Don't fail the entire onboarding if cover image upload fails
+                }
+            }
 
             // Step 2: Create business hours (if any)
             if (businessHours.length > 0) {
@@ -214,8 +281,10 @@ export default function BusinessOnboardingScreen() {
                         data={{
                             name: businessData.name,
                             description: businessData.description,
+                            coverImageUrl: businessData.coverImageUrl,
                         }}
                         onChange={handleFieldChange}
+                        onCoverImagePick={pickCoverImage}
                     />
                 );
             case 2:
