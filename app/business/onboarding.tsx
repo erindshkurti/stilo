@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/Button';
 import { Header } from '../../components/Header';
@@ -471,17 +471,7 @@ export default function BusinessOnboardingScreen() {
                         />
                     </View>
 
-                    {/* Skip Option for Optional Steps */}
-                    {currentStep >= 4 && (
-                        <TouchableOpacity
-                            onPress={() => router.replace('/business/dashboard')}
-                            className="items-center mt-6"
-                        >
-                            <Text className="text-neutral-500">
-                                Skip for now, I'll add this later
-                            </Text>
-                        </TouchableOpacity>
-                    )}
+
                 </View>
             </ScrollView>
         </SafeAreaView>

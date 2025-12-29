@@ -339,17 +339,17 @@ export default function BusinessDashboard() {
                                     </View>
 
                                     {/* Business Hours */}
-                                    {hours.length > 0 ? (
-                                        <View className="bg-neutral-50 rounded-2xl p-6 mb-6">
-                                            <View className="flex-row items-center justify-between mb-4">
-                                                <Text className="text-lg font-semibold">Business Hours</Text>
-                                                <TouchableOpacity
-                                                    onPress={() => router.push('/business/edit/hours')}
-                                                    className="w-8 h-8 bg-white rounded-full items-center justify-center border border-neutral-200"
-                                                >
-                                                    <Feather name="edit-2" size={14} color="#737373" />
-                                                </TouchableOpacity>
-                                            </View>
+                                    <View className="bg-neutral-50 rounded-2xl p-6 mb-6">
+                                        <View className="flex-row items-center justify-between mb-4">
+                                            <Text className="text-lg font-semibold">Business Hours</Text>
+                                            <TouchableOpacity
+                                                onPress={() => router.push('/business/edit/hours')}
+                                                className="w-8 h-8 bg-white rounded-full items-center justify-center border border-neutral-200"
+                                            >
+                                                <Feather name="edit-2" size={14} color="#737373" />
+                                            </TouchableOpacity>
+                                        </View>
+                                        {hours.length > 0 ? (
                                             <>
                                                 {hours.map((hour) => (
                                                     <View key={hour.id} className="flex-row justify-between mb-2">
@@ -360,21 +360,25 @@ export default function BusinessDashboard() {
                                                     </View>
                                                 ))}
                                             </>
-                                        </View>
-                                    ) : null}
+                                        ) : (
+                                            <View className="py-4 items-center">
+                                                <Text className="text-neutral-500">No business hours set</Text>
+                                            </View>
+                                        )}
+                                    </View>
 
                                     {/* Team Members */}
-                                    {stylists.length > 0 ? (
-                                        <View className="bg-neutral-50 rounded-2xl p-6 mb-6">
-                                            <View className="flex-row items-center justify-between mb-4">
-                                                <Text className="text-lg font-semibold">Team Members ({stylists.length})</Text>
-                                                <TouchableOpacity
-                                                    onPress={() => router.push('/business/edit/team')}
-                                                    className="w-8 h-8 bg-white rounded-full items-center justify-center border border-neutral-200"
-                                                >
-                                                    <Feather name="edit-2" size={14} color="#737373" />
-                                                </TouchableOpacity>
-                                            </View>
+                                    <View className="bg-neutral-50 rounded-2xl p-6 mb-6">
+                                        <View className="flex-row items-center justify-between mb-4">
+                                            <Text className="text-lg font-semibold">Team Members ({stylists.length})</Text>
+                                            <TouchableOpacity
+                                                onPress={() => router.push('/business/edit/team')}
+                                                className="w-8 h-8 bg-white rounded-full items-center justify-center border border-neutral-200"
+                                            >
+                                                <Feather name="edit-2" size={14} color="#737373" />
+                                            </TouchableOpacity>
+                                        </View>
+                                        {stylists.length > 0 ? (
                                             <View className="flex-row flex-wrap gap-2">
                                                 {stylists.map((stylist) => (
                                                     <View key={stylist.id} className="bg-white border border-neutral-200 rounded-full px-4 py-2">
@@ -382,22 +386,26 @@ export default function BusinessDashboard() {
                                                     </View>
                                                 ))}
                                             </View>
-                                        </View>
-                                    ) : null}
+                                        ) : (
+                                            <View className="py-4 items-center">
+                                                <Text className="text-neutral-500">No team members added yet</Text>
+                                            </View>
+                                        )}
+                                    </View>
 
 
                                     {/* Services */}
-                                    {services.length > 0 ? (
-                                        <View className="bg-neutral-50 rounded-2xl p-6 mb-6">
-                                            <View className="flex-row items-center justify-between mb-4">
-                                                <Text className="text-lg font-semibold">Services ({services.length})</Text>
-                                                <TouchableOpacity
-                                                    onPress={() => router.push('/business/edit/services')}
-                                                    className="w-8 h-8 bg-white rounded-full items-center justify-center border border-neutral-200"
-                                                >
-                                                    <Feather name="edit-2" size={14} color="#737373" />
-                                                </TouchableOpacity>
-                                            </View>
+                                    <View className="bg-neutral-50 rounded-2xl p-6 mb-6">
+                                        <View className="flex-row items-center justify-between mb-4">
+                                            <Text className="text-lg font-semibold">Services ({services.length})</Text>
+                                            <TouchableOpacity
+                                                onPress={() => router.push('/business/edit/services')}
+                                                className="w-8 h-8 bg-white rounded-full items-center justify-center border border-neutral-200"
+                                            >
+                                                <Feather name="edit-2" size={14} color="#737373" />
+                                            </TouchableOpacity>
+                                        </View>
+                                        {services.length > 0 ? (
                                             <>
                                                 {services.map((service) => (
                                                     <View key={service.id} className="flex-row justify-between items-center mb-3">
@@ -409,8 +417,12 @@ export default function BusinessDashboard() {
                                                     </View>
                                                 ))}
                                             </>
-                                        </View>
-                                    ) : null}
+                                        ) : (
+                                            <View className="py-4 items-center">
+                                                <Text className="text-neutral-500">No services added yet</Text>
+                                            </View>
+                                        )}
+                                    </View>
                                 </View>
 
                                 {/* Right Column */}

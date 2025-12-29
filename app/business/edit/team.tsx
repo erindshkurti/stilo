@@ -21,8 +21,7 @@ export default function EditTeamScreen() {
     const [stylists, setStylists] = useState<Stylist[]>([]);
     const [currentStylist, setCurrentStylist] = useState<Stylist>({ name: '', bio: '' });
     const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    const [hasChanges, setHasChanges] = useState(false);
+    const [actionLoading, setActionLoading] = useState(false);
 
     const isLargeScreen = width > 768;
     const maxWidth = isLargeScreen ? 600 : width - 48;
@@ -41,15 +40,7 @@ export default function EditTeamScreen() {
 
             if (businessData) {
                 setBusiness(businessData);
-
-                const { data: stylistsData } = await supabase
-                    .from('stylists')
-                    .select('*')
-                    .eq('business_id', businessData.id);
-
-                if (stylistsData) {
-                    setStylists(stylistsData);
-                }
+                await loadStylists(businessData.id);
             }
         } catch (error) {
             console.error('Error loading data:', error);
@@ -58,51 +49,62 @@ export default function EditTeamScreen() {
         }
     }
 
-    const addStylist = () => {
-        if (currentStylist.name.trim()) {
-            setStylists([...stylists, currentStylist]);
+    async function loadStylists(businessId: string) {
+        const { data: stylistsData } = await supabase
+            .from('stylists')
+            .select('*')
+            .eq('business_id', businessId);
+
+        if (stylistsData) {
+            setStylists(stylistsData);
+        }
+    }
+
+    const addStylist = async () => {
+        if (!business || !currentStylist.name.trim()) return;
+
+        setActionLoading(true);
+        try {
+            const { error } = await supabase
+                .from('stylists')
+                .insert({
+                    business_id: business.id,
+                    name: currentStylist.name,
+                    bio: currentStylist.bio,
+                    specialties: [],
+                });
+
+            if (error) throw error;
+
             setCurrentStylist({ name: '', bio: '' });
-            setHasChanges(true);
+            await loadStylists(business.id);
+        } catch (error) {
+            console.error('Error adding stylist:', error);
+            alert('Failed to add team member. Please try again.');
+        } finally {
+            setActionLoading(false);
         }
     };
 
-    const removeStylist = (index: number) => {
-        setStylists(stylists.filter((_, i) => i !== index));
-        setHasChanges(true);
-    };
+    const removeStylist = async (id: string | undefined) => {
+        if (!id) return;
 
-    const handleSave = async () => {
-        if (!business) return;
+        // Optimistic update
+        const previousStylists = [...stylists];
+        setStylists(stylists.filter(s => s.id !== id));
 
-        setSaving(true);
         try {
-            // Delete existing stylists
-            await supabase
+            const { error } = await supabase
                 .from('stylists')
                 .delete()
-                .eq('business_id', business.id);
+                .eq('id', id);
 
-            // Insert new stylists
-            if (stylists.length > 0) {
-                const stylistsToInsert = stylists.map(s => ({
-                    business_id: business.id,
-                    name: s.name,
-                    bio: s.bio,
-                    specialties: [],
-                }));
-
-                const { error } = await supabase
-                    .from('stylists')
-                    .insert(stylistsToInsert);
-
-                if (error) throw error;
-            }
-
-            router.back();
+            if (error) throw error;
         } catch (error) {
-            console.error('Error saving team:', error);
-        } finally {
-            setSaving(false);
+            console.error('Error removing stylist:', error);
+            // Revert on error
+            setStylists(previousStylists);
+            alert('Failed to remove team member. Please try again.');
         }
     };
 
@@ -134,8 +136,8 @@ export default function EditTeamScreen() {
                                 {/* Current Team Members */}
                                 {stylists.length > 0 && (
                                     <View className="mb-6">
-                                        {stylists.map((stylist, index) => (
-                                            <View key={index} className="bg-neutral-50 rounded-2xl p-4 flex-row items-center justify-between mb-3">
+                                        {stylists.map((stylist) => (
+                                            <View key={stylist.id} className="bg-neutral-50 rounded-2xl p-4 flex-row items-center justify-between mb-3">
                                                 <View className="flex-1">
                                                     <Text className="font-semibold text-base">{stylist.name}</Text>
                                                     {stylist.bio && (
@@ -144,7 +146,7 @@ export default function EditTeamScreen() {
                                                         </Text>
                                                     )}
                                                 </View>
-                                                <TouchableOpacity onPress={() => removeStylist(index)} className="ml-3 p-2">
+                                                <TouchableOpacity onPress={() => removeStylist(stylist.id)} className="ml-3 p-2">
                                                     <Feather name="trash-2" size={18} color="#ef4444" />
                                                 </TouchableOpacity>
                                             </View>
@@ -183,24 +185,16 @@ export default function EditTeamScreen() {
 
                                     <TouchableOpacity
                                         onPress={addStylist}
-                                        disabled={!currentStylist.name.trim()}
-                                        className={`h-12 rounded-xl items-center justify-center flex-row ${currentStylist.name.trim() ? 'bg-black' : 'bg-neutral-200'
+                                        disabled={!currentStylist.name.trim() || actionLoading}
+                                        className={`h-12 rounded-xl items-center justify-center flex-row ${currentStylist.name.trim() && !actionLoading ? 'bg-black' : 'bg-neutral-200'
                                             }`}
                                     >
                                         <Feather name="plus" size={20} color="white" />
-                                        <Text className="text-white font-medium ml-2">Add Team Member</Text>
+                                        <Text className="text-white font-medium ml-2">
+                                            {actionLoading ? 'Adding...' : 'Add Team Member'}
+                                        </Text>
                                     </TouchableOpacity>
                                 </View>
-
-                                <TouchableOpacity
-                                    onPress={handleSave}
-                                    disabled={saving || !hasChanges}
-                                    className={`py-4 rounded-xl ${saving || !hasChanges ? 'bg-neutral-300' : 'bg-black'}`}
-                                >
-                                    <Text className="text-white font-medium text-center text-base">
-                                        {saving ? 'Saving...' : 'Save Changes'}
-                                    </Text>
-                                </TouchableOpacity>
                             </>
                         )}
                     </View>

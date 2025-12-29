@@ -32,8 +32,7 @@ export default function EditServicesScreen() {
         category: 'Haircut',
     });
     const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    const [hasChanges, setHasChanges] = useState(false);
+    const [actionLoading, setActionLoading] = useState(false);
 
     const isLargeScreen = width > 768;
     const maxWidth = isLargeScreen ? 600 : width - 48;
@@ -52,15 +51,7 @@ export default function EditServicesScreen() {
 
             if (businessData) {
                 setBusiness(businessData);
-
-                const { data: servicesData } = await supabase
-                    .from('services')
-                    .select('*')
-                    .eq('business_id', businessData.id);
-
-                if (servicesData) {
-                    setServices(servicesData);
-                }
+                await loadServices(businessData.id);
             }
         } catch (error) {
             console.error('Error loading data:', error);
@@ -69,9 +60,35 @@ export default function EditServicesScreen() {
         }
     }
 
-    const addService = () => {
-        if (currentService.name.trim() && currentService.price > 0) {
-            setServices([...services, currentService]);
+    async function loadServices(businessId: string) {
+        const { data: servicesData } = await supabase
+            .from('services')
+            .select('*')
+            .eq('business_id', businessId);
+
+        if (servicesData) {
+            setServices(servicesData);
+        }
+    }
+
+    const addService = async () => {
+        if (!business || !currentService.name.trim() || currentService.price <= 0) return;
+
+        setActionLoading(true);
+        try {
+            const { error } = await supabase
+                .from('services')
+                .insert({
+                    business_id: business.id,
+                    name: currentService.name,
+                    description: currentService.description,
+                    duration_minutes: currentService.duration_minutes,
+                    price: currentService.price,
+                    category: currentService.category,
+                });
+
+            if (error) throw error;
+
             setCurrentService({
                 name: '',
                 description: '',
@@ -79,49 +96,34 @@ export default function EditServicesScreen() {
                 price: 0,
                 category: 'Haircut',
             });
-            setHasChanges(true);
+            await loadServices(business.id);
+        } catch (error) {
+            console.error('Error adding service:', error);
+            alert('Failed to add service. Please try again.');
+        } finally {
+            setActionLoading(false);
         }
     };
 
-    const removeService = (index: number) => {
-        setServices(services.filter((_, i) => i !== index));
-        setHasChanges(true);
-    };
+    const removeService = async (id: string | undefined) => {
+        if (!id) return;
 
-    const handleSave = async () => {
-        if (!business) return;
+        // Optimistic update
+        const previousServices = [...services];
+        setServices(services.filter(s => s.id !== id));
 
-        setSaving(true);
         try {
-            // Delete existing services
-            await supabase
+            const { error } = await supabase
                 .from('services')
                 .delete()
-                .eq('business_id', business.id);
+                .eq('id', id);
 
-            // Insert new services
-            if (services.length > 0) {
-                const servicesToInsert = services.map(s => ({
-                    business_id: business.id,
-                    name: s.name,
-                    description: s.description,
-                    duration_minutes: s.duration_minutes,
-                    price: s.price,
-                    category: s.category,
-                }));
-
-                const { error } = await supabase
-                    .from('services')
-                    .insert(servicesToInsert);
-
-                if (error) throw error;
-            }
-
-            router.back();
+            if (error) throw error;
         } catch (error) {
-            console.error('Error saving services:', error);
-        } finally {
-            setSaving(false);
+            console.error('Error removing service:', error);
+            // Revert on error
+            setServices(previousServices);
+            alert('Failed to remove service. Please try again.');
         }
     };
 
@@ -153,14 +155,14 @@ export default function EditServicesScreen() {
                                 {/* Current Services */}
                                 {services.length > 0 && (
                                     <View className="mb-6">
-                                        {services.map((service, index) => (
-                                            <View key={index} className="bg-neutral-50 rounded-2xl p-4 mb-3">
+                                        {services.map((service) => (
+                                            <View key={service.id} className="bg-neutral-50 rounded-2xl p-4 mb-3">
                                                 <View className="flex-row items-start justify-between mb-2">
                                                     <View className="flex-1">
                                                         <Text className="font-semibold text-base">{service.name}</Text>
                                                         <Text className="text-xs text-neutral-500 mt-1">{service.category}</Text>
                                                     </View>
-                                                    <TouchableOpacity onPress={() => removeService(index)} className="ml-3 p-2">
+                                                    <TouchableOpacity onPress={() => removeService(service.id)} className="ml-3 p-2">
                                                         <Feather name="trash-2" size={18} color="#ef4444" />
                                                     </TouchableOpacity>
                                                 </View>
@@ -235,24 +237,16 @@ export default function EditServicesScreen() {
 
                                     <TouchableOpacity
                                         onPress={addService}
-                                        disabled={!currentService.name.trim() || currentService.price <= 0}
-                                        className={`h-12 rounded-xl items-center justify-center flex-row ${currentService.name.trim() && currentService.price > 0 ? 'bg-black' : 'bg-neutral-200'
+                                        disabled={!currentService.name.trim() || currentService.price <= 0 || actionLoading}
+                                        className={`h-12 rounded-xl items-center justify-center flex-row ${currentService.name.trim() && currentService.price > 0 && !actionLoading ? 'bg-black' : 'bg-neutral-200'
                                             }`}
                                     >
                                         <Feather name="plus" size={20} color="white" />
-                                        <Text className="text-white font-medium ml-2">Add Service</Text>
+                                        <Text className="text-white font-medium ml-2">
+                                            {actionLoading ? 'Adding...' : 'Add Service'}
+                                        </Text>
                                     </TouchableOpacity>
                                 </View>
-
-                                <TouchableOpacity
-                                    onPress={handleSave}
-                                    disabled={saving || !hasChanges}
-                                    className={`py-4 rounded-xl ${saving || !hasChanges ? 'bg-neutral-300' : 'bg-black'}`}
-                                >
-                                    <Text className="text-white font-medium text-center text-base">
-                                        {saving ? 'Saving...' : 'Save Changes'}
-                                    </Text>
-                                </TouchableOpacity>
                             </>
                         )}
                     </View>
