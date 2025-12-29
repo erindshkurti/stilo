@@ -1,15 +1,17 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Alert, ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../components/Button';
 import { GoogleLogo } from '../components/GoogleLogo';
 import { Header } from '../components/Header';
+import { useAuth } from '../lib/auth';
 import { supabase } from '../lib/supabase';
 
 export default function SignInScreen() {
     const router = useRouter();
     const { width } = useWindowDimensions();
+    const { user } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -19,6 +21,39 @@ export default function SignInScreen() {
     // Responsive sizing
     const isLargeScreen = width > 768;
     const containerMaxWidth = isLargeScreen ? 480 : width - 48;
+
+    // Handle OAuth callback - redirect authenticated users
+    useEffect(() => {
+        async function handleAuthRedirect() {
+            if (user) {
+                let userType = user.user_metadata?.user_type;
+
+                // If user_type is not set (new Google OAuth user), default to customer
+                if (!userType) {
+                    console.log('No user_type found, setting to customer');
+
+                    // Update user metadata to set user_type as customer
+                    const { error } = await supabase.auth.updateUser({
+                        data: { user_type: 'customer' }
+                    });
+
+                    if (error) {
+                        console.error('Error updating user metadata:', error);
+                    }
+
+                    userType = 'customer';
+                }
+
+                if (userType === 'business') {
+                    router.replace('/business/dashboard');
+                } else {
+                    router.replace('/(tabs)');
+                }
+            }
+        }
+
+        handleAuthRedirect();
+    }, [user, router]);
 
     async function handleEmailAuth() {
         setLoading(true);
@@ -89,7 +124,31 @@ export default function SignInScreen() {
     }
 
     async function handleGoogleAuth() {
-        Alert.alert("Coming Soon", "Google Auth configuration requires a bit more setup.");
+        try {
+            setLoading(true);
+            setError('');
+
+            const { data, error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: 'http://localhost:8081',
+                    queryParams: {
+                        access_type: 'offline',
+                        prompt: 'consent',
+                    },
+                }
+            });
+
+            if (error) {
+                setError(error.message);
+                setLoading(false);
+            }
+            // Note: The page will redirect to Google, so we don't need to handle success here
+        } catch (error: any) {
+            console.error('Google auth error:', error);
+            setError(error.message || 'Failed to sign in with Google');
+            setLoading(false);
+        }
     }
 
     return (

@@ -1,4 +1,5 @@
 import { Feather } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -46,14 +47,58 @@ export default function BusinessOnboardingScreen() {
     const [stylists, setStylists] = useState<Stylist[]>([]);
     const [services, setServices] = useState<Service[]>([]);
 
-    // Auto-fill business name from user metadata
+    // Auto-fill business name from user metadata or local storage
+    // AND enforce user_type = 'business'
     useEffect(() => {
-        if (user?.user_metadata?.business_name) {
-            setBusinessData(prev => ({
-                ...prev,
-                name: user.user_metadata.business_name
-            }));
+        async function initializeBusinessUser() {
+            let currentName = '';
+
+            // 1. Check/Enforce Business User Type if not already set
+            if (user && user.user_metadata?.user_type !== 'business') {
+                console.log('[Onboarding] Enforcing business user type...');
+
+                // A. Update Auth Metadata
+                const { error } = await supabase.auth.updateUser({
+                    data: { user_type: 'business' }
+                });
+
+                // B. Update Public Profile (Fixes persistence issues)
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .update({ user_type: 'business' })
+                    .eq('id', user.id);
+
+                if (error || profileError) console.error('[Onboarding] Failed to update user type:', error || profileError);
+                else console.log('[Onboarding] User type enforced to business');
+            }
+
+            // 2. Get Business Name from Metadata
+            if (user?.user_metadata?.business_name) {
+                currentName = user.user_metadata.business_name;
+            }
+
+            // 3. Get Business Name from Storage (overrides metadata if present/newer)
+            try {
+                const savedName = await AsyncStorage.getItem('pending_business_name');
+                if (savedName) {
+                    currentName = savedName;
+                    // Clear it now that we've consumed it
+                    await AsyncStorage.removeItem('pending_business_name');
+                }
+            } catch (e) {
+                console.error('[Onboarding] Error reading storage:', e);
+            }
+
+            // 4. Update State
+            if (currentName) {
+                setBusinessData(prev => ({
+                    ...prev,
+                    name: currentName
+                }));
+            }
         }
+
+        initializeBusinessUser();
     }, [user]);
 
     // Set initial step from URL parameter

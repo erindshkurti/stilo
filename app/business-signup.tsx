@@ -1,4 +1,5 @@
 import { Feather } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from 'react-native';
@@ -100,7 +101,46 @@ export default function BusinessSignUpScreen() {
     }
 
     async function handleGoogleAuth() {
-        Alert.alert("Coming Soon", "Google Auth configuration requires a bit more setup.");
+        if (!businessName.trim()) {
+            setError('Please enter your business name first');
+            return;
+        }
+
+        try {
+            setLoading(true);
+            setError(''); // Clear any previous errors
+
+            // Flag this as a business signup attempt
+            await AsyncStorage.setItem('pending_business_signup', 'true');
+            // Store business name to use later if possible, or we'll ask again/fetch it
+            await AsyncStorage.setItem('pending_business_name', businessName);
+
+            const { data, error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: 'http://localhost:8081',
+                    queryParams: {
+                        access_type: 'offline',
+                        prompt: 'consent',
+                    },
+                    // @ts-ignore
+                    data: {
+                        user_type: 'business',
+                        business_name: businessName,
+                    },
+                }
+            });
+
+            if (error) {
+                setError(error.message);
+                setLoading(false);
+            }
+            // Note: The page will redirect to Google, so we don't need to handle success here
+        } catch (error: any) {
+            console.error('Google auth error:', error);
+            setError(error.message || 'Failed to sign in with Google');
+            setLoading(false);
+        }
     }
 
     return (
@@ -144,41 +184,49 @@ export default function BusinessSignUpScreen() {
                     </View>
 
                     <View className="space-y-4">
-                        <Button
-                            label="Continue with Google"
-                            variant="google"
-                            icon={<GoogleLogo size={20} />}
-                            onPress={handleGoogleAuth}
-                        />
-
-                        <View className="flex-row items-center my-4">
-                            <View className="flex-1 h-[1px] bg-neutral-100" />
-                            <Text className="mx-4 text-neutral-400 text-sm">Or sign up with email</Text>
-                            <View className="flex-1 h-[1px] bg-neutral-100" />
-                        </View>
-
-                        <View className="space-y-3">
+                        <View className="mb-2">
+                            <Text className="font-semibold text-base mb-2 px-1">Enter your business name</Text>
                             <TextInput
                                 placeholder="Business Name"
                                 value={businessName}
                                 onChangeText={setBusinessName}
                                 className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-100 focus:border-neutral-300 text-base"
                             />
-                            <TextInput
-                                placeholder="Email"
-                                value={email}
-                                onChangeText={setEmail}
-                                autoCapitalize="none"
-                                keyboardType="email-address"
-                                className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-100 focus:border-neutral-300 text-base"
+                        </View>
+
+                        <View>
+                            <Text className="font-semibold text-base mb-3 px-1">Choose your sign up method</Text>
+
+                            <Button
+                                label="Continue with Google"
+                                variant="google"
+                                icon={<GoogleLogo size={20} />}
+                                onPress={handleGoogleAuth}
                             />
-                            <TextInput
-                                placeholder="Password"
-                                value={password}
-                                onChangeText={setPassword}
-                                secureTextEntry
-                                className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-100 focus:border-neutral-300 text-base"
-                            />
+
+                            <View className="flex-row items-center my-4">
+                                <View className="flex-1 h-[1px] bg-neutral-100" />
+                                <Text className="mx-4 text-neutral-400 text-sm">Or sign up with email</Text>
+                                <View className="flex-1 h-[1px] bg-neutral-100" />
+                            </View>
+
+                            <View className="space-y-3">
+                                <TextInput
+                                    placeholder="Email"
+                                    value={email}
+                                    onChangeText={setEmail}
+                                    autoCapitalize="none"
+                                    keyboardType="email-address"
+                                    className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-100 focus:border-neutral-300 text-base"
+                                />
+                                <TextInput
+                                    placeholder="Password"
+                                    value={password}
+                                    onChangeText={setPassword}
+                                    secureTextEntry
+                                    className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-100 focus:border-neutral-300 text-base"
+                                />
+                            </View>
                         </View>
 
                         {/* Error Display */}

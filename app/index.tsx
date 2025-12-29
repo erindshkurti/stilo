@@ -1,11 +1,15 @@
 import { Feather } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useState } from 'react';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../components/Button';
 import { Header } from '../components/Header';
 import { StylistCard } from '../components/StylistCard';
+import { useAuth } from '../lib/auth';
+import { supabase } from '../lib/supabase';
 
 // Mock data for featured stylists
 const FEATURED_STYLISTS = [
@@ -44,11 +48,111 @@ const FEATURED_STYLISTS = [
 ];
 
 export default function LandingPage() {
+    const router = useRouter();
     const { width } = useWindowDimensions();
+    const { user, isLoading } = useAuth();
     const isLargeScreen = width > 768;
     const [location, setLocation] = useState('');
     const [service, setService] = useState('');
     const [date, setDate] = useState('');
+    const [redirecting, setRedirecting] = useState(false);
+    const [isChecking, setIsChecking] = useState(false);
+
+    // Redirect authenticated users to their dashboard
+    useEffect(() => {
+        async function handleAuthRedirect() {
+            // Prevent redundant checks if we are already processing or redirecting
+            if (user && !isChecking && !redirecting) {
+                console.log('[Landing] User detected:', user.id);
+                setIsChecking(true);
+                setRedirecting(true); // Optimistically show loading immediately
+
+                try {
+                    let userType = user.user_metadata?.user_type;
+                    const pendingBusinessSignup = await AsyncStorage.getItem('pending_business_signup');
+
+                    // 1. Check if this is a pending business signup (User clicked "Continue" on Business Page)
+                    if (pendingBusinessSignup === 'true') {
+                        console.log('[Landing] Found pending business signup flag. Converting user...');
+
+                        // A. Update Auth Metadata
+                        const { error: authError } = await supabase.auth.updateUser({
+                            data: { user_type: 'business' }
+                        });
+
+                        // B. Update Public Profile (Fixes "Client" persistence issue)
+                        const { error: profileError } = await supabase
+                            .from('profiles')
+                            .update({ user_type: 'business' })
+                            .eq('id', user.id);
+
+                        if (!authError && !profileError) {
+                            console.log('[Landing] Conversion success. Redirecting to Onboarding.');
+                            userType = 'business';
+
+                            // Clear the signup flag but keep the name for Onboarding to read
+                            await AsyncStorage.removeItem('pending_business_signup');
+
+                            router.replace('/business/onboarding');
+                            return;
+                        } else {
+                            console.error('[Landing] Conversion failed:', authError || profileError);
+                            // If failed, we might want to let them fall through or retry?
+                            // For now, let's proceed to standard checks.
+                        }
+                    }
+
+                    // 2. Default User Type Logic if not set (Regular Sign In)
+                    if (!userType) {
+                        console.log('[Landing] User type not set. Defaulting to customer.');
+                        await supabase.auth.updateUser({
+                            data: { user_type: 'customer' }
+                        });
+                        userType = 'customer';
+                    }
+
+                    // 3. Routing Logic
+                    if (userType === 'business') {
+                        // Critical Check: Does the business actually exist?
+                        console.log('[Landing] Checking for existing business profile...');
+                        const { count } = await supabase
+                            .from('businesses')
+                            .select('*', { count: 'exact', head: true })
+                            .eq('owner_id', user.id);
+
+                        if (count && count > 0) {
+                            console.log('[Landing] Business found. Going to Dashboard.');
+                            router.replace('/business/dashboard');
+                        } else {
+                            console.log('[Landing] No business found. Going to Onboarding.');
+                            router.replace('/business/onboarding');
+                        }
+                    } else {
+                        // Customer / Client
+                        console.log('[Landing] Customer detected. Going to Home.');
+                        router.replace('/(tabs)');
+                    }
+                } catch (error) {
+                    console.error('[Landing] Error in auth redirect:', error);
+                    setIsChecking(false);
+                    setRedirecting(false);
+                }
+            }
+        }
+
+        if (!isLoading) {
+            handleAuthRedirect();
+        }
+    }, [user, isLoading, router]);
+
+    // Show loading screen while checking auth or redirecting
+    if (isLoading || redirecting) {
+        return (
+            <View className="flex-1 items-center justify-center bg-white">
+                <Text className="text-lg">Loading...</Text>
+            </View>
+        );
+    }
 
     return (
         <View className="flex-1">
