@@ -336,7 +336,7 @@ export default function LandingPage() {
                                                 rating={stylist.rating}
                                                 reviewCount={stylist.reviewCount}
                                                 imageUrl={stylist.imageUrl}
-                                                onPress={() => console.log('Stylist pressed:', stylist.name)}
+                                                onPress={() => router.push(`/business/${stylist.id}`)}
                                             />
                                         </View>
                                     ))}

@@ -44,11 +44,27 @@ export default function BusinessOnboardingScreen() {
     });
 
     const [businessHours, setBusinessHours] = useState<BusinessHours[]>([]);
+
+    // Validated Team Member Logic
     const [stylists, setStylists] = useState<Stylist[]>([]);
+    const [currentStylistInput, setCurrentStylistInput] = useState<Stylist>({
+        name: '',
+        bio: '',
+        specialties: [],
+    });
+
+    // Validated Services Logic (Step 5)
     const [services, setServices] = useState<Service[]>([]);
+    const [currentServiceInput, setCurrentServiceInput] = useState<Service>({
+        name: '',
+        description: '',
+        duration_minutes: 60,
+        price: 0,
+        category: 'Haircut',
+    });
 
     // Auto-fill business name from user metadata or local storage
-    // AND enforce user_type = 'business'
+    // ... (existing useEffect) ...
     useEffect(() => {
         async function initializeBusinessUser() {
             let currentName = '';
@@ -117,6 +133,18 @@ export default function BusinessOnboardingScreen() {
                 return businessData.name.trim() !== '';
             case 2:
                 return businessData.address.trim() !== '' && businessData.city.trim() !== '';
+            case 4: // Team Step
+                // Prevent proceeding if they have typed a name but not added it
+                if (currentStylistInput.name.trim() !== '') {
+                    return false;
+                }
+                return true;
+            case 5: // Services Step
+                // Prevent proceeding if they have typed a service name but not added it
+                if (currentServiceInput.name.trim() !== '') {
+                    return false;
+                }
+                return true;
             default:
                 return true;
         }
@@ -126,7 +154,13 @@ export default function BusinessOnboardingScreen() {
         setError(null); // Clear any previous errors
 
         if (!canProceed()) {
-            setError('Please fill in all required fields before continuing.');
+            if (currentStep === 4 && currentStylistInput.name.trim() !== '') {
+                setError('Please click "Add Team Member" to save the details or clear the name field before continuing.');
+            } else if (currentStep === 5 && currentServiceInput.name.trim() !== '') {
+                setError('Please click "Add Service" to save the details or clear the service name field before continuing.');
+            } else {
+                setError('Please fill in all required fields before continuing.');
+            }
             return;
         }
 
@@ -358,6 +392,8 @@ export default function BusinessOnboardingScreen() {
                     <StylistForm
                         data={stylists}
                         onChange={setStylists}
+                        currentStylist={currentStylistInput}
+                        onCurrentStylistChange={setCurrentStylistInput}
                     />
                 );
             case 5:
@@ -365,6 +401,8 @@ export default function BusinessOnboardingScreen() {
                     <ServicesForm
                         data={services}
                         onChange={setServices}
+                        currentService={currentServiceInput}
+                        onCurrentServiceChange={setCurrentServiceInput}
                     />
                 );
             default:
@@ -383,7 +421,7 @@ export default function BusinessOnboardingScreen() {
                 <View style={{ maxWidth: containerMaxWidth, width: '100%', marginHorizontal: 'auto' }}>
                     {/* Header */}
                     <View className="items-center mb-8">
-                        <Text className={`font - bold mb - 2 ${isLargeScreen ? 'text-3xl' : 'text-2xl'} `}>
+                        <Text className={`font-bold mb-2 ${isLargeScreen ? 'text-3xl' : 'text-2xl'}`}>
                             Set Up Your Business
                         </Text>
                         <Text className="text-neutral-500 text-center">
@@ -428,6 +466,7 @@ export default function BusinessOnboardingScreen() {
                             onPress={handleNext}
                             loading={loading}
                             className="flex-1"
+                            disabled={!canProceed()} // Visually disable the button as well
                         />
                     </View>
 

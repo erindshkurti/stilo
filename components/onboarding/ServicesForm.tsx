@@ -5,6 +5,8 @@ import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 interface ServicesFormProps {
     data: Service[];
     onChange: (services: Service[]) => void;
+    currentService: Service;
+    onCurrentServiceChange: (service: Service) => void;
 }
 
 export interface Service {
@@ -17,22 +19,16 @@ export interface Service {
 
 const CATEGORIES = ['Haircut', 'Color', 'Styling', 'Treatment', 'Other'];
 
-export function ServicesForm({ data, onChange }: ServicesFormProps) {
+export function ServicesForm({ data, onChange, currentService, onCurrentServiceChange }: ServicesFormProps) {
     const [services, setServices] = useState<Service[]>(data.length > 0 ? data : []);
-    const [currentService, setCurrentService] = useState<Service>({
-        name: '',
-        description: '',
-        duration_minutes: 60,
-        price: 0,
-        category: 'Haircut',
-    });
+
+    // Removed local state for currentService
 
     const addService = () => {
         if (currentService.name.trim() && currentService.price > 0) {
-            const newServices = [...services, currentService];
-            setServices(newServices);
+            const newServices = [...data, currentService];
             onChange(newServices);
-            setCurrentService({
+            onCurrentServiceChange({
                 name: '',
                 description: '',
                 duration_minutes: 60,
@@ -43,8 +39,7 @@ export function ServicesForm({ data, onChange }: ServicesFormProps) {
     };
 
     const removeService = (index: number) => {
-        const newServices = services.filter((_, i) => i !== index);
-        setServices(newServices);
+        const newServices = data.filter((_, i) => i !== index);
         onChange(newServices);
     };
 
@@ -55,9 +50,9 @@ export function ServicesForm({ data, onChange }: ServicesFormProps) {
             </Text>
 
             {/* Added Services List */}
-            {services.length > 0 && (
+            {data.length > 0 && (
                 <View className="space-y-2 mb-4">
-                    {services.map((service, index) => (
+                    {data.map((service, index) => (
                         <View key={index} className="bg-neutral-50 rounded-2xl p-4">
                             <View className="flex-row items-start justify-between mb-2">
                                 <View className="flex-1">
@@ -85,7 +80,7 @@ export function ServicesForm({ data, onChange }: ServicesFormProps) {
             {/* Add New Service Form */}
             <View className="bg-neutral-50 rounded-2xl p-4 space-y-3">
                 <Text className="font-semibold text-base mb-2">
-                    {services.length === 0 ? 'Add Your First Service' : 'Add Another Service'}
+                    {data.length === 0 ? 'Add Your First Service' : 'Add Another Service'}
                 </Text>
 
                 <View>
@@ -93,7 +88,7 @@ export function ServicesForm({ data, onChange }: ServicesFormProps) {
                     <TextInput
                         placeholder="e.g., Women's Haircut"
                         value={currentService.name}
-                        onChangeText={(value) => setCurrentService({ ...currentService, name: value })}
+                        onChangeText={(value) => onCurrentServiceChange({ ...currentService, name: value })}
                         className="h-12 bg-white rounded-xl px-4 border border-neutral-200 text-base"
                     />
                 </View>
@@ -104,10 +99,10 @@ export function ServicesForm({ data, onChange }: ServicesFormProps) {
                         {CATEGORIES.map((cat) => (
                             <TouchableOpacity
                                 key={cat}
-                                onPress={() => setCurrentService({ ...currentService, category: cat })}
+                                onPress={() => onCurrentServiceChange({ ...currentService, category: cat })}
                                 className={`px-4 py-2 rounded-xl border ${currentService.category === cat
-                                        ? 'bg-black border-black'
-                                        : 'bg-white border-neutral-200'
+                                    ? 'bg-black border-black'
+                                    : 'bg-white border-neutral-200'
                                     }`}
                             >
                                 <Text className={currentService.category === cat ? 'text-white' : 'text-neutral-700'}>
@@ -124,7 +119,7 @@ export function ServicesForm({ data, onChange }: ServicesFormProps) {
                         <TextInput
                             placeholder="60"
                             value={currentService.duration_minutes > 0 ? currentService.duration_minutes.toString() : ''}
-                            onChangeText={(value) => setCurrentService({ ...currentService, duration_minutes: parseInt(value) || 0 })}
+                            onChangeText={(value) => onCurrentServiceChange({ ...currentService, duration_minutes: parseInt(value) || 0 })}
                             keyboardType="number-pad"
                             className="h-12 bg-white rounded-xl px-4 border border-neutral-200 text-base"
                         />
@@ -135,7 +130,7 @@ export function ServicesForm({ data, onChange }: ServicesFormProps) {
                         <TextInput
                             placeholder="50"
                             value={currentService.price > 0 ? currentService.price.toString() : ''}
-                            onChangeText={(value) => setCurrentService({ ...currentService, price: parseFloat(value) || 0 })}
+                            onChangeText={(value) => onCurrentServiceChange({ ...currentService, price: parseFloat(value) || 0 })}
                             keyboardType="decimal-pad"
                             className="h-12 bg-white rounded-xl px-4 border border-neutral-200 text-base"
                         />
@@ -153,7 +148,7 @@ export function ServicesForm({ data, onChange }: ServicesFormProps) {
                 </TouchableOpacity>
             </View>
 
-            {services.length === 0 && (
+            {data.length === 0 && (
                 <View className="bg-blue-50 rounded-xl p-4">
                     <View className="flex-row items-start">
                         <Feather name="info" size={16} color="#3b82f6" className="mt-0.5" />

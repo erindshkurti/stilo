@@ -1,10 +1,11 @@
 import { Feather } from '@expo/vector-icons';
-import { useState } from 'react';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 interface StylistFormProps {
     data: Stylist[];
     onChange: (stylists: Stylist[]) => void;
+    currentStylist: Stylist;
+    onCurrentStylistChange: (stylist: Stylist) => void;
 }
 
 export interface Stylist {
@@ -13,26 +14,24 @@ export interface Stylist {
     specialties: string[];
 }
 
-export function StylistForm({ data, onChange }: StylistFormProps) {
-    const [stylists, setStylists] = useState<Stylist[]>(data.length > 0 ? data : []);
-    const [currentStylist, setCurrentStylist] = useState<Stylist>({
-        name: '',
-        bio: '',
-        specialties: [],
-    });
+export function StylistForm({ data, onChange, currentStylist, onCurrentStylistChange }: StylistFormProps) {
+    // We only keep the list state here or let parent handle it too? 
+    // The parent passed `data` (the list) and `onChange`.
+    // The previous implementation had `useState` for `stylists` initialized from `data`.
+    // Ideally, we should just use `data` directly to be a controlled component fully.
+    // The previous implementation was a bit hybrid (props init state).
+    // Let's rely on props.
 
     const addStylist = () => {
         if (currentStylist.name.trim()) {
-            const newStylists = [...stylists, currentStylist];
-            setStylists(newStylists);
+            const newStylists = [...data, currentStylist];
             onChange(newStylists);
-            setCurrentStylist({ name: '', bio: '', specialties: [] });
+            onCurrentStylistChange({ name: '', bio: '', specialties: [] });
         }
     };
 
     const removeStylist = (index: number) => {
-        const newStylists = stylists.filter((_, i) => i !== index);
-        setStylists(newStylists);
+        const newStylists = data.filter((_, i) => i !== index);
         onChange(newStylists);
     };
 
@@ -43,9 +42,9 @@ export function StylistForm({ data, onChange }: StylistFormProps) {
             </Text>
 
             {/* Added Stylists List */}
-            {stylists.length > 0 && (
+            {data.length > 0 && (
                 <View className="space-y-2 mb-4">
-                    {stylists.map((stylist, index) => (
+                    {data.map((stylist, index) => (
                         <View key={index} className="bg-neutral-50 rounded-2xl p-4 flex-row items-center justify-between">
                             <View className="flex-1">
                                 <Text className="font-semibold text-base">{stylist.name}</Text>
@@ -69,7 +68,7 @@ export function StylistForm({ data, onChange }: StylistFormProps) {
             {/* Add New Stylist Form */}
             <View className="bg-neutral-50 rounded-2xl p-4 space-y-3">
                 <Text className="font-semibold text-base mb-2">
-                    {stylists.length === 0 ? 'Add Your First Team Member' : 'Add Another Team Member'}
+                    {data.length === 0 ? 'Add Your First Team Member' : 'Add Another Team Member'}
                 </Text>
 
                 <View>
@@ -77,7 +76,7 @@ export function StylistForm({ data, onChange }: StylistFormProps) {
                     <TextInput
                         placeholder="e.g., Sarah Johnson"
                         value={currentStylist.name}
-                        onChangeText={(value) => setCurrentStylist({ ...currentStylist, name: value })}
+                        onChangeText={(value) => onCurrentStylistChange({ ...currentStylist, name: value })}
                         className="h-12 bg-white rounded-xl px-4 border border-neutral-200 text-base"
                     />
                 </View>
@@ -87,7 +86,7 @@ export function StylistForm({ data, onChange }: StylistFormProps) {
                     <TextInput
                         placeholder="Brief description of their expertise..."
                         value={currentStylist.bio}
-                        onChangeText={(value) => setCurrentStylist({ ...currentStylist, bio: value })}
+                        onChangeText={(value) => onCurrentStylistChange({ ...currentStylist, bio: value })}
                         multiline
                         numberOfLines={3}
                         textAlignVertical="top"
@@ -106,7 +105,7 @@ export function StylistForm({ data, onChange }: StylistFormProps) {
                 </TouchableOpacity>
             </View>
 
-            {stylists.length === 0 && (
+            {data.length === 0 && (
                 <View className="bg-blue-50 rounded-xl p-4">
                     <View className="flex-row items-start">
                         <Feather name="info" size={16} color="#3b82f6" className="mt-0.5" />

@@ -1,11 +1,20 @@
 import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Modal, ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Modal, ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../components/Header';
 import { StylistCard } from '../components/StylistCard';
-import { STYLISTS } from '../data/stylists';
+import { supabase } from '../lib/supabase';
+
+interface BusinessResult {
+    id: string;
+    name: string;
+    city: string;
+    rating: number;
+    review_count: number;
+    cover_image_url: string | null;
+}
 
 export default function SearchScreen() {
     const router = useRouter();
@@ -18,15 +27,56 @@ export default function SearchScreen() {
     const [date, setDate] = useState(params.date as string || '');
     const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
 
-    // Filter results
-    const filteredStylists = STYLISTS.filter(stylist => {
-        const matchLocation = !location || stylist.location.toLowerCase().includes(location.toLowerCase());
-        const matchService = !service || stylist.services.some(s => s.toLowerCase().includes(service.toLowerCase())) ||
-            stylist.name.toLowerCase().includes(service.toLowerCase());
-        return matchLocation && matchService;
-    });
+    const [results, setResults] = useState<BusinessResult[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const activeFiltersCount = [location, service, date].filter(Boolean).length;
+    // Fetch Results from DB
+    useEffect(() => {
+        async function fetchResults() {
+            setLoading(true);
+            try {
+                // Base query
+                let query = supabase
+                    .from('businesses')
+                    .select('id, name, city, rating, review_count, cover_image_url');
+
+                // Filter by Location (City)
+                if (location) {
+                    // ILIKE is case-insensitive pattern matching
+                    query = query.ilike('city', `%${location}%`);
+                }
+
+                // Filter by Service (Currently checking Name/Description as proxy, 
+                // typically needs a join on services table, but keeping simple for MVP)
+                if (service) {
+                    query = query.or(`name.ilike.%${service}%,description.ilike.%${service}%`);
+                }
+
+                // Date filtering is usually availability-based, which requires a complex availability system.
+                // We'll skip DB filtering for date in this step.
+
+                const { data, error } = await query;
+
+                if (error) {
+                    console.error('Error fetching search results:', error);
+                } else if (data) {
+                    setResults(data);
+                }
+            } catch (err) {
+                console.error('Search error:', err);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Debounce could be added here, but for now fetch on change or mount
+        // Actually, let's fetch on mount or when modal closes/Apply is clicked to avoid spamming
+        // For this demo, we'll fetch when the component mounts or params change (from landing page)
+        // To make it responsive to the inputs, we might want a "Search" button or debounce. 
+        // Let's stick to valid params for initial load.
+        fetchResults();
+
+    }, [location, service]); // Re-fetch when filters change (simple live search)
 
     return (
         <View className="flex-1 bg-white">
@@ -107,23 +157,27 @@ export default function SearchScreen() {
                 <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
                     <View className="max-w-7xl mx-auto w-full px-6 py-8">
                         <Text className="text-xl font-bold mb-6 text-neutral-900">
-                            {filteredStylists.length} {filteredStylists.length === 1 ? 'Result' : 'Results'} Found
+                            {results.length} {results.length === 1 ? 'Result' : 'Results'} Found
                         </Text>
 
-                        {filteredStylists.length > 0 ? (
+                        {loading ? (
+                            <View className="items-center justify-center py-20">
+                                <ActivityIndicator size="large" color="#000" />
+                            </View>
+                        ) : results.length > 0 ? (
                             <View className="flex-row flex-wrap -mx-3">
-                                {filteredStylists.map((stylist) => (
+                                {results.map((item) => (
                                     <View
-                                        key={stylist.id}
+                                        key={item.id}
                                         className="w-full md:w-1/2 lg:w-1/4 px-3 mb-6"
                                     >
                                         <StylistCard
-                                            name={stylist.name}
-                                            location={stylist.location}
-                                            rating={stylist.rating}
-                                            reviewCount={stylist.reviewCount}
-                                            imageUrl={stylist.imageUrl}
-                                            onPress={() => console.log('Stylist pressed:', stylist.name)}
+                                            name={item.name}
+                                            location={item.city || 'Unknown'} // DB uses city, fallback
+                                            rating={item.rating || 0}
+                                            reviewCount={item.review_count || 0}
+                                            imageUrl={item.cover_image_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=2574&auto=format&fit=crop'}
+                                            onPress={() => router.push(`/business/${item.id}`)}
                                         />
                                     </View>
                                 ))}
@@ -132,7 +186,7 @@ export default function SearchScreen() {
                             <View className="items-center justify-center py-20">
                                 <Feather name="search" size={48} color="#e5e5e5" />
                                 <Text className="text-neutral-500 mt-4 text-center text-lg">
-                                    No stylists found.
+                                    No businesses found matching your search.
                                 </Text>
                                 <TouchableOpacity
                                     onPress={() => { setLocation(''); setService(''); setDate(''); }}
@@ -219,7 +273,7 @@ export default function SearchScreen() {
                                 className="bg-black py-4 rounded-xl items-center"
                             >
                                 <Text className="text-white font-bold text-lg">
-                                    Show {filteredStylists.length} {filteredStylists.length === 1 ? 'Result' : 'Results'}
+                                    Show Results
                                 </Text>
                             </TouchableOpacity>
                         </View>
