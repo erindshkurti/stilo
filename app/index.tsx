@@ -149,9 +149,10 @@ export default function LandingPage() {
                             router.replace('/business/onboarding');
                         }
                     } else {
-                        // Customer / Client
-                        console.log('[Landing] Customer detected. Going to Home.');
-                        router.replace('/(tabs)');
+                        // Customer - Stay on Landing Page (do nothing)
+                        console.log('[Landing] Customer detected. Staying on landing page.');
+                        setIsChecking(false);
+                        setRedirecting(false);
                     }
                 } catch (error) {
                     console.error('[Landing] Error in auth redirect:', error);

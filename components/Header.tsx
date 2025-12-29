@@ -130,81 +130,82 @@ export function Header() {
                         <View className="flex-row items-center gap-6">
                             {user ? (
                                 <>
-                                    {isBusinessOwner ? (
-                                        <>
-                                            <TouchableOpacity onPress={() => router.push('/business/dashboard')}>
-                                                <Text className="text-neutral-700 font-medium">Dashboard</Text>
-                                            </TouchableOpacity>
+                                    {isBusinessOwner && (
+                                        <TouchableOpacity onPress={() => router.push('/business/dashboard')}>
+                                            <Text className="text-neutral-700 font-medium">Dashboard</Text>
+                                        </TouchableOpacity>
+                                    )}
 
-                                            {/* Profile Dropdown */}
-                                            <View style={{ position: 'relative', zIndex: 9999 }} data-dropdown="profile">
-                                                <TouchableOpacity
-                                                    onPress={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                                                    className="w-10 h-10 rounded-full overflow-hidden items-center justify-center"
-                                                    style={{
-                                                        backgroundColor: avatarUrl ? 'transparent' : '#f5f5f5',
-                                                        borderWidth: 2,
-                                                        borderColor: '#e5e5e5',
-                                                    }}
-                                                >
-                                                    {avatarUrl ? (
-                                                        <Image
-                                                            source={{ uri: avatarUrl }}
-                                                            style={{ width: 36, height: 36, borderRadius: 18 }}
-                                                        />
-                                                    ) : (
-                                                        <Feather name="user" size={20} color="#000" />
-                                                    )}
-                                                </TouchableOpacity>
+                                    {/* Unified Profile Dropdown */}
+                                    <View style={{ position: 'relative', zIndex: 9999 }} data-dropdown="profile">
+                                        <TouchableOpacity
+                                            onPress={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                                            className="w-10 h-10 rounded-full overflow-hidden items-center justify-center"
+                                            style={{
+                                                backgroundColor: avatarUrl ? 'transparent' : '#f5f5f5',
+                                                borderWidth: 2,
+                                                borderColor: '#e5e5e5',
+                                            }}
+                                        >
+                                            {avatarUrl ? (
+                                                <Image
+                                                    source={{ uri: avatarUrl }}
+                                                    style={{ width: 36, height: 36, borderRadius: 18 }}
+                                                />
+                                            ) : (
+                                                <Feather name="user" size={20} color="#000" />
+                                            )}
+                                        </TouchableOpacity>
 
-                                                {profileDropdownOpen ? (
-                                                    <View
-                                                        style={{
-                                                            position: 'absolute',
-                                                            right: 0,
-                                                            top: 48,
-                                                            width: 192,
-                                                            zIndex: 10000,
-                                                            // @ts-ignore - web only style
-                                                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-                                                        }}
-                                                        className="bg-white rounded-xl border border-neutral-200 py-2"
-                                                        // @ts-ignore - stop propagation to prevent closing when clicking inside
-                                                        onClick={(e: any) => e.stopPropagation()}
-                                                    >
-                                                        <Link href="/business/settings" asChild>
-                                                            <TouchableOpacity
-                                                                onPress={() => setProfileDropdownOpen(false)}
-                                                                className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
-                                                            >
-                                                                <Feather name="settings" size={18} color="#737373" />
-                                                                <Text className="ml-3 text-neutral-900">Settings</Text>
-                                                            </TouchableOpacity>
-                                                        </Link>
-
-                                                        <View className="h-px bg-neutral-200 my-1" />
-
+                                        {profileDropdownOpen ? (
+                                            <View
+                                                style={{
+                                                    position: 'absolute',
+                                                    right: 0,
+                                                    top: 48,
+                                                    width: 192,
+                                                    zIndex: 10000,
+                                                    // @ts-ignore - web only style
+                                                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+                                                }}
+                                                className="bg-white rounded-xl border border-neutral-200 py-2"
+                                                // @ts-ignore - stop propagation to prevent closing when clicking inside
+                                                onClick={(e: any) => e.stopPropagation()}
+                                            >
+                                                {isBusinessOwner ? (
+                                                    <Link href="/business/settings" asChild>
                                                         <TouchableOpacity
-                                                            onPress={handleSignOut}
+                                                            onPress={() => setProfileDropdownOpen(false)}
                                                             className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
                                                         >
-                                                            <Feather name="log-out" size={18} color="#737373" />
-                                                            <Text className="ml-3 text-neutral-900">Sign Out</Text>
+                                                            <Feather name="settings" size={18} color="#737373" />
+                                                            <Text className="ml-3 text-neutral-900">Settings</Text>
                                                         </TouchableOpacity>
-                                                    </View>
-                                                ) : null}
+                                                    </Link>
+                                                ) : (
+                                                    <Link href="/(tabs)/profile" asChild>
+                                                        <TouchableOpacity
+                                                            onPress={() => setProfileDropdownOpen(false)}
+                                                            className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
+                                                        >
+                                                            <Feather name="user" size={18} color="#737373" />
+                                                            <Text className="ml-3 text-neutral-900">My Account</Text>
+                                                        </TouchableOpacity>
+                                                    </Link>
+                                                )}
+
+                                                <View className="h-px bg-neutral-200 my-1" />
+
+                                                <TouchableOpacity
+                                                    onPress={handleSignOut}
+                                                    className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
+                                                >
+                                                    <Feather name="log-out" size={18} color="#737373" />
+                                                    <Text className="ml-3 text-neutral-900">Sign Out</Text>
+                                                </TouchableOpacity>
                                             </View>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <TouchableOpacity onPress={() => router.push('/(tabs)')}>
-                                                <Text className="text-neutral-700 font-medium">Dashboard</Text>
-                                            </TouchableOpacity>
-                                            <TouchableOpacity onPress={() => router.push('/(tabs)/profile')}>
-                                                <Text className="text-neutral-700 font-medium">Profile</Text>
-                                            </TouchableOpacity>
-                                        </>
-                                    )}
+                                        ) : null}
+                                    </View>
                                 </>
                             ) : (
                                 <>
@@ -288,23 +289,29 @@ export function Header() {
                                     </>
                                 ) : (
                                     <>
+                                        <Link href="/(tabs)/profile" asChild>
+                                            <TouchableOpacity
+                                                onPress={() => setMenuOpen(false)}
+                                                className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-3"
+                                            >
+                                                <View className="flex-row items-center">
+                                                    <Feather name="user" size={18} color="#737373" />
+                                                    <Text className="ml-3 text-neutral-900 font-medium text-base">My Account</Text>
+                                                </View>
+                                            </TouchableOpacity>
+                                        </Link>
+
                                         <TouchableOpacity
                                             onPress={() => {
                                                 setMenuOpen(false);
-                                                router.push('/(tabs)');
-                                            }}
-                                            className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-3"
-                                        >
-                                            <Text className="text-neutral-900 font-medium text-base">Dashboard</Text>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity
-                                            onPress={() => {
-                                                setMenuOpen(false);
-                                                router.push('/(tabs)/profile');
+                                                handleSignOut();
                                             }}
                                             className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100"
                                         >
-                                            <Text className="text-neutral-900 font-medium text-base">Profile</Text>
+                                            <View className="flex-row items-center">
+                                                <Feather name="log-out" size={18} color="#737373" />
+                                                <Text className="ml-3 text-neutral-900 font-medium text-base">Sign Out</Text>
+                                            </View>
                                         </TouchableOpacity>
                                     </>
                                 )}

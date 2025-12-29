@@ -62,7 +62,7 @@ export default function SignInScreen() {
                 if (userType === 'business') {
                     router.replace('/business/dashboard');
                 } else {
-                    router.replace('/(tabs)');
+                    router.replace('/');
                 }
             }
         }
@@ -107,8 +107,8 @@ export default function SignInScreen() {
             if (signUpError) {
                 setError(signUpError.message);
             } else {
-                // New users are always clients, redirect to tabs
-                router.replace('/(tabs)');
+                // New users are always clients, redirect to root
+                router.replace('/');
             }
         } else {
             const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
@@ -130,7 +130,7 @@ export default function SignInScreen() {
                 if (userType === 'business') {
                     router.replace('/business/dashboard');
                 } else {
-                    router.replace('/(tabs)');
+                    router.replace('/');
                 }
             }
         }
