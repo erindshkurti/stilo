@@ -79,9 +79,17 @@ export function Header() {
 
                 if (data?.avatar_url) {
                     setAvatarUrl(data.avatar_url);
+                } else if (user?.user_metadata?.avatar_url) {
+                    // Fallback to Google/Auth provider metadata
+                    setAvatarUrl(user.user_metadata.avatar_url);
                 }
             } catch (error) {
                 console.error('Error loading profile:', error);
+
+                // Fallback on error too
+                if (user?.user_metadata?.avatar_url) {
+                    setAvatarUrl(user.user_metadata.avatar_url);
+                }
             }
         }
 
@@ -183,7 +191,7 @@ export function Header() {
                                                         </TouchableOpacity>
                                                     </Link>
                                                 ) : (
-                                                    <Link href="/(tabs)/profile" asChild>
+                                                    <Link href="/profile" asChild>
                                                         <TouchableOpacity
                                                             onPress={() => setProfileDropdownOpen(false)}
                                                             className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
@@ -289,7 +297,7 @@ export function Header() {
                                     </>
                                 ) : (
                                     <>
-                                        <Link href="/(tabs)/profile" asChild>
+                                        <Link href="/profile" asChild>
                                             <TouchableOpacity
                                                 onPress={() => setMenuOpen(false)}
                                                 className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-3"
