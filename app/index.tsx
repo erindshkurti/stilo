@@ -58,14 +58,17 @@ export default function LandingPage() {
     const [redirecting, setRedirecting] = useState(false);
     const [isChecking, setIsChecking] = useState(false);
 
+    const [lastCheckedUserId, setLastCheckedUserId] = useState<string | null>(null);
+
     // Redirect authenticated users to their dashboard
     useEffect(() => {
         async function handleAuthRedirect() {
             // Prevent redundant checks if we are already processing or redirecting
-            if (user && !isChecking && !redirecting) {
+            if (user && !isChecking && !redirecting && user.id !== lastCheckedUserId) {
                 console.log('[Landing] User detected:', user.id);
                 setIsChecking(true);
                 setRedirecting(true); // Optimistically show loading immediately
+                setLastCheckedUserId(user.id);
 
                 try {
                     let userType = user.user_metadata?.user_type;
@@ -158,14 +161,19 @@ export default function LandingPage() {
                     console.error('[Landing] Error in auth redirect:', error);
                     setIsChecking(false);
                     setRedirecting(false);
+                    // allow retry on error
+                    setLastCheckedUserId(null);
                 }
+            } else if (!user && lastCheckedUserId) {
+                // User logged out, reset check
+                setLastCheckedUserId(null);
             }
         }
 
         if (!isLoading) {
             handleAuthRedirect();
         }
-    }, [user, isLoading, router]);
+    }, [user, isLoading, router, lastCheckedUserId, isChecking, redirecting]);
 
     // Show loading screen while checking auth or redirecting
     if (isLoading || redirecting) {
