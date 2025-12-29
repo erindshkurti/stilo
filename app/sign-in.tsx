@@ -1,5 +1,6 @@
+import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../components/Button';
@@ -21,6 +22,20 @@ export default function SignInScreen() {
     // Responsive sizing
     const isLargeScreen = width > 768;
     const containerMaxWidth = isLargeScreen ? 480 : width - 48;
+
+    // Clear password when screen comes into focus
+    useFocusEffect(
+        useCallback(() => {
+            setPassword('');
+            setError('');
+        }, [])
+    );
+
+    // Clear fields when toggling between Sign In and Sign Up
+    useEffect(() => {
+        setPassword('');
+        setError('');
+    }, [isSignUp]);
 
     // Handle OAuth callback - redirect authenticated users
     useEffect(() => {

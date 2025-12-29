@@ -1,7 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../components/Button';
@@ -24,6 +25,15 @@ export default function BusinessSignUpScreen() {
     // Responsive sizing
     const isLargeScreen = width > 768;
     const containerMaxWidth = isLargeScreen ? 520 : width - 48;
+
+    // Clear password when screen comes into focus
+    useFocusEffect(
+        useCallback(() => {
+            setPassword('');
+            setFormError(null);
+            setGoogleError(null);
+        }, [])
+    );
 
     async function handleSignUp() {
         // Clear other errors
