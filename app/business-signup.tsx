@@ -16,33 +16,39 @@ export default function BusinessSignUpScreen() {
     const [password, setPassword] = useState('');
     const [businessName, setBusinessName] = useState('');
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+
+    // Split error states for better UX placement
+    const [formError, setFormError] = useState<string | null>(null);
+    const [googleError, setGoogleError] = useState<string | null>(null);
 
     // Responsive sizing
     const isLargeScreen = width > 768;
     const containerMaxWidth = isLargeScreen ? 520 : width - 48;
 
     async function handleSignUp() {
+        // Clear other errors
+        setGoogleError(null);
+
         // Validate business name
         if (!businessName.trim()) {
-            setError('Please enter your business name');
+            setFormError('Please enter your business name');
             return;
         }
 
         // Validate email
         if (!email.trim() || !email.includes('@')) {
-            setError('Please enter a valid email address');
+            setFormError('Please enter a valid email address');
             return;
         }
 
         // Validate password
         if (password.length < 6) {
-            setError('Password is too short');
+            setFormError('Password is too short');
             return;
         }
 
         setLoading(true);
-        setError(null); // Clear any previous errors
+        setFormError(null); // Clear any previous errors
 
         try {
             console.log('Attempting signup with:', { email, businessName, passwordLength: password.length });
@@ -94,21 +100,24 @@ export default function BusinessSignUpScreen() {
             }
         } catch (error: any) {
             console.error('Signup error:', error);
-            setError(error.message || 'Failed to create account. Please try a different email address.');
+            setFormError(error.message || 'Failed to create account. Please try a different email address.');
         } finally {
             setLoading(false);
         }
     }
 
     async function handleGoogleAuth() {
+        // Clear other errors
+        setFormError(null);
+
         if (!businessName.trim()) {
-            setError('Please enter your business name first');
+            setGoogleError('Please enter your business name first');
             return;
         }
 
         try {
             setLoading(true);
-            setError(''); // Clear any previous errors
+            setGoogleError(null); // Clear any previous errors
 
             // Flag this as a business signup attempt
             await AsyncStorage.setItem('pending_business_signup', 'true');
@@ -132,13 +141,13 @@ export default function BusinessSignUpScreen() {
             });
 
             if (error) {
-                setError(error.message);
+                setGoogleError(error.message);
                 setLoading(false);
             }
             // Note: The page will redirect to Google, so we don't need to handle success here
         } catch (error: any) {
             console.error('Google auth error:', error);
-            setError(error.message || 'Failed to sign in with Google');
+            setGoogleError(error.message || 'Failed to sign in with Google');
             setLoading(false);
         }
     }
@@ -197,6 +206,16 @@ export default function BusinessSignUpScreen() {
                         <View>
                             <Text className="font-semibold text-base mb-3 px-1">Choose your sign up method</Text>
 
+                            {/* Google Auth Error Display */}
+                            {googleError && (
+                                <View className="mb-3 bg-red-50 border border-red-200 rounded-xl p-3">
+                                    <View className="flex-row items-center">
+                                        <Feather name="alert-circle" size={18} color="#dc2626" />
+                                        <Text className="text-red-600 ml-2 flex-1 text-sm">{googleError}</Text>
+                                    </View>
+                                </View>
+                            )}
+
                             <Button
                                 label="Continue with Google"
                                 variant="google"
@@ -229,12 +248,12 @@ export default function BusinessSignUpScreen() {
                             </View>
                         </View>
 
-                        {/* Error Display */}
-                        {error && (
+                        {/* Email Form Error Display */}
+                        {formError && (
                             <View className="mb-4 bg-red-50 border border-red-200 rounded-xl p-4">
                                 <View className="flex-row items-center">
                                     <Feather name="alert-circle" size={20} color="#dc2626" />
-                                    <Text className="text-red-600 ml-3 flex-1">{error}</Text>
+                                    <Text className="text-red-600 ml-3 flex-1">{formError}</Text>
                                 </View>
                             </View>
                         )}

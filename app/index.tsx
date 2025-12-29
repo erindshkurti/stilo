@@ -73,7 +73,28 @@ export default function LandingPage() {
 
                     // 1. Check if this is a pending business signup (User clicked "Continue" on Business Page)
                     if (pendingBusinessSignup === 'true') {
-                        console.log('[Landing] Found pending business signup flag. Converting user...');
+                        console.log('[Landing] Found pending business signup flag. Checking restrictions...');
+
+                        // Preliminary Check: Does this user ALREADY have a business?
+                        // If so, we PREVENT them from trying to create another one or overwriting.
+                        const { count: existingCount } = await supabase
+                            .from('businesses')
+                            .select('*', { count: 'exact', head: true })
+                            .eq('owner_id', user.id);
+
+                        if (existingCount && existingCount > 0) {
+                            console.log('[Landing] User already has a business. Preventing duplicate creation.');
+
+                            // Clear flag so we don't loop
+                            await AsyncStorage.removeItem('pending_business_signup');
+
+                            // Show Message via banner on dashboard
+                            // Redirect to Dashboard (Treat as Sign In) with warning param
+                            router.replace('/business/dashboard?warning=duplicate_business');
+                            return;
+                        }
+
+                        console.log('[Landing] No existing business. Converting user...');
 
                         // A. Update Auth Metadata
                         const { error: authError } = await supabase.auth.updateUser({

@@ -1,8 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import { Image, ScrollView, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../../components/Header';
@@ -13,6 +13,11 @@ export default function BusinessDashboard() {
     const { user } = useAuth();
     const { width } = useWindowDimensions();
     const router = useRouter();
+    const params = useLocalSearchParams();
+
+    // Banner State
+    const [showWarning, setShowWarning] = useState(false);
+
     const [business, setBusiness] = useState<any>(null);
     const [hours, setHours] = useState<any[]>([]);
     const [stylists, setStylists] = useState<any[]>([]);
@@ -24,6 +29,13 @@ export default function BusinessDashboard() {
 
     const isLargeScreen = width > 1024;
     const isMediumScreen = width > 768;
+
+    // Check for warning param
+    useEffect(() => {
+        if (params.warning === 'duplicate_business') {
+            setShowWarning(true);
+        }
+    }, [params.warning]);
 
     // Reload data when page comes into focus
     useFocusEffect(
@@ -255,6 +267,21 @@ export default function BusinessDashboard() {
     return (
         <SafeAreaView className="flex-1 bg-white">
             <Header />
+
+            {/* Warning Banner */}
+            {showWarning && (
+                <View className="bg-yellow-50 border-b border-yellow-200 px-6 py-4 flex-row items-center justify-between">
+                    <View className="flex-row items-center flex-1 pr-4 justify-center">
+                        <Feather name="alert-triangle" size={20} color="#eab308" />
+                        <Text className="ml-3 text-yellow-800 text-sm font-medium text-center">
+                            An email address can be associated with only one business at this time. [Temp restriction via code]
+                        </Text>
+                    </View>
+                    <TouchableOpacity onPress={() => setShowWarning(false)}>
+                        <Feather name="x" size={20} color="#ca8a04" />
+                    </TouchableOpacity>
+                </View>
+            )}
 
             <ScrollView className="flex-1">
                 <View className="px-6 py-8 max-w-7xl mx-auto w-full">
