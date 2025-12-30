@@ -17,7 +17,7 @@ export interface Service {
     category: string;
 }
 
-const CATEGORIES = ['Haircut', 'Color', 'Styling', 'Treatment', 'Other'];
+const CATEGORIES = ['Haircut', 'Color', 'Balayage', 'Blowout', 'Extensions', 'Styling', 'Treatment'];
 
 export function ServicesForm({ data, onChange, currentService, onCurrentServiceChange }: ServicesFormProps) {
     const [services, setServices] = useState<Service[]>(data.length > 0 ? data : []);
