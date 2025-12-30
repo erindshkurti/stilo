@@ -17,9 +17,6 @@ export default function SignInScreen() {
     const params = useLocalSearchParams();
     const returnTo = params.returnTo as string | undefined;
 
-    console.log('SignInScreen MOUNT params:', JSON.stringify(params, null, 2));
-    console.log('SignInScreen returnTo raw:', returnTo);
-
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
