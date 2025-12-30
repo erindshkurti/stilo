@@ -269,7 +269,7 @@ export default function BusinessPage() {
                                         <View className="items-end">
                                             <Text className="font-bold text-neutral-900 text-base">${service.price}</Text>
                                             <TouchableOpacity
-                                                onPress={() => router.push(`/booking/${id}`)}
+                                                onPress={() => router.push(`/booking/${id}?serviceId=${service.id}`)}
                                                 className="mt-2 bg-black px-3 py-1.5 rounded-lg"
                                             >
                                                 <Text className="text-white text-xs font-bold">Book</Text>

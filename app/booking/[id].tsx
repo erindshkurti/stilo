@@ -102,19 +102,17 @@ export default function BookingScreen() {
 
     // Restore state from URL params (e.g. after return from sign-in)
     // We decode params manually if needed, but expo-router does most of it
-    const { restore, sId, stId, d, t } = useLocalSearchParams<{ restore: string; sId: string; stId: string; d: string; t: string }>();
+    const { restore, sId, stId, d, t, serviceId } = useLocalSearchParams<{ restore: string; sId: string; stId: string; d: string; t: string; serviceId: string }>();
 
     useEffect(() => {
+        // 1. Full State Restore (e.g. from Auth Redirect)
         if (restore && !loading && services.length > 0 && stylists.length > 0) {
             console.log('Restoring booking state...', { sId, stId, d, t });
 
-            // Restore Service
             if (sId) {
                 const serviceToRestore = services.find(s => s.id === sId);
                 if (serviceToRestore) setSelectedService(serviceToRestore);
             }
-
-            // Restore Stylist
             if (stId) {
                 if (stId === 'any') {
                     setSelectedStylist('any');
@@ -123,20 +121,26 @@ export default function BookingScreen() {
                     if (stylistToRestore) setSelectedStylist(stylistToRestore);
                 }
             }
-
-            // Restore Date & Time
             if (d) {
                 const dateToRestore = new Date(d);
                 if (!isNaN(dateToRestore.getTime())) setSelectedDate(dateToRestore);
             }
             if (t) setSelectedTime(t);
 
-            // Jump to Review Step if we have everything
             if (sId && stId && d && t) {
                 setStep(4);
             }
         }
-    }, [restore, loading, services, stylists, sId, stId, d, t]);
+        // 2. Initial Pre-selection (e.g. "Book" from Business Page service list)
+        else if (serviceId && !loading && services.length > 0 && !selectedService) {
+            console.log('Pre-selecting service:', serviceId);
+            const preSelected = services.find(s => s.id === serviceId);
+            if (preSelected) {
+                setSelectedService(preSelected);
+                setStep(2); // Skip to Stylist Step
+            }
+        }
+    }, [restore, serviceId, loading, services, stylists, sId, stId, d, t]);
 
     // Generate dates (Next 14 days)
     const dates = Array.from({ length: 14 }, (_, i) => {
