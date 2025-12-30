@@ -350,6 +350,11 @@ export default function LandingPage() {
                                                     onChangeText={setDate}
                                                     className="flex-1 h-14 px-3 text-base"
                                                 />
+                                                {date.length > 0 && (
+                                                    <TouchableOpacity onPress={() => setDate('')} className="p-2">
+                                                        <Feather name="x" size={18} color="#a3a3a3" />
+                                                    </TouchableOpacity>
+                                                )}
                                             </View>
                                         </View>
 

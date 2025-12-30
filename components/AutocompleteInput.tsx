@@ -48,6 +48,12 @@ export function AutocompleteInput({
                     className="flex-1 h-14 px-3 text-base"
                     {...textInputProps}
                 />
+                {/* Clear Button */}
+                {value.length > 0 && (
+                    <TouchableOpacity onPress={() => onChangeText('')} className="p-2">
+                        <Feather name="x" size={18} color="#a3a3a3" />
+                    </TouchableOpacity>
+                )}
                 {loading && (
                     <View className="ml-2">
                         <Text className="text-neutral-400 text-xs">...</Text>

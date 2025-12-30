@@ -222,6 +222,11 @@ export default function SearchScreen() {
                                             onSubmitEditing={() => fetchResults()}
                                             returnKeyType="search"
                                         />
+                                        {date.length > 0 && (
+                                            <TouchableOpacity onPress={() => setDate('')} className="p-2">
+                                                <Feather name="x" size={18} color="#a3a3a3" />
+                                            </TouchableOpacity>
+                                        )}
                                     </View>
                                 </View>
                                 <TouchableOpacity
@@ -363,6 +368,11 @@ export default function SearchScreen() {
                                             className="ml-3 flex-1 text-base text-neutral-900"
                                             returnKeyType="done"
                                         />
+                                        {date.length > 0 && (
+                                            <TouchableOpacity onPress={() => setDate('')} className="p-2">
+                                                <Feather name="x" size={18} color="#a3a3a3" />
+                                            </TouchableOpacity>
+                                        )}
                                     </View>
                                 </View>
                             </View>
