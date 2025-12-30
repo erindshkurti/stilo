@@ -124,7 +124,7 @@ export function Header() {
     return (
         <View className="bg-white border-b border-neutral-100" style={{ overflow: 'visible', zIndex: 50 }}>
             <View className="px-6 py-4" style={{ overflow: 'visible' }}>
-                <View className="flex-row items-center justify-between max-w-7xl mx-auto w-full" style={{ overflow: 'visible' }}>
+                <View className="flex-row items-center justify-between mx-auto w-full" style={{ overflow: 'visible', maxWidth: 1200 }}>
                     {/* Logo */}
                     <TouchableOpacity onPress={() => {
                         setMenuOpen(false);

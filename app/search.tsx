@@ -84,8 +84,8 @@ export default function SearchScreen() {
                 <Header />
 
                 {/* Filter Bar */}
-                <View className="bg-white pt-2 border-b border-neutral-100 pb-2">
-                    <View className="max-w-7xl mx-auto w-full px-4 md:px-0">
+                <View className="bg-white pt-2 border-b border-neutral-100 pb-2 px-6">
+                    <View className="mx-auto w-full" style={{ maxWidth: 1200 }}>
                         {isLargeScreen ? (
                             /* Desktop: Horizontal Row */
                             <ScrollView
@@ -155,47 +155,49 @@ export default function SearchScreen() {
 
                 {/* Results Grid */}
                 <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-                    <View className="max-w-7xl mx-auto w-full px-6 py-8">
-                        <Text className="text-xl font-bold mb-6 text-neutral-900">
-                            {results.length} {results.length === 1 ? 'Result' : 'Results'} Found
-                        </Text>
+                    <View className="w-full px-6 py-8">
+                        <View className="mx-auto w-full" style={{ maxWidth: 1200 }}>
+                            <Text className="text-xl font-bold mb-6 text-neutral-900">
+                                {results.length} {results.length === 1 ? 'Result' : 'Results'} Found
+                            </Text>
 
-                        {loading ? (
-                            <View className="items-center justify-center py-20">
-                                <ActivityIndicator size="large" color="#000" />
-                            </View>
-                        ) : results.length > 0 ? (
-                            <View className="flex-row flex-wrap -mx-3">
-                                {results.map((item) => (
-                                    <View
-                                        key={item.id}
-                                        className="w-full md:w-1/2 lg:w-1/4 px-3 mb-6"
+                            {loading ? (
+                                <View className="items-center justify-center py-20">
+                                    <ActivityIndicator size="large" color="#000" />
+                                </View>
+                            ) : results.length > 0 ? (
+                                <View className="flex-row flex-wrap -mx-3">
+                                    {results.map((item) => (
+                                        <View
+                                            key={item.id}
+                                            className="w-full md:w-1/2 lg:w-1/4 px-3 mb-6"
+                                        >
+                                            <StylistCard
+                                                name={item.name}
+                                                location={item.city || 'Unknown'} // DB uses city, fallback
+                                                rating={item.rating || 0}
+                                                reviewCount={item.review_count || 0}
+                                                imageUrl={item.cover_image_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=2574&auto=format&fit=crop'}
+                                                onPress={() => router.push(`/business/${item.id}`)}
+                                            />
+                                        </View>
+                                    ))}
+                                </View>
+                            ) : (
+                                <View className="items-center justify-center py-20">
+                                    <Feather name="search" size={48} color="#e5e5e5" />
+                                    <Text className="text-neutral-500 mt-4 text-center text-lg">
+                                        No businesses found matching your search.
+                                    </Text>
+                                    <TouchableOpacity
+                                        onPress={() => { setLocation(''); setService(''); setDate(''); }}
+                                        className="mt-4"
                                     >
-                                        <StylistCard
-                                            name={item.name}
-                                            location={item.city || 'Unknown'} // DB uses city, fallback
-                                            rating={item.rating || 0}
-                                            reviewCount={item.review_count || 0}
-                                            imageUrl={item.cover_image_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=2574&auto=format&fit=crop'}
-                                            onPress={() => router.push(`/business/${item.id}`)}
-                                        />
-                                    </View>
-                                ))}
-                            </View>
-                        ) : (
-                            <View className="items-center justify-center py-20">
-                                <Feather name="search" size={48} color="#e5e5e5" />
-                                <Text className="text-neutral-500 mt-4 text-center text-lg">
-                                    No businesses found matching your search.
-                                </Text>
-                                <TouchableOpacity
-                                    onPress={() => { setLocation(''); setService(''); setDate(''); }}
-                                    className="mt-4"
-                                >
-                                    <Text className="text-black font-medium border-b border-black">Clear Filters</Text>
-                                </TouchableOpacity>
-                            </View>
-                        )}
+                                        <Text className="text-black font-medium border-b border-black">Clear Filters</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+                        </View>
                     </View>
                 </ScrollView>
 
