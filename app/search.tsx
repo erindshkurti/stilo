@@ -35,32 +35,66 @@ export default function SearchScreen() {
         async function fetchResults() {
             setLoading(true);
             try {
-                // Base query
-                let query = supabase
-                    .from('businesses')
-                    .select('id, name, city, rating, review_count, cover_image_url');
-
-                // Filter by Location (City)
-                if (location) {
-                    // ILIKE is case-insensitive pattern matching
-                    query = query.ilike('city', `%${location}%`);
-                }
-
-                // Filter by Service (Currently checking Name/Description as proxy, 
-                // typically needs a join on services table, but keeping simple for MVP)
+                // If service filter is provided, we need to join with services table
                 if (service) {
-                    query = query.or(`name.ilike.%${service}%,description.ilike.%${service}%`);
-                }
+                    // Query businesses that have services matching the category
+                    const { data: serviceData, error: serviceError } = await supabase
+                        .from('services')
+                        .select('business_id')
+                        .ilike('category', `%${service}%`);
 
-                // Date filtering is usually availability-based, which requires a complex availability system.
-                // We'll skip DB filtering for date in this step.
+                    if (serviceError) {
+                        console.error('Error fetching services:', serviceError);
+                        setResults([]);
+                        setLoading(false);
+                        return;
+                    }
 
-                const { data, error } = await query;
+                    // Get unique business IDs
+                    const businessIds = [...new Set(serviceData?.map(s => s.business_id) || [])];
 
-                if (error) {
-                    console.error('Error fetching search results:', error);
-                } else if (data) {
-                    setResults(data);
+                    if (businessIds.length === 0) {
+                        setResults([]);
+                        setLoading(false);
+                        return;
+                    }
+
+                    // Now query businesses with those IDs
+                    let query = supabase
+                        .from('businesses')
+                        .select('id, name, city, rating, review_count, cover_image_url')
+                        .in('id', businessIds);
+
+                    // Also filter by location if provided
+                    if (location) {
+                        query = query.ilike('city', `%${location}%`);
+                    }
+
+                    const { data, error } = await query;
+
+                    if (error) {
+                        console.error('Error fetching search results:', error);
+                    } else if (data) {
+                        setResults(data);
+                    }
+                } else {
+                    // No service filter, just query businesses directly
+                    let query = supabase
+                        .from('businesses')
+                        .select('id, name, city, rating, review_count, cover_image_url');
+
+                    // Filter by Location (City)
+                    if (location) {
+                        query = query.ilike('city', `%${location}%`);
+                    }
+
+                    const { data, error } = await query;
+
+                    if (error) {
+                        console.error('Error fetching search results:', error);
+                    } else if (data) {
+                        setResults(data);
+                    }
                 }
             } catch (err) {
                 console.error('Search error:', err);
@@ -69,11 +103,6 @@ export default function SearchScreen() {
             }
         }
 
-        // Debounce could be added here, but for now fetch on change or mount
-        // Actually, let's fetch on mount or when modal closes/Apply is clicked to avoid spamming
-        // For this demo, we'll fetch when the component mounts or params change (from landing page)
-        // To make it responsive to the inputs, we might want a "Search" button or debounce. 
-        // Let's stick to valid params for initial load.
         fetchResults();
 
     }, [location, service]); // Re-fetch when filters change (simple live search)
