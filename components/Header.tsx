@@ -130,7 +130,7 @@ export function Header() {
                         setMenuOpen(false);
                         router.push('/');
                     }}>
-                        <Text className="text-2xl font-bold">Stilo.</Text>
+                        <Text className="text-2xl font-bold">Stilo</Text>
                     </TouchableOpacity>
 
                     {/* Desktop Navigation */}
