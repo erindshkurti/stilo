@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -67,8 +67,17 @@ export default function LandingPage() {
     }, []);
 
     // Redirect authenticated users to their dashboard
+    const params = useLocalSearchParams();
+
     useEffect(() => {
         async function handleAuthRedirect() {
+            // Check for explicit no-redirect flag (from URL)
+            // If they clicked "Stilo" (Home) or explicitly went to /?noredirect=true, stay here.
+            if (params.noredirect === 'true') {
+                console.log('[Landing] No-redirect flag present. Skipping auth redirect.');
+                return;
+            }
+
             // Prevent redundant checks if we are already processing or redirecting
             if (user && !isChecking && !redirecting && user.id !== lastCheckedUserId) {
                 console.log('[Landing] User detected:', user.id);
@@ -188,7 +197,7 @@ export default function LandingPage() {
         if (!isLoading) {
             handleAuthRedirect();
         }
-    }, [user, isLoading, router, lastCheckedUserId, isChecking, redirecting]);
+    }, [user, isLoading, router, lastCheckedUserId, isChecking, redirecting, params]);
 
     // Show loading screen while checking auth or redirecting
     if (isLoading || redirecting) {

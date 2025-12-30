@@ -1,8 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../components/Button';
@@ -26,14 +25,32 @@ export default function BusinessSignUpScreen() {
     const isLargeScreen = width > 768;
     const containerMaxWidth = isLargeScreen ? 520 : width - 48;
 
-    // Clear password when screen comes into focus
-    useFocusEffect(
-        useCallback(() => {
-            setPassword('');
-            setFormError(null);
-            setGoogleError(null);
-        }, [])
-    );
+    // Load saved state on mount
+    useEffect(() => {
+        async function loadSavedState() {
+            try {
+                const savedBusinessName = await AsyncStorage.getItem('signup_business_name');
+                const savedEmail = await AsyncStorage.getItem('signup_email');
+
+                if (savedBusinessName) setBusinessName(savedBusinessName);
+                if (savedEmail) setEmail(savedEmail);
+            } catch (e) {
+                console.log('Failed to load saved signup state');
+            }
+        }
+        loadSavedState();
+    }, []);
+
+    // Save state changes
+    const updateBusinessName = (text: string) => {
+        setBusinessName(text);
+        AsyncStorage.setItem('signup_business_name', text);
+    };
+
+    const updateEmail = (text: string) => {
+        setEmail(text);
+        AsyncStorage.setItem('signup_email', text);
+    };
 
     async function handleSignUp() {
         // Clear other errors
@@ -82,6 +99,9 @@ export default function BusinessSignUpScreen() {
             });
 
             if (error) throw error;
+
+            // Clear saved state on success
+            await AsyncStorage.multiRemove(['signup_business_name', 'signup_email']);
 
             // Check if email confirmation is required
             if (data.user && !data.session) {
@@ -133,6 +153,9 @@ export default function BusinessSignUpScreen() {
             await AsyncStorage.setItem('pending_business_signup', 'true');
             // Store business name to use later if possible, or we'll ask again/fetch it
             await AsyncStorage.setItem('pending_business_name', businessName);
+
+            // Also save current form state just in case
+            await AsyncStorage.setItem('signup_business_name', businessName);
 
             const { data, error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
@@ -208,7 +231,7 @@ export default function BusinessSignUpScreen() {
                             <TextInput
                                 placeholder="Business Name"
                                 value={businessName}
-                                onChangeText={setBusinessName}
+                                onChangeText={updateBusinessName}
                                 className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-100 focus:border-neutral-300 text-base"
                             />
                         </View>
@@ -243,7 +266,7 @@ export default function BusinessSignUpScreen() {
                                 <TextInput
                                     placeholder="Email"
                                     value={email}
-                                    onChangeText={setEmail}
+                                    onChangeText={updateEmail}
                                     autoCapitalize="none"
                                     keyboardType="email-address"
                                     className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-100 focus:border-neutral-300 text-base"

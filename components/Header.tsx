@@ -126,12 +126,11 @@ export function Header() {
             <View className="px-6 py-4" style={{ overflow: 'visible' }}>
                 <View className="flex-row items-center justify-between mx-auto w-full" style={{ overflow: 'visible', maxWidth: 1200 }}>
                     {/* Logo */}
-                    <TouchableOpacity onPress={() => {
-                        setMenuOpen(false);
-                        router.push('/');
-                    }}>
-                        <Text className="text-2xl font-bold">Stilo</Text>
-                    </TouchableOpacity>
+                    <Link href="/?noredirect=true" asChild>
+                        <TouchableOpacity onPress={() => setMenuOpen(false)}>
+                            <Text className="text-2xl font-bold">Stilo</Text>
+                        </TouchableOpacity>
+                    </Link>
 
                     {/* Desktop Navigation */}
                     {!isMobile && (
