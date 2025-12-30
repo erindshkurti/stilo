@@ -239,7 +239,26 @@ export function Header() {
                             className="p-2"
                             activeOpacity={0.7}
                         >
-                            <Feather name={menuOpen ? "x" : "menu"} size={24} color="#000" />
+                            {menuOpen ? (
+                                <View className="w-8 h-8 items-center justify-center">
+                                    <Feather name="x" size={24} color="#000" />
+                                </View>
+                            ) : user ? (
+                                <View className="w-8 h-8 rounded-full overflow-hidden bg-neutral-100 items-center justify-center border border-neutral-200">
+                                    {avatarUrl ? (
+                                        <Image
+                                            source={{ uri: avatarUrl }}
+                                            className="w-full h-full"
+                                        />
+                                    ) : (
+                                        <Feather name="user" size={16} color="#000" />
+                                    )}
+                                </View>
+                            ) : (
+                                <View className="w-8 h-8 items-center justify-center">
+                                    <Feather name="menu" size={24} color="#000" />
+                                </View>
+                            )}
                         </TouchableOpacity>
                     )}
                 </View>
