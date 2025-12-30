@@ -3,10 +3,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AutocompleteInput } from '../components/AutocompleteInput';
 import { Button } from '../components/Button';
+import { DatePicker } from '../components/DatePicker';
 import { Header } from '../components/Header';
 import { StylistCard } from '../components/StylistCard';
 
@@ -291,7 +292,7 @@ export default function LandingPage() {
                         showsVerticalScrollIndicator={false}
                     >
                         {/* Hero Section */}
-                        <View className="items-center justify-center px-6 py-16 md:py-24">
+                        <View className="items-center justify-center px-6 py-16 md:py-24" style={{ zIndex: 20 }}>
                             <View style={{ maxWidth: 1000, width: '100%', overflow: 'visible' }}>
                                 {/* Headline */}
                                 <View className="items-center mb-12">
@@ -341,20 +342,15 @@ export default function LandingPage() {
                                         </View>
 
                                         {/* Date Input */}
-                                        <View className={isLargeScreen ? 'flex-1' : 'w-full'} style={{ zIndex: 10 }}>
+                                        <View className={isLargeScreen ? 'flex-1' : 'w-full'} style={{ zIndex: 50 }}>
                                             <View className="flex-row items-center bg-neutral-50 rounded-2xl px-4 border border-neutral-200">
                                                 <Feather name="calendar" size={20} color="#737373" />
-                                                <TextInput
-                                                    placeholder="Date & Time"
+                                                <DatePicker
+                                                    placeholder="Date"
                                                     value={date}
-                                                    onChangeText={setDate}
+                                                    onChange={setDate}
                                                     className="flex-1 h-14 px-3 text-base"
                                                 />
-                                                {date.length > 0 && (
-                                                    <TouchableOpacity onPress={() => setDate('')} className="p-2">
-                                                        <Feather name="x" size={18} color="#a3a3a3" />
-                                                    </TouchableOpacity>
-                                                )}
                                             </View>
                                         </View>
 
@@ -377,7 +373,7 @@ export default function LandingPage() {
                                 </View>
 
                                 {/* Popular Services */}
-                                <View className="mt-12">
+                                <View className="mt-12" style={{ zIndex: 0, position: 'relative' }}>
                                     <Text className="text-lg font-semibold mb-4 text-center">Popular Services</Text>
                                     <View className="flex-row flex-wrap justify-center gap-3">
                                         {['Haircut', 'Color', 'Balayage', 'Blowout', 'Extensions', 'Styling'].map((item) => (
@@ -398,7 +394,7 @@ export default function LandingPage() {
                         </View>
 
                         {/* Featured Stylists Section */}
-                        <View className="px-6 py-12 bg-white/50">
+                        <View className="px-6 py-12 bg-white/50" style={{ zIndex: 0 }}>
                             <View style={{ maxWidth: 1200, width: '100%', marginHorizontal: 'auto' }}>
                                 <View className="mb-8">
                                     <Text className={`font - bold text - center mb - 2 ${isLargeScreen ? 'text-3xl' : 'text-2xl'} `}>

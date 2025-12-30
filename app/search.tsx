@@ -1,9 +1,10 @@
 import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Modal, ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Modal, ScrollView, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AutocompleteInput } from '../components/AutocompleteInput';
+import { DatePicker } from '../components/DatePicker';
 import { Header } from '../components/Header';
 import { StylistCard } from '../components/StylistCard';
 import { fetchLocationSuggestions, fetchServiceSuggestions } from '../lib/search';
@@ -213,20 +214,14 @@ export default function SearchScreen() {
                                 <View className="flex-1 max-w-[200px]" style={{ zIndex: 10 }}>
                                     <View className="flex-row items-center bg-neutral-50 rounded-2xl px-4 border border-neutral-200">
                                         <Feather name="calendar" size={20} color="#737373" />
-                                        <TextInput
+                                        <DatePicker
                                             placeholder="Date"
                                             value={date}
-                                            onChangeText={setDate}
-                                            className="flex-1 h-14 px-3 text-base"
-                                            placeholderTextColor="#a3a3a3"
+                                            onChange={setDate}
                                             onSubmitEditing={() => fetchResults()}
                                             returnKeyType="search"
+                                            className="flex-1 h-14 px-3 text-base"
                                         />
-                                        {date.length > 0 && (
-                                            <TouchableOpacity onPress={() => setDate('')} className="p-2">
-                                                <Feather name="x" size={18} color="#a3a3a3" />
-                                            </TouchableOpacity>
-                                        )}
                                     </View>
                                 </View>
                                 <TouchableOpacity
@@ -358,21 +353,15 @@ export default function SearchScreen() {
                                 {/* Date */}
                                 <View style={{ zIndex: 10 }}>
                                     <Text className="font-semibold text-lg mb-3">When?</Text>
-                                    <View className="flex-row items-center bg-neutral-50 border border-neutral-200 rounded-2xl px-4 h-14">
+                                    <View className="flex-row items-center bg-neutral-50 border border-neutral-200 rounded-2xl px-4">
                                         <Feather name="calendar" size={20} color="#737373" />
-                                        <TextInput
+                                        <DatePicker
                                             placeholder="Add dates"
-                                            placeholderTextColor="#a3a3a3"
                                             value={date}
-                                            onChangeText={setDate}
-                                            className="ml-3 flex-1 text-base text-neutral-900"
+                                            onChange={setDate}
                                             returnKeyType="done"
+                                            className="ml-3 flex-1 h-14 text-base text-neutral-900"
                                         />
-                                        {date.length > 0 && (
-                                            <TouchableOpacity onPress={() => setDate('')} className="p-2">
-                                                <Feather name="x" size={18} color="#a3a3a3" />
-                                            </TouchableOpacity>
-                                        )}
                                     </View>
                                 </View>
                             </View>
