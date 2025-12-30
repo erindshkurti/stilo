@@ -304,10 +304,10 @@ export default function LandingPage() {
                                 </View>
 
                                 {/* Search Card - Horizontal on large screens, vertical on mobile */}
-                                <View className="bg-white rounded-3xl shadow-sm border border-neutral-100 p-6" style={{ overflow: 'visible' }}>
+                                <View className="bg-white rounded-3xl shadow-sm border border-neutral-100 p-6" style={{ overflow: 'visible', zIndex: 100 }}>
                                     <View className={isLargeScreen ? 'flex-row gap-3' : 'space-y-3'} style={{ overflow: 'visible' }}>
                                         {/* Location Input */}
-                                        <View className={isLargeScreen ? 'flex-1' : 'w-full'}>
+                                        <View className={isLargeScreen ? 'flex-1' : 'w-full'} style={{ zIndex: 30 }}>
                                             <AutocompleteInput
                                                 placeholder="Location"
                                                 value={location}
@@ -324,7 +324,7 @@ export default function LandingPage() {
                                         </View>
 
                                         {/* Service Input */}
-                                        <View className={isLargeScreen ? 'flex-1' : 'w-full'}>
+                                        <View className={isLargeScreen ? 'flex-1' : 'w-full'} style={{ zIndex: 20 }}>
                                             <AutocompleteInput
                                                 placeholder="Service"
                                                 value={service}
@@ -341,7 +341,7 @@ export default function LandingPage() {
                                         </View>
 
                                         {/* Date Input */}
-                                        <View className={isLargeScreen ? 'flex-1' : 'w-full'}>
+                                        <View className={isLargeScreen ? 'flex-1' : 'w-full'} style={{ zIndex: 10 }}>
                                             <View className="flex-row items-center bg-neutral-50 rounded-2xl px-4 border border-neutral-200">
                                                 <Feather name="calendar" size={20} color="#737373" />
                                                 <TextInput

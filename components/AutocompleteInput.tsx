@@ -38,7 +38,7 @@ export function AutocompleteInput({
     };
 
     return (
-        <View style={{ position: 'relative', zIndex: 1 }}>
+        <View style={{ position: 'relative', zIndex: 50 }}>
             <View className="flex-row items-center bg-neutral-50 rounded-2xl px-4 border border-neutral-200">
                 {icon && <Feather name={icon} size={20} color="#737373" />}
                 <TextInput
