@@ -1,10 +1,12 @@
 import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Modal, ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AutocompleteInput } from '../components/AutocompleteInput';
 import { Header } from '../components/Header';
 import { StylistCard } from '../components/StylistCard';
+import { fetchLocationSuggestions, fetchServiceSuggestions } from '../lib/search';
 import { supabase } from '../lib/supabase';
 
 interface BusinessResult {
@@ -27,85 +29,139 @@ export default function SearchScreen() {
     const [date, setDate] = useState(params.date as string || '');
     const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
 
+    // Suggestions State
+    const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
+    const [serviceSuggestions, setServiceSuggestions] = useState<string[]>([]);
+    const [loadingLocationSuggestions, setLoadingLocationSuggestions] = useState(false);
+    const [loadingServiceSuggestions, setLoadingServiceSuggestions] = useState(false);
+
+    // Refs to lock fetching when selection is made
+    const locationSelectionMade = useRef(!!(params.location as string));
+    const serviceSelectionMade = useRef(!!(params.service as string));
+
     const [results, setResults] = useState<BusinessResult[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // Fetch Results from DB
+    // Debounced autocomplete for location
     useEffect(() => {
-        async function fetchResults() {
-            setLoading(true);
-            try {
-                // If service filter is provided, we need to join with services table
-                if (service) {
-                    // Query businesses that have services matching the category
-                    const { data: serviceData, error: serviceError } = await supabase
-                        .from('services')
-                        .select('business_id')
-                        .ilike('category', `%${service}%`);
-
-                    if (serviceError) {
-                        console.error('Error fetching services:', serviceError);
-                        setResults([]);
-                        setLoading(false);
-                        return;
-                    }
-
-                    // Get unique business IDs
-                    const businessIds = [...new Set(serviceData?.map(s => s.business_id) || [])];
-
-                    if (businessIds.length === 0) {
-                        setResults([]);
-                        setLoading(false);
-                        return;
-                    }
-
-                    // Now query businesses with those IDs
-                    let query = supabase
-                        .from('businesses')
-                        .select('id, name, city, rating, review_count, cover_image_url')
-                        .in('id', businessIds);
-
-                    // Also filter by location if provided
-                    if (location) {
-                        query = query.ilike('city', `%${location}%`);
-                    }
-
-                    const { data, error } = await query;
-
-                    if (error) {
-                        console.error('Error fetching search results:', error);
-                    } else if (data) {
-                        setResults(data);
-                    }
-                } else {
-                    // No service filter, just query businesses directly
-                    let query = supabase
-                        .from('businesses')
-                        .select('id, name, city, rating, review_count, cover_image_url');
-
-                    // Filter by Location (City)
-                    if (location) {
-                        query = query.ilike('city', `%${location}%`);
-                    }
-
-                    const { data, error } = await query;
-
-                    if (error) {
-                        console.error('Error fetching search results:', error);
-                    } else if (data) {
-                        setResults(data);
-                    }
-                }
-            } catch (err) {
-                console.error('Search error:', err);
-            } finally {
-                setLoading(false);
+        const timer = setTimeout(async () => {
+            if (locationSelectionMade.current) {
+                locationSelectionMade.current = false;
+                return;
             }
-        }
 
+            if (location.trim().length > 0) {
+                setLoadingLocationSuggestions(true);
+                const suggestions = await fetchLocationSuggestions(location);
+                setLocationSuggestions(suggestions);
+                setLoadingLocationSuggestions(false);
+            } else {
+                setLocationSuggestions([]);
+            }
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [location]);
+
+    // Debounced autocomplete for service
+    useEffect(() => {
+        const timer = setTimeout(async () => {
+            if (serviceSelectionMade.current) {
+                serviceSelectionMade.current = false;
+                return;
+            }
+
+            if (service.trim().length > 0) {
+                setLoadingServiceSuggestions(true);
+                const suggestions = await fetchServiceSuggestions(service);
+                setServiceSuggestions(suggestions);
+                setLoadingServiceSuggestions(false);
+            } else {
+                setServiceSuggestions([]);
+            }
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [service]);
+
+    // Initial Fetch ONLY
+    useEffect(() => {
         fetchResults();
+    }, []);
 
-    }, [location, service]); // Re-fetch when filters change (simple live search)
+    async function fetchResults(overrideLocation?: string, overrideService?: string) {
+        setLoading(true);
+        const searchLocation = overrideLocation ?? location;
+        const searchService = overrideService ?? service;
+
+        try {
+            // If service filter is provided, we need to join with services table
+            if (searchService) {
+                // Query businesses that have services matching the category
+                const { data: serviceData, error: serviceError } = await supabase
+                    .from('services')
+                    .select('business_id')
+                    .ilike('category', `%${searchService}%`);
+
+                if (serviceError) {
+                    console.error('Error fetching services:', serviceError);
+                    setResults([]);
+                    setLoading(false);
+                    return;
+                }
+
+                // Get unique business IDs
+                const businessIds = [...new Set(serviceData?.map(s => s.business_id) || [])];
+
+                if (businessIds.length === 0) {
+                    setResults([]);
+                    setLoading(false);
+                    return;
+                }
+
+                // Now query businesses with those IDs
+                let query = supabase
+                    .from('businesses')
+                    .select('id, name, city, rating, review_count, cover_image_url')
+                    .in('id', businessIds);
+
+                // Also filter by location if provided
+                if (searchLocation) {
+                    query = query.ilike('city', `%${searchLocation}%`);
+                }
+
+                const { data, error } = await query;
+
+                if (error) {
+                    console.error('Error fetching search results:', error);
+                } else if (data) {
+                    setResults(data);
+                }
+            } else {
+                // No service filter, just query businesses directly
+                let query = supabase
+                    .from('businesses')
+                    .select('id, name, city, rating, review_count, cover_image_url');
+
+                // Filter by Location (City)
+                if (searchLocation) {
+                    query = query.ilike('city', `%${searchLocation}%`);
+                }
+
+                const { data, error } = await query;
+
+                if (error) {
+                    console.error('Error fetching search results:', error);
+                } else if (data) {
+                    setResults(data);
+                }
+            }
+        } catch (err) {
+            console.error('Search error:', err);
+        } finally {
+            setLoading(false);
+        }
+    }
 
     return (
         <View className="flex-1 bg-white">
@@ -113,52 +169,68 @@ export default function SearchScreen() {
                 <Header />
 
                 {/* Filter Bar */}
-                <View className="bg-white pt-2 border-b border-neutral-100 pb-2 px-6">
+                <View className="bg-white pt-2 border-b border-neutral-100 pb-2 px-6" style={{ zIndex: 100 }}>
                     <View className="mx-auto w-full" style={{ maxWidth: 1200 }}>
                         {isLargeScreen ? (
-                            /* Desktop: Horizontal Row */
-                            <ScrollView
-                                horizontal
-                                showsHorizontalScrollIndicator={false}
-                                contentContainerStyle={{
-                                    flexGrow: 1,
-                                    justifyContent: 'center',
-                                    paddingHorizontal: 24,
-                                    paddingVertical: 12,
-                                    gap: 12
-                                }}
-                            >
-                                <View className="flex-row items-center bg-neutral-50 rounded-full border border-neutral-200 px-4 py-2">
-                                    <Feather name="map-pin" size={16} className="text-neutral-500" color="#737373" />
-                                    <TextInput
+                            /* Desktop: Horizontal inputs with Autocomplete */
+                            <View className="flex-row items-center gap-4 py-3" style={{ zIndex: 100 }}>
+                                <View className="flex-1 max-w-[280px]" style={{ zIndex: 30 }}>
+                                    <AutocompleteInput
                                         placeholder="Location"
                                         value={location}
                                         onChangeText={setLocation}
-                                        className="ml-2 h-6 text-neutral-900 min-w-[100px] text-base"
-                                        placeholderTextColor="#a3a3a3"
+                                        suggestions={locationSuggestions}
+                                        onSuggestionSelect={(value) => {
+                                            locationSelectionMade.current = true;
+                                            setLocation(value);
+                                            setLocationSuggestions([]);
+                                            fetchResults(value, undefined);
+                                        }}
+                                        icon="map-pin"
+                                        loading={loadingLocationSuggestions}
+                                        onSubmitEditing={() => fetchResults()}
+                                        returnKeyType="search"
                                     />
                                 </View>
-                                <View className="flex-row items-center bg-neutral-50 rounded-full border border-neutral-200 px-4 py-2">
-                                    <Feather name="scissors" size={16} className="text-neutral-500" color="#737373" />
-                                    <TextInput
+                                <View className="flex-1 max-w-[280px]" style={{ zIndex: 20 }}>
+                                    <AutocompleteInput
                                         placeholder="Service"
                                         value={service}
                                         onChangeText={setService}
-                                        className="ml-2 h-6 text-neutral-900 min-w-[100px] text-base"
-                                        placeholderTextColor="#a3a3a3"
+                                        suggestions={serviceSuggestions}
+                                        onSuggestionSelect={(value) => {
+                                            serviceSelectionMade.current = true;
+                                            setService(value);
+                                            setServiceSuggestions([]);
+                                            fetchResults(undefined, value);
+                                        }}
+                                        icon="scissors"
+                                        loading={loadingServiceSuggestions}
+                                        onSubmitEditing={() => fetchResults()}
+                                        returnKeyType="search"
                                     />
                                 </View>
-                                <View className="flex-row items-center bg-neutral-50 rounded-full border border-neutral-200 px-4 py-2">
-                                    <Feather name="calendar" size={16} className="text-neutral-500" color="#737373" />
-                                    <TextInput
-                                        placeholder="Date"
-                                        value={date}
-                                        onChangeText={setDate}
-                                        className="ml-2 h-6 text-neutral-900 min-w-[100px] text-base"
-                                        placeholderTextColor="#a3a3a3"
-                                    />
+                                <View className="flex-1 max-w-[200px]" style={{ zIndex: 10 }}>
+                                    <View className="flex-row items-center bg-neutral-50 rounded-2xl px-4 border border-neutral-200">
+                                        <Feather name="calendar" size={20} color="#737373" />
+                                        <TextInput
+                                            placeholder="Date"
+                                            value={date}
+                                            onChangeText={setDate}
+                                            className="flex-1 h-14 px-3 text-base"
+                                            placeholderTextColor="#a3a3a3"
+                                            onSubmitEditing={() => fetchResults()}
+                                            returnKeyType="search"
+                                        />
+                                    </View>
                                 </View>
-                            </ScrollView>
+                                <TouchableOpacity
+                                    onPress={() => fetchResults()}
+                                    className="h-14 w-14 bg-black rounded-2xl items-center justify-center shadow-sm active:bg-neutral-800"
+                                >
+                                    <Feather name="search" size={24} color="white" />
+                                </TouchableOpacity>
+                            </View>
                         ) : (
                             /* Mobile: Search Bar Summary -> Opens Modal */
                             <TouchableOpacity
@@ -183,7 +255,7 @@ export default function SearchScreen() {
                 </View>
 
                 {/* Results Grid */}
-                <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+                <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false} style={{ zIndex: 1 }}>
                     <View className="w-full px-6 py-8">
                         <View className="mx-auto w-full" style={{ maxWidth: 1200 }}>
                             <Text className="text-xl font-bold mb-6 text-neutral-900">
@@ -199,14 +271,14 @@ export default function SearchScreen() {
                                     {results.map((item) => (
                                         <View
                                             key={item.id}
-                                            className="w-full md:w-1/2 lg:w-1/4 px-3 mb-6"
+                                            className={isLargeScreen ? 'w-1/3 px-3 mb-6' : 'w-full px-0 mb-6'}
                                         >
                                             <StylistCard
                                                 name={item.name}
-                                                location={item.city || 'Unknown'} // DB uses city, fallback
+                                                location={item.city}
                                                 rating={item.rating || 0}
                                                 reviewCount={item.review_count || 0}
-                                                imageUrl={item.cover_image_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=2574&auto=format&fit=crop'}
+                                                imageUrl={item.cover_image_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80'}
                                                 onPress={() => router.push(`/business/${item.id}`)}
                                             />
                                         </View>
@@ -214,16 +286,9 @@ export default function SearchScreen() {
                                 </View>
                             ) : (
                                 <View className="items-center justify-center py-20">
-                                    <Feather name="search" size={48} color="#e5e5e5" />
-                                    <Text className="text-neutral-500 mt-4 text-center text-lg">
-                                        No businesses found matching your search.
+                                    <Text className="text-neutral-500 text-lg text-center">
+                                        No businesses found matching your criteria.
                                     </Text>
-                                    <TouchableOpacity
-                                        onPress={() => { setLocation(''); setService(''); setDate(''); }}
-                                        className="mt-4"
-                                    >
-                                        <Text className="text-black font-medium border-b border-black">Clear Filters</Text>
-                                    </TouchableOpacity>
                                 </View>
                             )}
                         </View>
@@ -238,60 +303,65 @@ export default function SearchScreen() {
                     onRequestClose={() => setIsFilterModalVisible(false)}
                 >
                     <SafeAreaView className="flex-1 bg-white">
-                        <View className="px-6 py-4 flex-row items-center justify-between border-b border-neutral-100">
+                        <View className="flex-row items-center justify-between px-6 py-4 border-b border-neutral-100">
+                            <Text className="text-xl font-bold">Filters</Text>
                             <TouchableOpacity onPress={() => setIsFilterModalVisible(false)}>
                                 <Feather name="x" size={24} color="#000" />
                             </TouchableOpacity>
-                            <Text className="font-bold text-lg">Filters</Text>
-                            <TouchableOpacity onPress={() => { setLocation(''); setService(''); setDate(''); }}>
-                                <Text className="text-neutral-500 font-medium underline">Clear</Text>
-                            </TouchableOpacity>
                         </View>
 
-                        <ScrollView className="flex-1 p-6">
+                        <ScrollView className="flex-1 p-6" keyboardShouldPersistTaps="handled">
                             <View className="space-y-6">
                                 {/* Location */}
-                                <View>
+                                <View style={{ zIndex: 30 }}>
                                     <Text className="font-semibold text-lg mb-3">Where to?</Text>
-                                    <View className="flex-row items-center bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-4">
-                                        <Feather name="map-pin" size={20} color="#737373" />
-                                        <TextInput
-                                            placeholder="City, zip code, or neighborhood"
-                                            placeholderTextColor="#a3a3a3"
-                                            value={location}
-                                            onChangeText={setLocation}
-                                            className="ml-3 flex-1 text-lg text-neutral-900"
-                                            autoFocus
-                                        />
-                                    </View>
+                                    <AutocompleteInput
+                                        placeholder="City, zip code, or neighborhood"
+                                        value={location}
+                                        onChangeText={setLocation}
+                                        suggestions={locationSuggestions}
+                                        onSuggestionSelect={(value) => {
+                                            locationSelectionMade.current = true;
+                                            setLocation(value);
+                                            setLocationSuggestions([]);
+                                        }}
+                                        icon="map-pin"
+                                        loading={loadingLocationSuggestions}
+                                        returnKeyType="next"
+                                    />
                                 </View>
 
                                 {/* Service */}
-                                <View>
+                                <View style={{ zIndex: 20 }}>
                                     <Text className="font-semibold text-lg mb-3">Service</Text>
-                                    <View className="flex-row items-center bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-4">
-                                        <Feather name="scissors" size={20} color="#737373" />
-                                        <TextInput
-                                            placeholder="Haircut, Color, Styling..."
-                                            placeholderTextColor="#a3a3a3"
-                                            value={service}
-                                            onChangeText={setService}
-                                            className="ml-3 flex-1 text-lg text-neutral-900"
-                                        />
-                                    </View>
+                                    <AutocompleteInput
+                                        placeholder="Haircut, Color, Styling..."
+                                        value={service}
+                                        onChangeText={setService}
+                                        suggestions={serviceSuggestions}
+                                        onSuggestionSelect={(value) => {
+                                            serviceSelectionMade.current = true;
+                                            setService(value);
+                                            setServiceSuggestions([]);
+                                        }}
+                                        icon="scissors"
+                                        loading={loadingServiceSuggestions}
+                                        returnKeyType="next"
+                                    />
                                 </View>
 
                                 {/* Date */}
-                                <View>
+                                <View style={{ zIndex: 10 }}>
                                     <Text className="font-semibold text-lg mb-3">When?</Text>
-                                    <View className="flex-row items-center bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-4">
+                                    <View className="flex-row items-center bg-neutral-50 border border-neutral-200 rounded-2xl px-4 h-14">
                                         <Feather name="calendar" size={20} color="#737373" />
                                         <TextInput
                                             placeholder="Add dates"
                                             placeholderTextColor="#a3a3a3"
                                             value={date}
                                             onChangeText={setDate}
-                                            className="ml-3 flex-1 text-lg text-neutral-900"
+                                            className="ml-3 flex-1 text-base text-neutral-900"
+                                            returnKeyType="done"
                                         />
                                     </View>
                                 </View>
@@ -300,7 +370,10 @@ export default function SearchScreen() {
 
                         <View className="p-6 border-t border-neutral-100">
                             <TouchableOpacity
-                                onPress={() => setIsFilterModalVisible(false)}
+                                onPress={() => {
+                                    setIsFilterModalVisible(false);
+                                    fetchResults();
+                                }}
                                 className="bg-black py-4 rounded-xl items-center"
                             >
                                 <Text className="text-white font-bold text-lg">
