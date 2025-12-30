@@ -375,7 +375,7 @@ export default function LandingPage() {
                                 <View className="mt-12">
                                     <Text className="text-lg font-semibold mb-4 text-center">Popular Services</Text>
                                     <View className="flex-row flex-wrap justify-center gap-3">
-                                        {['Haircut', 'Hair Color', 'Balayage', 'Blowout', 'Extensions', 'Styling'].map((item) => (
+                                        {['Haircut', 'Color', 'Balayage', 'Blowout', 'Extensions', 'Styling'].map((item) => (
                                             <TouchableOpacity
                                                 key={item}
                                                 className="bg-white/80 px-5 py-2.5 rounded-full border border-neutral-100"
