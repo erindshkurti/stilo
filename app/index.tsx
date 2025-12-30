@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { findNodeHandle, Platform, ScrollView, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AutocompleteInput } from '../components/AutocompleteInput';
 import { Button } from '../components/Button';
@@ -47,6 +47,10 @@ export default function LandingPage() {
     // Track when selections are made to prevent re-fetch
     const locationSelectionMade = useRef(false);
     const serviceSelectionMade = useRef(false);
+
+    // Scroll Logic Refs
+    const scrollViewRef = useRef<ScrollView>(null);
+    const searchCardRef = useRef<View>(null);
 
     // Featured Businesses State
     const [featuredBusinesses, setFeaturedBusinesses] = useState<Business[]>([]);
@@ -288,6 +292,7 @@ export default function LandingPage() {
                     <Header />
 
                     <ScrollView
+                        ref={scrollViewRef}
                         contentContainerStyle={{ flexGrow: 1 }}
                         showsVerticalScrollIndicator={false}
                     >
@@ -305,10 +310,17 @@ export default function LandingPage() {
                                 </View>
 
                                 {/* Search Card - Horizontal on large screens, vertical on mobile */}
-                                <View className="bg-white rounded-3xl shadow-sm border border-neutral-100 p-6" style={{ overflow: 'visible', zIndex: 100 }}>
+                                <View
+                                    ref={searchCardRef}
+                                    className="bg-white rounded-3xl shadow-sm border border-neutral-100 p-6"
+                                    style={{ overflow: 'visible', zIndex: 100 }}
+                                >
                                     <View className={isLargeScreen ? 'flex-row gap-3' : 'space-y-3'} style={{ overflow: 'visible' }}>
                                         {/* Location Input */}
-                                        <View className={isLargeScreen ? 'flex-1' : 'w-full'} style={{ zIndex: 30 }}>
+                                        <View
+                                            className={isLargeScreen ? 'flex-1' : 'w-full'}
+                                            style={{ zIndex: 30 }}
+                                        >
                                             <AutocompleteInput
                                                 placeholder="Location"
                                                 value={location}
@@ -383,6 +395,32 @@ export default function LandingPage() {
                                                 onPress={() => {
                                                     serviceSelectionMade.current = true;
                                                     setService(item);
+                                                    // Auto-scroll to Search Card ONLY if out of view
+                                                    if (searchCardRef.current) {
+                                                        if (Platform.OS === 'web') {
+                                                            const rect = (searchCardRef.current as any).getBoundingClientRect();
+                                                            // If top edge is effectively out of view (or very close to edge)
+                                                            if (rect.top < 10) {
+                                                                (searchCardRef.current as any).scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                            }
+                                                        } else if (scrollViewRef.current) {
+                                                            searchCardRef.current.measureInWindow((x, y, width, height) => {
+                                                                // If top edge is scrolled off top (y < determined offset, e.g. 10)
+                                                                if (y < 10) {
+                                                                    const scrollNode = findNodeHandle(scrollViewRef.current);
+                                                                    if (scrollNode) {
+                                                                        searchCardRef.current?.measureLayout(
+                                                                            scrollNode,
+                                                                            (lx, ly) => {
+                                                                                scrollViewRef.current?.scrollTo({ y: Math.max(0, ly - 10), animated: true });
+                                                                            },
+                                                                            () => { }
+                                                                        );
+                                                                    }
+                                                                }
+                                                            });
+                                                        }
+                                                    }
                                                 }}
                                             >
                                                 <Text className="text-neutral-700 font-medium">{item}</Text>
