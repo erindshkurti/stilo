@@ -1,0 +1,88 @@
+# Stilo - Salon Booking App
+
+- [x] Initialize Project <!-- id: 0 -->
+    - [x] Create Expo app with Expo Router and TypeScript <!-- id: 1 -->
+    - [x] Install and configure NativeWind (TailwindCSS) <!-- id: 2 -->
+    - [x] Set up project structure (app, components, lib, constants) <!-- id: 3 -->
+- [x] Landing Page & Navigation <!-- id: 4 -->
+    - [x] Refine Booking Authentication Flow <!-- id: 5 -->
+    - [x] Replace `Alert.alert` with UI prompt (Button in footer) <!-- id: 6 -->
+    - [x] Implement robust `returnTo` logic with state persistence (handle OAuth redirects) <!-- id: 7 -->
+    - [x] Fix navigation stack issues (Done/Close buttons) <!-- id: 8 -->
+    - [x] Implement search autocomplete suggestions <!-- id: 9 -->
+- [x] Authentication Setup <!-- id: 8 -->
+    - [x] Configure Supabase Client <!-- id: 9 -->
+    - [x] Implement Google Authentication for Businesses
+    - [x] Add Google Sign-In button to business signup page
+    - [x] Validate business name before OAuth
+    - [x] Create Dedicated Customer Profile Page
+    - [x] Create `app/profile.tsx` (Customer Profile)
+    - [x] Implement Profile Details (Image, Name)
+    - [x] Implement Bookings List (Recent & Upcoming)
+    - [x] Update `components/Header.tsx` to link to `/profile` instead of `/(tabs)/profile`
+- [x] Verify Authentication Flows
+    - [x] Ensure no redirects to `/(tabs)` exist
+- [x] Implement Search Functionality
+    - [x] Create shared mock data (`data/stylists.ts`)
+    - [x] Create `app/search.tsx` (Results Page with Filters)
+    - [x] Connect Landing Page Search to `/search`
+    - [x] Register `search` route in `_layout.tsx`
+- [ ] Transition to Real Data
+    - [x] Create migration for `businesses` table (rating, review_count, is_featured)
+    - [/] Update `StylistCard` / Types to match DB schema
+    - [x] Update Landing Page to fetch Featured Businesses from DB
+    - [x] Update Landing Page to fetch Featured Businesses from DB
+    - [x] Update Search Page to fetch real results from DB
+- [ ] Business Details Page (`/business/[id]`)
+    - [x] Create `app/business/[id].tsx`
+    - [x] Fetch Business Data (Profile, Portfolio, Services, Team)
+    - [x] Implement UI: Cover Image & Header
+    - [x] Implement UI: Portfolio Carousel
+    - [x] Implement UI: Services List & Book Now
+    - [x] Implement UI: Team Members Grid OAuth users (using local storage flag)
+- [x] Ensure correct OAuth redirects
+- [x] Business Listing System <!-- id: 12 -->
+    - [x] Create database schema <!-- id: 13 -->
+    - [x] Create implementation plan <!-- id: 14 -->
+    - [x] Build multi-step onboarding wizard <!-- id: 15 -->
+    - [x] Step 1: Business details form <!-- id: 16 -->
+    - [x] Step 2: Location form <!-- id: 17 -->
+    - [x] Step 3: Business hours form <!-- id: 18 -->
+    - [x] Step 4: Add stylists form <!-- id: 19 -->
+    - [x] Step 5: Services form <!-- id: 20 -->
+    - [x] Create business dashboard <!-- id: 21 -->
+    - [x] Fix Onboarding Bugs (Cover Image, Hours, Validation, UX)
+- [ ] Core Features - Stylist/Business <!-- id: 22 -->
+    - [ ] Profile Creation (Name, Salon Name, Bio, Photos) <!-- id: 23 -->
+    - [ ] Service Management (Add/Edit Services, Price, Duration) <!-- id: 24 -->
+    - [ ] Availability Management (Hours of operation) <!-- id: 25 -->
+- [ ] Core Features - User/Booking <!-- id: 26 -->
+    - [ ] Search/Discover Stylists <!-- id: 27 -->
+    - [ ] View Stylist Profile & Services <!-- id: 28 -->
+    - [x] Booking Flow (Select Service -> Select Time -> Confirm) <!-- id: 29 -->
+    - [x] Booking Success Page & Desktop Optimization <!-- id: 31 -->
+    - [x] Mobile Header: Profile Icon for Signed-in Users <!-- id: 32 -->
+    - [x] Booking Auth: Inline Sign-In Button (No Alerts) <!-- id: 33 -->
+    - [ ] My Appointments View <!-- id: 30 -->
+- [x] UI Polish & Animations <!-- id: 21 -->
+    - [x] Make UI responsive across screen sizes <!-- id: 22 -->
+    - [x] Add Google branding to sign-in button <!-- id: 23 -->
+    - [ ] Add micro-animations (Reanimated) <!-- id: 24 -->
+    - [ ] Ensure "Premium" feel (Fonts, Colors, Spacing) <!-- id: 25 -->
+- [x] **Refine App Branding** <!-- id: 7 -->
+    - [x] Remove period from "Stilo." in Header <!-- id: 8 -->
+    - [x] Create and implement new Logo <!-- id: 9 -->
+    - [x] Align Header and Page Widths (1200px) <!-- id: 10 -->
+    - [x] Add full_name and avatar_url to profiles table <!-- id: 27 -->
+    - [x] Create avatars storage bucket <!-- id: 28 -->
+    - [x] Implement profile picture upload in settings <!-- id: 29 -->
+    - [x] Add full name input field <!-- id: 30 -->
+    - [x] Display profile picture in Header <!-- id: 31 -->
+- [x] Profile Settings <!-- id: 26 -->
+- [x] Business Portfolio Gallery <!-- id: 32 -->
+    - [x] Create business_portfolio_images table <!-- id: 33 -->
+    - [x] Create portfolio storage bucket <!-- id: 34 -->
+    - [x] Add portfolio section to settings page <!-- id: 35 -->
+    - [x] Implement multi-image upload <!-- id: 36 -->
+    - [x] Add featured image selection <!-- id: 37 -->
+    - [x] Display featured image on dashboard <!-- id: 38 -->
