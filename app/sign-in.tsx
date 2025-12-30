@@ -1,5 +1,6 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,6 +14,12 @@ export default function SignInScreen() {
     const router = useRouter();
     const { width } = useWindowDimensions();
     const { user } = useAuth();
+    const params = useLocalSearchParams();
+    const returnTo = params.returnTo as string | undefined;
+
+    console.log('SignInScreen MOUNT params:', JSON.stringify(params, null, 2));
+    console.log('SignInScreen returnTo raw:', returnTo);
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -41,12 +48,24 @@ export default function SignInScreen() {
     useEffect(() => {
         async function handleAuthRedirect() {
             if (user) {
+                console.log('Authenticated user detected. ReturnTo:', returnTo);
+
+                if (returnTo) {
+                    console.log('Redirecting to returnTo:', returnTo);
+                    try {
+                        router.replace(returnTo as any);
+                    } catch (e) {
+                        console.error('Redirect failed:', e);
+                        // Fallback?
+                        router.replace('/');
+                    }
+                    return;
+                }
+
                 let userType = user.user_metadata?.user_type;
 
                 // If user_type is not set (new Google OAuth user), default to customer
                 if (!userType) {
-                    console.log('No user_type found, setting to customer');
-
                     // Update user metadata to set user_type as customer
                     const { error } = await supabase.auth.updateUser({
                         data: { user_type: 'customer' }
@@ -55,10 +74,10 @@ export default function SignInScreen() {
                     if (error) {
                         console.error('Error updating user metadata:', error);
                     }
-
                     userType = 'customer';
                 }
 
+                console.log('Redirecting based on userType:', userType);
                 if (userType === 'business') {
                     router.replace('/business/dashboard');
                 } else {
@@ -68,13 +87,20 @@ export default function SignInScreen() {
         }
 
         handleAuthRedirect();
-    }, [user, router]);
+    }, [user, router, returnTo]);
 
     async function handleEmailAuth() {
         setLoading(true);
         setError('');
 
-        // Basic validation
+        // Save returnTo if present
+        if (returnTo) {
+            try { await AsyncStorage.setItem('auth_return_url', returnTo as string); } catch (e) { console.error('Storage error', e); }
+        } else {
+            await AsyncStorage.removeItem('auth_return_url');
+        }
+
+        // Validate
         if (!email || !password) {
             setError('Please enter both email and password');
             setLoading(false);
@@ -99,17 +125,16 @@ export default function SignInScreen() {
                 password,
                 options: {
                     data: {
-                        user_type: 'client',
+                        user_type: 'customer', // Default to customer for now
                     }
                 }
             });
 
             if (signUpError) {
                 setError(signUpError.message);
-            } else {
-                // New users are always clients, redirect to root
-                router.replace('/');
+                setLoading(false);
             }
+            // Logic continues in useEffect when user state updates
         } else {
             const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
@@ -122,26 +147,23 @@ export default function SignInScreen() {
                 } else {
                     setError(signInError.message);
                 }
-            } else {
-                // Check user type and redirect accordingly
-                const { data: { user } } = await supabase.auth.getUser();
-                const userType = user?.user_metadata?.user_type;
-
-                if (userType === 'business') {
-                    router.replace('/business/dashboard');
-                } else {
-                    router.replace('/');
-                }
+                setLoading(false);
             }
+            // Logic continues in useEffect when user state updates
         }
-
-        setLoading(false);
     }
 
     async function handleGoogleAuth() {
         try {
             setLoading(true);
             setError('');
+
+            if (returnTo) {
+                console.log('Saving returnTo to storage:', returnTo);
+                await AsyncStorage.setItem('auth_return_url', returnTo as string);
+            } else {
+                await AsyncStorage.removeItem('auth_return_url');
+            }
 
             const { data, error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',

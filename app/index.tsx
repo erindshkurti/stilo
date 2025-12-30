@@ -77,6 +77,15 @@ export default function LandingPage() {
                 setLastCheckedUserId(user.id);
 
                 try {
+                    // Check for pending auth redirect (from Sign In flow)
+                    const savedReturnTo = await AsyncStorage.getItem('auth_return_url');
+                    if (savedReturnTo) {
+                        console.log('[Landing] Found saved return URL, redirecting:', savedReturnTo);
+                        await AsyncStorage.removeItem('auth_return_url');
+                        router.replace(savedReturnTo as any);
+                        return;
+                    }
+
                     let userType = user.user_metadata?.user_type;
                     const pendingBusinessSignup = await AsyncStorage.getItem('pending_business_signup');
 

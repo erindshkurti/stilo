@@ -2,6 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Image, ScrollView, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
+import { useAuth } from '../../lib/auth';
 import { supabase } from '../../lib/supabase';
 
 // Types
@@ -34,6 +35,7 @@ export default function BookingScreen() {
     const router = useRouter();
     const { width } = useWindowDimensions();
     const isLargeScreen = width > 1024;
+    const { user } = useAuth();
 
     // State
     const [step, setStep] = useState<Step>(1);
@@ -98,6 +100,44 @@ export default function BookingScreen() {
         fetchData();
     }, [businessId]);
 
+    // Restore state from URL params (e.g. after return from sign-in)
+    // We decode params manually if needed, but expo-router does most of it
+    const { restore, sId, stId, d, t } = useLocalSearchParams<{ restore: string; sId: string; stId: string; d: string; t: string }>();
+
+    useEffect(() => {
+        if (restore && !loading && services.length > 0 && stylists.length > 0) {
+            console.log('Restoring booking state...', { sId, stId, d, t });
+
+            // Restore Service
+            if (sId) {
+                const serviceToRestore = services.find(s => s.id === sId);
+                if (serviceToRestore) setSelectedService(serviceToRestore);
+            }
+
+            // Restore Stylist
+            if (stId) {
+                if (stId === 'any') {
+                    setSelectedStylist('any');
+                } else {
+                    const stylistToRestore = stylists.find(s => s.id === stId);
+                    if (stylistToRestore) setSelectedStylist(stylistToRestore);
+                }
+            }
+
+            // Restore Date & Time
+            if (d) {
+                const dateToRestore = new Date(d);
+                if (!isNaN(dateToRestore.getTime())) setSelectedDate(dateToRestore);
+            }
+            if (t) setSelectedTime(t);
+
+            // Jump to Review Step if we have everything
+            if (sId && stId && d && t) {
+                setStep(4);
+            }
+        }
+    }, [restore, loading, services, stylists, sId, stId, d, t]);
+
     // Generate dates (Next 14 days)
     const dates = Array.from({ length: 14 }, (_, i) => {
         const d = new Date();
@@ -107,17 +147,23 @@ export default function BookingScreen() {
 
     // Calculate Available Slots when Date/Stylist/Service changes
     useEffect(() => {
-        if (step === 3 && selectedDate && selectedService) {
+        if (selectedDate && selectedService && selectedStylist) {
+            // Only calculate availability if we are on step 3 OR if we are restoring (step=4)
+            // Actually, if we are restoring to step 4, we don't strictly *need* to re-fetch slots right away 
+            // unless we want to validate the slot is still free. 
+            // For now, let's allow it to calculate to populate data, but assume it's valid if restored.
             calculateAvailability();
         }
-    }, [step, selectedDate, selectedService, selectedStylist]);
+    }, [selectedDate, selectedService, selectedStylist]);
 
     async function calculateAvailability() {
         if (!selectedDate || !businessId || !selectedService) return;
 
         setSlotsLoading(true);
         setAvailableSlots([]);
-        setSelectedTime(null);
+
+        // Only clear time if we are NOT restoring/it matches existing
+        // setSelectedTime(null); // Removed to prevent clearing restored time
 
         try {
             const dayOfWeek = selectedDate.getDay();
@@ -229,8 +275,7 @@ export default function BookingScreen() {
             // Get user
             const { data: { user }, error: authError } = await supabase.auth.getUser();
             if (authError || !user) {
-                console.error('Auth User Error:', authError);
-                Alert.alert('Sign In Required', 'Please sign in to book an appointment.');
+                console.log('Auth check failed (unexpected in handleBook)');
                 return;
             }
 
@@ -288,8 +333,8 @@ export default function BookingScreen() {
                     key={service.id}
                     onPress={() => setSelectedService(service)}
                     className={`flex-row justify-between items-center p-4 mb-3 rounded-xl border ${selectedService?.id === service.id
-                            ? 'bg-neutral-900 border-neutral-900'
-                            : 'bg-white border-neutral-200'
+                        ? 'bg-neutral-900 border-neutral-900'
+                        : 'bg-white border-neutral-200'
                         }`}
                 >
                     <View className="flex-1">
@@ -310,8 +355,8 @@ export default function BookingScreen() {
             <TouchableOpacity
                 onPress={() => setSelectedStylist('any')}
                 className={`flex-row items-center p-4 mb-3 rounded-xl border ${selectedStylist === 'any'
-                        ? 'bg-neutral-900 border-neutral-900'
-                        : 'bg-white border-neutral-200'
+                    ? 'bg-neutral-900 border-neutral-900'
+                    : 'bg-white border-neutral-200'
                     }`}
             >
                 <View className={`w-12 h-12 rounded-full items-center justify-center mr-4 ${selectedStylist === 'any' ? 'bg-neutral-700' : 'bg-neutral-100'}`}>
@@ -326,8 +371,8 @@ export default function BookingScreen() {
                     key={stylist.id}
                     onPress={() => setSelectedStylist(stylist)}
                     className={`flex-row items-center p-4 mb-3 rounded-xl border ${selectedStylist !== 'any' && selectedStylist?.id === stylist.id
-                            ? 'bg-neutral-900 border-neutral-900'
-                            : 'bg-white border-neutral-200'
+                        ? 'bg-neutral-900 border-neutral-900'
+                        : 'bg-white border-neutral-200'
                         }`}
                 >
                     <View className="w-12 h-12 rounded-full bg-neutral-100 mr-4 overflow-hidden border border-neutral-100">
@@ -470,7 +515,7 @@ export default function BookingScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-                onPress={() => router.back()}
+                onPress={() => router.replace(`/business/${businessId}`)}
                 className="py-4"
             >
                 <Text className="text-neutral-900 font-semibold">Done</Text>
@@ -490,7 +535,7 @@ export default function BookingScreen() {
                     <View className="flex-row items-center justify-between px-6 py-4 border-b border-neutral-100 bg-white">
                         <View className="w-10" />
                         <Text className="text-lg font-bold text-neutral-900">Book Appointment</Text>
-                        <TouchableOpacity onPress={() => router.back()} className="w-10 h-10 items-center justify-center rounded-full active:bg-neutral-100">
+                        <TouchableOpacity onPress={() => router.replace(`/business/${businessId}`)} className="w-10 h-10 items-center justify-center rounded-full active:bg-neutral-100">
                             <Feather name="x" size={24} color="#000" />
                         </TouchableOpacity>
                     </View>
@@ -528,7 +573,32 @@ export default function BookingScreen() {
 
                             <TouchableOpacity
                                 onPress={() => {
-                                    if (step === 4) handleBook();
+                                    if (step === 4) {
+                                        if (!user) {
+                                            // Serialize booking state
+                                            const innerParams = new URLSearchParams({
+                                                restore: 'true',
+                                                sId: selectedService?.id || '',
+                                                stId: selectedStylist === 'any' ? 'any' : selectedStylist?.id || '',
+                                                d: selectedDate?.toISOString() || '',
+                                                t: selectedTime || ''
+                                            });
+
+                                            const returnUrl = `/booking/${businessId}?${innerParams.toString()}`;
+                                            console.log('Generated Return URL:', returnUrl);
+
+                                            const params = new URLSearchParams({
+                                                returnTo: returnUrl
+                                            });
+
+                                            const targetPath = `/sign-in?${params.toString()}`;
+                                            console.log('Navigating to:', targetPath);
+
+                                            router.push(targetPath as any);
+                                        } else {
+                                            handleBook();
+                                        }
+                                    }
                                     else setStep(prev => prev + 1 as Step);
                                 }}
                                 disabled={
@@ -538,8 +608,8 @@ export default function BookingScreen() {
                                     submitting
                                 }
                                 className={`flex-1 py-4 rounded-xl items-center justify-center ${((step === 1 && !selectedService) || (step === 2 && !selectedStylist) || (step === 3 && (!selectedDate || !selectedTime)))
-                                        ? 'bg-neutral-200'
-                                        : 'bg-black'
+                                    ? 'bg-neutral-200'
+                                    : 'bg-black'
                                     }`}
                                 style={{ flex: 2 }}
                             >
@@ -547,7 +617,10 @@ export default function BookingScreen() {
                                     <ActivityIndicator color="white" />
                                 ) : (
                                     <Text className={`font-bold ${((step === 1 && !selectedService) || (step === 2 && !selectedStylist) || (step === 3 && (!selectedDate || !selectedTime))) ? 'text-neutral-400' : 'text-white'}`}>
-                                        {step === 4 ? 'Confirm Booking' : 'Next'}
+                                        {step === 4
+                                            ? (!user ? 'Sign In to Book' : 'Confirm Booking')
+                                            : 'Next'
+                                        }
                                     </Text>
                                 )}
                             </TouchableOpacity>
