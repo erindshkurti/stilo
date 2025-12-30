@@ -379,7 +379,10 @@ export default function LandingPage() {
                                             <TouchableOpacity
                                                 key={item}
                                                 className="bg-white/80 px-5 py-2.5 rounded-full border border-neutral-100"
-                                                onPress={() => setService(item)}
+                                                onPress={() => {
+                                                    serviceSelectionMade.current = true;
+                                                    setService(item);
+                                                }}
                                             >
                                                 <Text className="text-neutral-700 font-medium">{item}</Text>
                                             </TouchableOpacity>
