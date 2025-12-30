@@ -9,7 +9,7 @@ import { AutocompleteInput } from '../components/AutocompleteInput';
 import { Button } from '../components/Button';
 import { Header } from '../components/Header';
 import { StylistCard } from '../components/StylistCard';
-import { STYLISTS } from '../data/stylists';
+
 import { useAuth } from '../lib/auth';
 import { fetchLocationSuggestions, fetchServiceSuggestions } from '../lib/search';
 import { supabase } from '../lib/supabase';
@@ -264,19 +264,15 @@ export default function LandingPage() {
         );
     }
 
-    // Fallback to mock data if no DB data found (or while loading to prevent jump, though we have explicit loading state)
-    // Mixing: Show DB results first, then fill remainder with mock data if needed? 
-    // For now, simpler: If DB has data, use it. Else use mock.
-    const displayStylists = featuredBusinesses.length > 0
-        ? featuredBusinesses.map(b => ({
-            id: b.id,
-            name: b.name,
-            location: b.city,
-            rating: b.rating || 0, // Handle nulls from DB defaults if needed
-            reviewCount: b.review_count || 0,
-            imageUrl: b.cover_image_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=2574&auto=format&fit=crop', // Fallback image
-        }))
-        : STYLISTS.slice(0, 4);
+    // Always use database data for featured businesses
+    const displayStylists = featuredBusinesses.map(b => ({
+        id: b.id,
+        name: b.name,
+        location: b.city,
+        rating: b.rating || 0,
+        reviewCount: b.review_count || 0,
+        imageUrl: b.cover_image_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=2574&auto=format&fit=crop',
+    }));
 
     return (
         <View className="flex-1">
@@ -418,7 +414,7 @@ export default function LandingPage() {
                                                 rating={stylist.rating}
                                                 reviewCount={stylist.reviewCount}
                                                 imageUrl={stylist.imageUrl}
-                                                onPress={() => router.push(`/ business / ${stylist.id} `)}
+                                                onPress={() => router.push(`/business/${stylist.id}`)}
                                             />
                                         </View>
                                     ))}
