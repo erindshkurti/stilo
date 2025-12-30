@@ -296,10 +296,10 @@ export default function LandingPage() {
                             <View style={{ maxWidth: 1000, width: '100%', overflow: 'visible' }}>
                                 {/* Headline */}
                                 <View className="items-center mb-12">
-                                    <Text className={`font - bold text - center mb - 4 ${isLargeScreen ? 'text-5xl' : 'text-4xl'} `}>
+                                    <Text className={`font-bold text-center mb-4 ${isLargeScreen ? 'text-5xl' : 'text-4xl'} `}>
                                         Book your next hair appointment
                                     </Text>
-                                    <Text className={`text - neutral - 600 text - center ${isLargeScreen ? 'text-xl' : 'text-lg'} `}>
+                                    <Text className={`text-neutral-600 text-center ${isLargeScreen ? 'text-xl' : 'text-lg'} `}>
                                         Find and book top-rated hair stylists near you
                                     </Text>
                                 </View>
@@ -397,7 +397,7 @@ export default function LandingPage() {
                         <View className="px-6 py-12 bg-white/50" style={{ zIndex: 0 }}>
                             <View style={{ maxWidth: 1200, width: '100%', marginHorizontal: 'auto' }}>
                                 <View className="mb-8">
-                                    <Text className={`font - bold text - center mb - 2 ${isLargeScreen ? 'text-3xl' : 'text-2xl'} `}>
+                                    <Text className={`font-bold text-center mb-2 ${isLargeScreen ? 'text-3xl' : 'text-2xl'} `}>
                                         Featured Stylists
                                     </Text>
                                     <Text className="text-neutral-600 text-center text-base">

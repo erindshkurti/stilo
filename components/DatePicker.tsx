@@ -107,7 +107,7 @@ export function DatePicker({ value, onChange, placeholder, className, ...props }
                     <TouchableOpacity
                         activeOpacity={1}
                         className="absolute w-[9999px] h-[9999px] top-[-5000px] left-[-5000px] bg-transparent"
-                        style={Platform.OS === 'web' ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, cursor: 'default', zIndex: 40 } : { zIndex: 40 }}
+                        style={Platform.OS === 'web' ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, cursor: 'default', zIndex: 40 } as any : { zIndex: 40 }}
                         onPress={() => setIsOpen(false)}
                     />
 
