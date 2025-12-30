@@ -104,7 +104,7 @@ export default function BusinessDashboard() {
     async function pickPortfolioImage() {
         try {
             const result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                mediaTypes: ['images'],
                 allowsEditing: true,
                 aspect: [4, 3],
                 quality: 0.8,
@@ -208,7 +208,7 @@ export default function BusinessDashboard() {
     async function pickCoverImage() {
         try {
             const result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                mediaTypes: ['images'],
                 allowsEditing: true,
                 aspect: [16, 9],
                 quality: 0.8,
@@ -284,7 +284,7 @@ export default function BusinessDashboard() {
             )}
 
             <ScrollView className="flex-1">
-                <View className="px-6 py-8 max-w-7xl mx-auto w-full">
+                <View className="py-8 mx-auto w-full" style={{ maxWidth: 1200 }}>
                     {/* Welcome Section */}
                     <View className="mb-8">
                         <Text className="text-3xl font-bold mb-2">
