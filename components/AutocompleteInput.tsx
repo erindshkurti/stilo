@@ -39,20 +39,22 @@ export function AutocompleteInput({
 
     return (
         <View style={{ position: 'relative', zIndex: 50 }}>
-            <View className="flex-row items-center bg-neutral-50 rounded-2xl px-4 border border-neutral-200">
+            <View className="relative flex-row items-center bg-neutral-50 rounded-2xl px-4 border border-neutral-200">
                 {icon && <Feather name={icon} size={20} color="#737373" />}
                 <TextInput
                     ref={inputRef}
                     value={value}
                     onChangeText={onChangeText}
-                    className="flex-1 h-14 px-3 text-base"
+                    className="flex-1 h-14 px-3 pr-10 text-base min-w-0"
                     {...textInputProps}
                 />
                 {/* Clear Button */}
                 {value.length > 0 && (
-                    <TouchableOpacity onPress={() => onChangeText('')} className="p-2">
-                        <Feather name="x" size={18} color="#a3a3a3" />
-                    </TouchableOpacity>
+                    <View className="absolute right-2 top-0 bottom-0 justify-center">
+                        <TouchableOpacity onPress={() => onChangeText('')} className="p-2">
+                            <Feather name="x" size={18} color="#a3a3a3" />
+                        </TouchableOpacity>
+                    </View>
                 )}
                 {loading && (
                     <View className="ml-2">
