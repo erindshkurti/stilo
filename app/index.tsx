@@ -2,14 +2,16 @@ import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AutocompleteInput } from '../components/AutocompleteInput';
 import { Button } from '../components/Button';
 import { Header } from '../components/Header';
 import { StylistCard } from '../components/StylistCard';
 import { STYLISTS } from '../data/stylists';
 import { useAuth } from '../lib/auth';
+import { fetchLocationSuggestions, fetchServiceSuggestions } from '../lib/search';
 import { supabase } from '../lib/supabase';
 
 
@@ -34,6 +36,16 @@ export default function LandingPage() {
     const [date, setDate] = useState('');
     const [redirecting, setRedirecting] = useState(false);
     const [isChecking, setIsChecking] = useState(false);
+
+    // Autocomplete state
+    const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
+    const [serviceSuggestions, setServiceSuggestions] = useState<string[]>([]);
+    const [loadingLocationSuggestions, setLoadingLocationSuggestions] = useState(false);
+    const [loadingServiceSuggestions, setLoadingServiceSuggestions] = useState(false);
+
+    // Track when selections are made to prevent re-fetch
+    const locationSelectionMade = useRef(false);
+    const serviceSelectionMade = useRef(false);
 
     // Featured Businesses State
     const [featuredBusinesses, setFeaturedBusinesses] = useState<Business[]>([]);
@@ -65,6 +77,50 @@ export default function LandingPage() {
 
         fetchFeatured();
     }, []);
+
+    // Debounced autocomplete for location
+    useEffect(() => {
+        const timer = setTimeout(async () => {
+            // Skip if a selection was just made
+            if (locationSelectionMade.current) {
+                locationSelectionMade.current = false;
+                return;
+            }
+
+            if (location.trim().length > 0) {
+                setLoadingLocationSuggestions(true);
+                const suggestions = await fetchLocationSuggestions(location);
+                setLocationSuggestions(suggestions);
+                setLoadingLocationSuggestions(false);
+            } else {
+                setLocationSuggestions([]);
+            }
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [location]);
+
+    // Debounced autocomplete for service
+    useEffect(() => {
+        const timer = setTimeout(async () => {
+            // Skip if a selection was just made
+            if (serviceSelectionMade.current) {
+                serviceSelectionMade.current = false;
+                return;
+            }
+
+            if (service.trim().length > 0) {
+                setLoadingServiceSuggestions(true);
+                const suggestions = await fetchServiceSuggestions(service);
+                setServiceSuggestions(suggestions);
+                setLoadingServiceSuggestions(false);
+            } else {
+                setServiceSuggestions([]);
+            }
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [service]);
 
     // Redirect authenticated users to their dashboard
     const params = useLocalSearchParams();
@@ -240,44 +296,52 @@ export default function LandingPage() {
                     >
                         {/* Hero Section */}
                         <View className="items-center justify-center px-6 py-16 md:py-24">
-                            <View style={{ maxWidth: 1000, width: '100%' }}>
+                            <View style={{ maxWidth: 1000, width: '100%', overflow: 'visible' }}>
                                 {/* Headline */}
                                 <View className="items-center mb-12">
-                                    <Text className={`font-bold text-center mb-4 ${isLargeScreen ? 'text-5xl' : 'text-4xl'}`}>
+                                    <Text className={`font - bold text - center mb - 4 ${isLargeScreen ? 'text-5xl' : 'text-4xl'} `}>
                                         Book your next hair appointment
                                     </Text>
-                                    <Text className={`text-neutral-600 text-center ${isLargeScreen ? 'text-xl' : 'text-lg'}`}>
+                                    <Text className={`text - neutral - 600 text - center ${isLargeScreen ? 'text-xl' : 'text-lg'} `}>
                                         Find and book top-rated hair stylists near you
                                     </Text>
                                 </View>
 
                                 {/* Search Card - Horizontal on large screens, vertical on mobile */}
-                                <View className="bg-white rounded-3xl shadow-sm border border-neutral-100 p-6">
-                                    <View className={isLargeScreen ? 'flex-row gap-3' : 'space-y-3'}>
+                                <View className="bg-white rounded-3xl shadow-sm border border-neutral-100 p-6" style={{ overflow: 'visible' }}>
+                                    <View className={isLargeScreen ? 'flex-row gap-3' : 'space-y-3'} style={{ overflow: 'visible' }}>
                                         {/* Location Input */}
                                         <View className={isLargeScreen ? 'flex-1' : 'w-full'}>
-                                            <View className="flex-row items-center bg-neutral-50 rounded-2xl px-4 border border-neutral-200">
-                                                <Feather name="map-pin" size={20} color="#737373" />
-                                                <TextInput
-                                                    placeholder="Location"
-                                                    value={location}
-                                                    onChangeText={setLocation}
-                                                    className="flex-1 h-14 px-3 text-base"
-                                                />
-                                            </View>
+                                            <AutocompleteInput
+                                                placeholder="Location"
+                                                value={location}
+                                                onChangeText={setLocation}
+                                                suggestions={locationSuggestions}
+                                                onSuggestionSelect={(value) => {
+                                                    locationSelectionMade.current = true;
+                                                    setLocation(value);
+                                                    setLocationSuggestions([]);
+                                                }}
+                                                icon="map-pin"
+                                                loading={loadingLocationSuggestions}
+                                            />
                                         </View>
 
                                         {/* Service Input */}
                                         <View className={isLargeScreen ? 'flex-1' : 'w-full'}>
-                                            <View className="flex-row items-center bg-neutral-50 rounded-2xl px-4 border border-neutral-200">
-                                                <Feather name="scissors" size={20} color="#737373" />
-                                                <TextInput
-                                                    placeholder="Service"
-                                                    value={service}
-                                                    onChangeText={setService}
-                                                    className="flex-1 h-14 px-3 text-base"
-                                                />
-                                            </View>
+                                            <AutocompleteInput
+                                                placeholder="Service"
+                                                value={service}
+                                                onChangeText={setService}
+                                                suggestions={serviceSuggestions}
+                                                onSuggestionSelect={(value) => {
+                                                    serviceSelectionMade.current = true;
+                                                    setService(value);
+                                                    setServiceSuggestions([]);
+                                                }}
+                                                icon="scissors"
+                                                loading={loadingServiceSuggestions}
+                                            />
                                         </View>
 
                                         {/* Date Input */}
@@ -333,7 +397,7 @@ export default function LandingPage() {
                         <View className="px-6 py-12 bg-white/50">
                             <View style={{ maxWidth: 1200, width: '100%', marginHorizontal: 'auto' }}>
                                 <View className="mb-8">
-                                    <Text className={`font-bold text-center mb-2 ${isLargeScreen ? 'text-3xl' : 'text-2xl'}`}>
+                                    <Text className={`font - bold text - center mb - 2 ${isLargeScreen ? 'text-3xl' : 'text-2xl'} `}>
                                         Featured Stylists
                                     </Text>
                                     <Text className="text-neutral-600 text-center text-base">
@@ -342,7 +406,7 @@ export default function LandingPage() {
                                 </View>
 
                                 {/* Stylist Grid */}
-                                <View className={`${isLargeScreen ? 'flex-row flex-wrap -mx-3' : 'space-y-4'}`}>
+                                <View className={`${isLargeScreen ? 'flex-row flex-wrap -mx-3' : 'space-y-4'} `}>
                                     {displayStylists.map((stylist) => (
                                         <View
                                             key={stylist.id}
@@ -354,7 +418,7 @@ export default function LandingPage() {
                                                 rating={stylist.rating}
                                                 reviewCount={stylist.reviewCount}
                                                 imageUrl={stylist.imageUrl}
-                                                onPress={() => router.push(`/business/${stylist.id}`)}
+                                                onPress={() => router.push(`/ business / ${stylist.id} `)}
                                             />
                                         </View>
                                     ))}
