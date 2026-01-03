@@ -182,6 +182,24 @@ User types:
 - Consistent 1200px max-width layout
 - Dark mode support (coming soon)
 
+## 🚢 Deployment
+
+### Web Deployment
+
+The application is configured for deployment to Vercel. For detailed deployment instructions, see:
+- `docs/vercel_deployment.md` - Complete Vercel deployment guide
+- `docs/deployment_guide.md` - General deployment overview
+
+### Database Setup
+
+For Supabase configuration and database setup, see:
+- `docs/supabase_setup.md` - Supabase project configuration
+- `docs/database_setup.md` - Database schema setup
+
+### Mobile Deployment
+
+For iOS and Android deployment using Expo Application Services (EAS), refer to the Expo EAS documentation.
+
 ## 📄 License
 
 This project is private and proprietary.
