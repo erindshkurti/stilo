@@ -7,6 +7,7 @@ import { Header } from '../../components/Header';
 import { useAuth } from '../../lib/auth';
 import { db } from '../../lib/firebase';
 import { addDoc, collection, deleteDoc, getDocs, orderBy, query, where, doc, getDoc } from 'firebase/firestore';
+import { TimePicker } from '../../components/TimePicker';
 
 interface StaffHours {
     id?: string;
@@ -42,6 +43,8 @@ export default function StaffHoursScreen() {
     const [profile, setProfile] = useState<any>(null);
     const [stylistId, setStylistId] = useState<string | null>(null);
     const [hours, setHours] = useState<StaffHours[]>([]);
+    const [businessHours, setBusinessHours] = useState<StaffHours[]>([]);
+    const [error, setError] = useState<string | null>(null);
 
     const isLargeScreen = width > 768;
     const maxWidth = isLargeScreen ? 600 : width - 48;
@@ -69,7 +72,14 @@ export default function StaffHoursScreen() {
             const sId = stylistsSnap.docs[0].id;
             setStylistId(sId);
 
-            // 3. Load Hours
+            // 3. Load Business Hours (Reference)
+            const bizHoursSnap = await getDocs(
+                query(collection(db, 'businesses', profileData.business_id, 'hours'), orderBy('day_of_week'))
+            );
+            const bHours = bizHoursSnap.docs.map(d => d.data() as StaffHours);
+            setBusinessHours(bHours);
+
+            // 4. Load Stylist Hours
             const hoursSnap = await getDocs(
                 query(collection(db, 'businesses', profileData.business_id, 'stylists', sId, 'hours'), orderBy('day_of_week'))
             );
@@ -94,6 +104,13 @@ export default function StaffHoursScreen() {
         }
     }
 
+    const updateTime = (dayIndex: number, field: 'open_time' | 'close_time', time: string) => {
+        const newHours = [...hours];
+        newHours[dayIndex][field] = time;
+        setHours(newHours);
+        setError(null); // Clear error on edit
+    };
+
     const toggleDay = (dayIndex: number) => {
         const newHours = [...hours];
         newHours[dayIndex].is_closed = !newHours[dayIndex].is_closed;
@@ -102,6 +119,38 @@ export default function StaffHoursScreen() {
 
     const handleSave = async () => {
         if (!profile?.business_id || !stylistId) return;
+
+        // --- Validation Logic ---
+        for (const hour of hours) {
+            if (hour.is_closed) continue;
+
+            const bizDay = businessHours.find(bh => bh.day_of_week === hour.day_of_week);
+            
+            // 1. If business is closed, stylist cannot be open
+            if (!bizDay || bizDay.is_closed) {
+                setError(`${hour.day_name}: The shop is closed on this day.`);
+                return;
+            }
+
+            // 2. Cannot start earlier than business
+            if (hour.open_time < bizDay.open_time) {
+                setError(`${hour.day_name}: You cannot start earlier than the shop (${bizDay.open_time}).`);
+                return;
+            }
+
+            // 3. Cannot stay later than business
+            if (hour.close_time > bizDay.close_time) {
+                setError(`${hour.day_name}: You cannot stay later than the shop (${bizDay.close_time}).`);
+                return;
+            }
+
+            // 4. Start must be before end
+            if (hour.open_time >= hour.close_time) {
+                setError(`${hour.day_name}: Start time must be before end time.`);
+                return;
+            }
+        }
+
         setSaving(true);
         try {
             const hoursCol = collection(db, 'businesses', profile.business_id, 'stylists', stylistId, 'hours');
@@ -154,6 +203,15 @@ export default function StaffHoursScreen() {
                             Set your personal availability. These hours override the business defaults.
                         </Text>
 
+                        {error && (
+                            <View className="bg-red-50 p-4 rounded-xl border border-red-200 mb-6">
+                                <View className="flex-row items-center">
+                                    <Feather name="alert-circle" size={18} color="#ef4444" />
+                                    <Text className="text-red-700 ml-2 font-medium">{error}</Text>
+                                </View>
+                            </View>
+                        )}
+
                         {hours.map((day, index) => (
                             <View key={day.day_of_week} className="bg-neutral-50 rounded-2xl p-4 mb-3">
                                 <View className="flex-row items-center justify-between mb-3">
@@ -176,7 +234,10 @@ export default function StaffHoursScreen() {
                                         <View className="flex-1">
                                             <Text className="text-xs text-neutral-600 mb-1">Start</Text>
                                             <View className="h-12 bg-white rounded-xl px-3 border border-neutral-200 justify-center">
-                                                <Text className="text-base">{day.open_time}</Text>
+                                                <TimePicker 
+                                                    value={day.open_time} 
+                                                    onChange={(t) => updateTime(index, 'open_time', t)}
+                                                />
                                             </View>
                                         </View>
 
@@ -185,7 +246,10 @@ export default function StaffHoursScreen() {
                                         <View className="flex-1">
                                             <Text className="text-xs text-neutral-600 mb-1">End</Text>
                                             <View className="h-12 bg-white rounded-xl px-3 border border-neutral-200 justify-center">
-                                                <Text className="text-base">{day.close_time}</Text>
+                                                <TimePicker 
+                                                    value={day.close_time} 
+                                                    onChange={(t) => updateTime(index, 'close_time', t)}
+                                                />
                                             </View>
                                         </View>
                                     </View>
