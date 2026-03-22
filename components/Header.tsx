@@ -181,8 +181,8 @@ export function Header() {
                                                                 onPress={() => setProfileDropdownOpen(false)}
                                                                 className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
                                                             >
-                                                                <Feather name="user" size={18} color="#737373" />
-                                                                <Text className="ml-3 text-neutral-900">Profile</Text>
+                                                                <Feather name="calendar" size={18} color="#737373" />
+                                                                <Text className="ml-3 text-neutral-900">Personal Bookings</Text>
                                                             </TouchableOpacity>
                                                         </Link>
                                                         <Link href="/business/settings" asChild>
@@ -190,8 +190,8 @@ export function Header() {
                                                                 onPress={() => setProfileDropdownOpen(false)}
                                                                 className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
                                                             >
-                                                                <Feather name="settings" size={18} color="#737373" />
-                                                                <Text className="ml-3 text-neutral-900">Settings</Text>
+                                                                <Feather name="user" size={18} color="#737373" />
+                                                                <Text className="ml-3 text-neutral-900">Profile</Text>
                                                             </TouchableOpacity>
                                                         </Link>
                                                     </>
@@ -302,8 +302,8 @@ export function Header() {
                                                 className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-3"
                                             >
                                                 <View className="flex-row items-center">
-                                                    <Feather name="user" size={18} color="#737373" />
-                                                    <Text className="ml-3 text-neutral-900 font-medium text-base">Profile</Text>
+                                                    <Feather name="calendar" size={18} color="#737373" />
+                                                    <Text className="ml-3 text-neutral-900 font-medium text-base">Personal Bookings</Text>
                                                 </View>
                                             </TouchableOpacity>
                                         </Link>
@@ -316,8 +316,8 @@ export function Header() {
                                             className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-3"
                                         >
                                             <View className="flex-row items-center">
-                                                <Feather name="settings" size={18} color="#737373" />
-                                                <Text className="ml-3 text-neutral-900 font-medium text-base">Settings</Text>
+                                                <Feather name="user" size={18} color="#737373" />
+                                                <Text className="ml-3 text-neutral-900 font-medium text-base">Profile</Text>
                                             </View>
                                         </TouchableOpacity>
 

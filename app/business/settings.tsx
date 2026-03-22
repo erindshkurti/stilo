@@ -219,9 +219,9 @@ export default function BusinessSettings() {
                 <View className="px-6 py-8 items-center">
                     <View style={{ maxWidth, width: '100%' }}>
                         <Text className={`font-bold mb-2 ${isLargeScreen ? 'text-3xl' : 'text-2xl'}`}>
-                            Settings
+                            Profile
                         </Text>
-                        <Text className="text-neutral-600 mb-8">Manage your account and profile</Text>
+                        <Text className="text-neutral-600 mb-8">Manage your business account details</Text>
 
                         {loading ? (
                             <View className="items-center py-8">
