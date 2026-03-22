@@ -176,7 +176,7 @@ export function Header() {
                                             >
                                                 {isBusinessOwner ? (
                                                     <>
-                                                        <Link href="/profile" asChild>
+                                                        <Link href="/bookings" asChild>
                                                             <TouchableOpacity
                                                                 onPress={() => setProfileDropdownOpen(false)}
                                                                 className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
@@ -196,15 +196,26 @@ export function Header() {
                                                         </Link>
                                                     </>
                                                 ) : (
-                                                    <Link href="/profile" asChild>
-                                                        <TouchableOpacity
-                                                            onPress={() => setProfileDropdownOpen(false)}
-                                                            className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
-                                                        >
-                                                            <Feather name="user" size={18} color="#737373" />
-                                                            <Text className="ml-3 text-neutral-900">Profile</Text>
-                                                        </TouchableOpacity>
-                                                    </Link>
+                                                    <>
+                                                        <Link href="/bookings" asChild>
+                                                            <TouchableOpacity
+                                                                onPress={() => setProfileDropdownOpen(false)}
+                                                                className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
+                                                            >
+                                                                <Feather name="calendar" size={18} color="#737373" />
+                                                                <Text className="ml-3 text-neutral-900">Bookings</Text>
+                                                            </TouchableOpacity>
+                                                        </Link>
+                                                        <Link href="/profile" asChild>
+                                                            <TouchableOpacity
+                                                                onPress={() => setProfileDropdownOpen(false)}
+                                                                className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
+                                                            >
+                                                                <Feather name="user" size={18} color="#737373" />
+                                                                <Text className="ml-3 text-neutral-900">Profile</Text>
+                                                            </TouchableOpacity>
+                                                        </Link>
+                                                    </>
                                                 )}
 
                                                 <View className="h-px bg-neutral-200 my-1" />
@@ -296,7 +307,7 @@ export function Header() {
                                             </View>
                                         </TouchableOpacity>
 
-                                        <Link href="/profile" asChild>
+                                        <Link href="/bookings" asChild>
                                             <TouchableOpacity
                                                 onPress={() => setMenuOpen(false)}
                                                 className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-3"
@@ -336,6 +347,18 @@ export function Header() {
                                     </>
                                 ) : (
                                     <>
+                                        <Link href="/bookings" asChild>
+                                            <TouchableOpacity
+                                                onPress={() => setMenuOpen(false)}
+                                                className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-3"
+                                            >
+                                                <View className="flex-row items-center">
+                                                    <Feather name="calendar" size={18} color="#737373" />
+                                                    <Text className="ml-3 text-neutral-900 font-medium text-base">Bookings</Text>
+                                                </View>
+                                            </TouchableOpacity>
+                                        </Link>
+
                                         <Link href="/profile" asChild>
                                             <TouchableOpacity
                                                 onPress={() => setMenuOpen(false)}
