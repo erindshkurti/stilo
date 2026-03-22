@@ -35,6 +35,7 @@ export default function StylistDashboard() {
 
     const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
+    const [status, setStatus] = useState({ type: 'Active', label: 'On duty', color: 'bg-green-500' });
 
     useEffect(() => {
         if (!user) return;
@@ -98,6 +99,55 @@ export default function StylistDashboard() {
                 });
             }
             setBookings(fetchedBookings);
+            
+            // 4. Determine Dynamic Status
+            const now = new Date();
+            const currentDay = now.getDay();
+            const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            const todayStr = now.toISOString().split('T')[0];
+
+            // Check Hours
+            const hoursSnap = await getDocs(
+                query(collection(db, 'businesses', profileData.business_id, 'stylists', stylistDoc.id, 'hours'), where('day_of_week', '==', currentDay))
+            );
+            
+            let isAvailable = false;
+            let statusLabel = 'Off duty';
+
+            if (!hoursSnap.empty) {
+                const dayHours = hoursSnap.docs[0].data();
+                if (!dayHours.is_closed) {
+                    if (currentTime >= dayHours.open_time && currentTime <= dayHours.close_time) {
+                        isAvailable = true;
+                        statusLabel = 'On duty';
+                    }
+                }
+            }
+
+            // Check Blocks if still available
+            if (isAvailable) {
+                const blocksSnap = await getDocs(
+                    query(
+                        collection(db, 'businesses', profileData.business_id, 'stylists', stylistDoc.id, 'blocks'),
+                        where('date', '==', todayStr)
+                    )
+                );
+                
+                for (const bDoc of blocksSnap.docs) {
+                    const b = bDoc.data();
+                    if (currentTime >= b.start_time && currentTime <= b.end_time) {
+                        isAvailable = false;
+                        statusLabel = b.reason || 'On break';
+                        break;
+                    }
+                }
+            }
+
+            setStatus({
+                type: isAvailable ? 'Active' : 'Away',
+                label: statusLabel,
+                color: isAvailable ? 'bg-green-500' : 'bg-neutral-400'
+            });
 
         } catch (error) {
             console.error('Error loading stylist dashboard:', error);
@@ -138,13 +188,13 @@ export default function StylistDashboard() {
                                 <Text className="text-3xl font-bold text-neutral-900">{upcomingBookings.length}</Text>
                                 <Text className="text-neutral-400 text-xs mt-1">Appointments</Text>
                             </View>
-                            <View className="flex-1 bg-neutral-50 p-6 rounded-3xl border border-neutral-100">
+                             <View className="flex-1 bg-neutral-50 p-6 rounded-3xl border border-neutral-100">
                                 <Text className="text-neutral-500 text-sm font-medium uppercase tracking-wider mb-1">Status</Text>
                                 <View className="flex-row items-center">
-                                    <View className="w-2 h-2 rounded-full bg-green-500 mr-2" />
-                                    <Text className="text-lg font-bold text-neutral-900">Active</Text>
+                                    <View className={`w-2 h-2 rounded-full ${status.color} mr-2`} />
+                                    <Text className="text-lg font-bold text-neutral-900">{status.type}</Text>
                                 </View>
-                                <Text className="text-neutral-400 text-xs mt-1">On duty</Text>
+                                <Text className="text-neutral-400 text-xs mt-1">{status.label}</Text>
                             </View>
                         </View>
 
