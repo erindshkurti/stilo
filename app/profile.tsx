@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Image, ScrollView, Text, TouchableOpacity, useWindowDimensions, View, Alert } from 'react-native';
+import { Image, ScrollView, Text, TouchableOpacity, useWindowDimensions, View, Alert, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../components/Header';
 import { useAuth } from '../lib/auth';
@@ -20,6 +20,10 @@ export default function ProfileScreen() {
     const [upcomingBookings, setUpcomingBookings] = useState<any[]>([]);
     const [recentBookings, setRecentBookings] = useState<any[]>([]);
     const [loadingBookings, setLoadingBookings] = useState(true);
+    
+    // Cancellation Modal State
+    const [showCancelModal, setShowCancelModal] = useState(false);
+    const [bookingToCancel, setBookingToCancel] = useState<string | null>(null);
 
     const isLargeScreen = width > 768;
 
@@ -113,27 +117,23 @@ export default function ProfileScreen() {
     }, [user]);
 
     const handleCancel = (bookingId: string) => {
-        Alert.alert(
-            "Cancel Appointment",
-            "Are you sure you want to cancel this appointment?",
-            [
-                { text: "No", style: "cancel" },
-                { 
-                    text: "Yes, Cancel", 
-                    style: "destructive", 
-                    onPress: async () => {
-                        try {
-                            setUpcomingBookings(prev => prev.filter(b => b.id !== bookingId));
-                            await updateDoc(doc(db, 'bookings', bookingId), {
-                                status: 'cancelled'
-                            });
-                        } catch (e) {
-                            console.error('Failed to cancel:', e);
-                        }
-                    } 
-                }
-            ]
-        );
+        setBookingToCancel(bookingId);
+        setShowCancelModal(true);
+    };
+
+    const confirmCancel = async () => {
+        if (!bookingToCancel) return;
+        try {
+            setUpcomingBookings(prev => prev.filter(b => b.id !== bookingToCancel));
+            await updateDoc(doc(db, 'bookings', bookingToCancel), {
+                status: 'cancelled'
+            });
+        } catch (e) {
+            console.error('Failed to cancel:', e);
+        } finally {
+            setShowCancelModal(false);
+            setBookingToCancel(null);
+        }
     };
 
     if (isLoading) {
@@ -207,7 +207,7 @@ export default function ProfileScreen() {
                             >
                                 <Text className={`font-medium text-base ${activeTab === 'recent' ? 'text-black' : 'text-neutral-500'
                                     }`}>
-                                    Recent History
+                                    Past Bookings
                                 </Text>
                             </TouchableOpacity>
                         </View>
@@ -231,15 +231,20 @@ export default function ProfileScreen() {
                                             />
                                             <View className="flex-1">
                                                 <Text className="font-bold text-lg text-neutral-900 mb-1">{booking.businessName}</Text>
-                                                <Text className="text-neutral-600 font-medium mb-1">{booking.service}</Text>
+                                                <View className="flex-row items-center mb-1">
+                                                    <Feather name="scissors" size={14} color="#525252" />
+                                                    <Text className="text-neutral-600 font-medium ml-1.5">{booking.service}</Text>
+                                                </View>
                                                 <View className="flex-row items-center text-neutral-500 mb-1">
                                                     <Feather name="calendar" size={14} color="#737373" />
                                                     <Text className="text-neutral-500 text-sm ml-1.5">{booking.date}</Text>
                                                 </View>
-                                                <View className="flex-row items-center text-neutral-500">
-                                                    <Feather name="map-pin" size={14} color="#737373" />
-                                                    <Text className="text-neutral-500 text-sm ml-1.5 truncate" numberOfLines={1}>{booking.location}</Text>
-                                                </View>
+                                                {activeTab !== 'upcoming' && (
+                                                    <View className="flex-row items-center text-neutral-500">
+                                                        <Feather name="map-pin" size={14} color="#737373" />
+                                                        <Text className="text-neutral-500 text-sm ml-1.5 truncate" numberOfLines={1}>{booking.location}</Text>
+                                                    </View>
+                                                )}
                                             </View>
                                             <View className="ml-2 gap-2">
                                                 {activeTab === 'upcoming' ? (
@@ -282,6 +287,34 @@ export default function ProfileScreen() {
                     </View>
                 </ScrollView>
             </SafeAreaView>
+
+            {/* Cancel Confirmation Modal */}
+            <Modal visible={showCancelModal} transparent animationType="fade">
+                <View className="flex-1 bg-black/40 justify-center items-center px-6">
+                    <View className="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl items-center">
+                        <View className="w-16 h-16 bg-red-50 rounded-full items-center justify-center mb-5">
+                            <Feather name="alert-circle" size={32} color="#dc2626" />
+                        </View>
+                        <Text className="text-2xl font-bold text-neutral-900 mb-2 text-center">Cancel Booking?</Text>
+                        <Text className="text-neutral-500 mb-8 text-center text-base leading-6 px-2">This action cannot be undone. Are you sure you wish to cancel this appointment?</Text>
+                        
+                        <View className="flex-row gap-3 w-full">
+                            <TouchableOpacity 
+                                className="flex-1 py-4 bg-neutral-100 rounded-xl items-center"
+                                onPress={() => setShowCancelModal(false)}
+                            >
+                                <Text className="font-bold text-neutral-900 text-base">Keep It</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity 
+                                className="flex-1 py-4 bg-red-600 rounded-xl items-center"
+                                onPress={confirmCancel}
+                            >
+                                <Text className="font-bold text-white text-base">Cancel</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 }
