@@ -2,7 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Image, ScrollView, Text, TextInput, TouchableOpacity, View, useWindowDimensions, ActivityIndicator } from 'react-native';
+import { Image, ScrollView, Text, TextInput, TouchableOpacity, View, useWindowDimensions, ActivityIndicator, Modal, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../../../components/Header';
 import { useAuth } from '../../../lib/auth';
@@ -30,6 +30,7 @@ export default function EditTeamScreen() {
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+    const [isModalVisible, setIsModalVisible] = useState(false);
 
     const isLargeScreen = width > 768;
     const maxWidth = isLargeScreen ? 600 : width - 48;
@@ -135,6 +136,7 @@ export default function EditTeamScreen() {
 
             setCurrentStylist({ name: '', bio: '', local_image_uri: undefined, has_new_image: false, image_url: undefined, storage_path: undefined });
             setIsEditing(false);
+            setIsModalVisible(false);
             await loadStylists(business.id);
         } catch (error) {
             console.error('Error saving stylist:', error);
@@ -144,6 +146,12 @@ export default function EditTeamScreen() {
         }
     };
 
+    const handleAddClick = () => {
+        setCurrentStylist({ name: '', bio: '', local_image_uri: undefined, has_new_image: false, image_url: undefined, storage_path: undefined });
+        setIsEditing(false);
+        setIsModalVisible(true);
+    };
+
     const editStylist = (stylist: Stylist) => {
         setCurrentStylist({
             ...stylist,
@@ -151,11 +159,13 @@ export default function EditTeamScreen() {
             has_new_image: false
         });
         setIsEditing(true);
+        setIsModalVisible(true);
     };
 
     const cancelEdit = () => {
         setCurrentStylist({ name: '', bio: '', local_image_uri: undefined, has_new_image: false, image_url: undefined, storage_path: undefined });
         setIsEditing(false);
+        setIsModalVisible(false);
     };
 
     const removeStylist = async (stylist: Stylist) => {
@@ -245,94 +255,119 @@ export default function EditTeamScreen() {
                                     </View>
                                 )}
 
-                                {/* Add New Team Member */}
-                                <View className="bg-neutral-50 rounded-2xl p-4 mb-6">
-                                    <Text className="font-semibold text-base mb-4">
-                                        {isEditing ? 'Edit Team Member' : stylists.length === 0 ? 'Add Your First Team Member' : 'Add Another Team Member'}
-                                    </Text>
+                                    {stylists.length === 0 && (
+                                        <View className="items-center py-12 px-6">
+                                            <Feather name="users" size={48} color="#d4d4d8" />
+                                            <Text className="text-neutral-500 mt-4 text-center">No team members yet. Add stylists to let clients book them directly!</Text>
+                                        </View>
+                                    )}
 
-                                    <View className="items-center mb-6">
-                                        <TouchableOpacity 
-                                            onPress={pickImage}
-                                            className="items-center justify-center w-24 h-24 rounded-full bg-neutral-200 overflow-hidden"
-                                        >
-                                            {currentStylist.local_image_uri ? (
-                                                <Image 
-                                                    source={{ uri: currentStylist.local_image_uri }} 
-                                                    className="w-full h-full"
-                                                />
-                                            ) : (
-                                                <>
-                                                    <Feather name="camera" size={24} color="#737373" />
-                                                    <Text className="text-[10px] text-neutral-500 font-medium mt-1 uppercase text-center">Add Photo</Text>
-                                                </>
-                                            )}
-                                        </TouchableOpacity>
-                                        {currentStylist.local_image_uri && (
-                                            <TouchableOpacity 
-                                                onPress={() => setCurrentStylist({ ...currentStylist, local_image_uri: undefined, has_new_image: true })}
-                                                className="mt-2"
-                                            >
-                                                <Text className="text-sm text-red-500 font-medium">Remove Photo</Text>
-                                            </TouchableOpacity>
-                                        )}
-                                    </View>
-
-                                    <View className="mb-3">
-                                        <Text className="text-sm font-medium text-neutral-700 mb-2">Name</Text>
-                                        <TextInput
-                                            placeholder="e.g., Sarah Johnson"
-                                            value={currentStylist.name}
-                                            onChangeText={(value) => setCurrentStylist({ ...currentStylist, name: value })}
-                                            className="h-12 bg-white rounded-xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
-                                        />
-                                    </View>
-
-                                    <View className="mb-3">
-                                        <Text className="text-sm font-medium text-neutral-700 mb-2">Bio (Optional)</Text>
-                                        <TextInput
-                                            placeholder="Brief description..."
-                                            value={currentStylist.bio}
-                                            onChangeText={(value) => setCurrentStylist({ ...currentStylist, bio: value })}
-                                            multiline
-                                            numberOfLines={3}
-                                            textAlignVertical="top"
-                                            className="bg-white rounded-xl p-3 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base min-h-[80px]"
-                                        />
-                                    </View>
-
-                                    <View className="flex-row gap-3">
-                                        {isEditing && (
-                                            <TouchableOpacity
-                                                onPress={cancelEdit}
-                                                className="h-12 flex-1 rounded-xl items-center justify-center bg-neutral-200"
-                                            >
-                                                <Text className="text-neutral-900 font-medium">Cancel</Text>
-                                            </TouchableOpacity>
-                                        )}
-                                        <TouchableOpacity
-                                            onPress={saveStylist}
-                                            disabled={!currentStylist.name.trim() || actionLoading}
-                                            className={`h-12 flex-1 rounded-xl items-center justify-center flex-row ${
-                                                currentStylist.name.trim() && !actionLoading ? 'bg-black' : 'bg-neutral-200'
-                                            }`}
-                                        >
-                                            {actionLoading ? (
-                                                <ActivityIndicator color="white" size="small" />
-                                            ) : (
-                                                <Feather name={isEditing ? "save" : "plus"} size={20} color={currentStylist.name.trim() ? "white" : "#a3a3a3"} />
-                                            )}
-                                            <Text className={`${currentStylist.name.trim() && !actionLoading ? 'text-white' : 'text-neutral-500'} font-medium ml-2`}>
-                                                {actionLoading ? 'Saving...' : isEditing ? 'Save Changes' : 'Add Team Member'}
-                                            </Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                </View>
+                                    <TouchableOpacity 
+                                        onPress={handleAddClick} 
+                                        className="bg-black h-14 rounded-2xl flex-row items-center justify-center mt-4 w-full"
+                                    >
+                                        <Feather name="plus" size={20} color="white" />
+                                        <Text className="text-white font-semibold ml-2 text-base">
+                                            Add Team Member
+                                        </Text>
+                                    </TouchableOpacity>
                             </>
                         )}
                     </View>
                 </View>
             </ScrollView>
+
+            {/* Modal Form for Add/Edit using native PageSheet */}
+            <Modal
+                visible={isModalVisible}
+                animationType="slide"
+                presentationStyle="pageSheet"
+                onRequestClose={cancelEdit}
+            >
+                <KeyboardAvoidingView 
+                    behavior={Platform.OS === "ios" ? "padding" : "height"}
+                    className="flex-1 bg-white"
+                >
+                    <View className="flex-row items-center justify-between px-6 py-4 border-b border-neutral-100">
+                        <Text className="text-xl font-bold">
+                            {isEditing ? 'Edit Stylist' : 'Add Stylist'}
+                        </Text>
+                        <TouchableOpacity onPress={cancelEdit} className="p-2 -mr-2">
+                            <Feather name="x" size={24} color="#000" />
+                        </TouchableOpacity>
+                    </View>
+
+                    <ScrollView className="flex-1 px-6 pt-8 pb-32">
+                        <View className="items-center mb-8">
+                            <TouchableOpacity 
+                                onPress={pickImage}
+                                className="items-center justify-center w-28 h-28 rounded-full bg-neutral-100 overflow-hidden border border-neutral-200"
+                            >
+                                {currentStylist.local_image_uri ? (
+                                    <Image 
+                                        source={{ uri: currentStylist.local_image_uri }} 
+                                        className="w-full h-full"
+                                    />
+                                ) : (
+                                    <>
+                                        <Feather name="camera" size={28} color="#a3a3a3" />
+                                        <Text className="text-[10px] text-neutral-400 font-medium mt-2 uppercase text-center">Add Photo</Text>
+                                    </>
+                                )}
+                            </TouchableOpacity>
+                            {currentStylist.local_image_uri && (
+                                <TouchableOpacity 
+                                    onPress={() => setCurrentStylist({ ...currentStylist, local_image_uri: undefined, has_new_image: true })}
+                                    className="mt-4 bg-red-50 px-4 py-2 rounded-full"
+                                >
+                                    <Text className="text-sm text-red-600 font-medium">Remove Photo</Text>
+                                </TouchableOpacity>
+                            )}
+                        </View>
+
+                        <View className="mb-5">
+                            <Text className="text-sm font-medium text-neutral-700 mb-2">Stylist Name</Text>
+                            <TextInput
+                                placeholder="e.g., Sarah Johnson"
+                                value={currentStylist.name}
+                                onChangeText={(value) => setCurrentStylist({ ...currentStylist, name: value })}
+                                className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
+                            />
+                        </View>
+
+                        <View className="mb-8">
+                            <Text className="text-sm font-medium text-neutral-700 mb-2">Short Bio (Optional)</Text>
+                            <TextInput
+                                placeholder="Brief description to help clients get to know them..."
+                                value={currentStylist.bio}
+                                onChangeText={(value) => setCurrentStylist({ ...currentStylist, bio: value })}
+                                multiline
+                                numberOfLines={4}
+                                textAlignVertical="top"
+                                className="bg-neutral-50 rounded-2xl p-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base min-h-[100px]"
+                            />
+                        </View>
+
+                        <TouchableOpacity
+                            onPress={saveStylist}
+                            disabled={!currentStylist.name.trim() || actionLoading}
+                            className={`h-14 w-full rounded-2xl items-center justify-center flex-row shadow-sm ${
+                                currentStylist.name.trim() && !actionLoading ? 'bg-black' : 'bg-neutral-200'
+                            }`}
+                        >
+                            {actionLoading ? (
+                                <ActivityIndicator color="white" size="small" />
+                            ) : (
+                                <Feather name={isEditing ? "save" : "check"} size={20} color={currentStylist.name.trim() ? "white" : "#a3a3a3"} />
+                            )}
+                            <Text className={`${currentStylist.name.trim() && !actionLoading ? 'text-white' : 'text-neutral-500'} font-semibold ml-2 text-base`}>
+                                {actionLoading ? 'Saving...' : isEditing ? 'Save Stylist' : 'Add Stylist'}
+                            </Text>
+                        </TouchableOpacity>
+                        <View className="h-20" />
+                    </ScrollView>
+                </KeyboardAvoidingView>
+            </Modal>
         </SafeAreaView>
     );
 }
