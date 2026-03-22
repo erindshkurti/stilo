@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { ScrollView, Switch, Text, TouchableOpacity, View, useWindowDimensions, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../../components/Header';
+import { Toast } from '../../components/Toast';
 import { useAuth } from '../../lib/auth';
 import { db } from '../../lib/firebase';
 import { addDoc, collection, deleteDoc, getDocs, orderBy, query, where, doc, getDoc } from 'firebase/firestore';
@@ -40,6 +41,7 @@ export default function StaffHoursScreen() {
     
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [toast, setToast] = useState<{ visible: boolean; message: string; type: 'success' | 'error' }>({ visible: false, message: '', type: 'success' });
     const [profile, setProfile] = useState<any>(null);
     const [stylistId, setStylistId] = useState<string | null>(null);
     const [hours, setHours] = useState<StaffHours[]>([]);
@@ -128,25 +130,25 @@ export default function StaffHoursScreen() {
             
             // 1. If business is closed, stylist cannot be open
             if (!bizDay || bizDay.is_closed) {
-                setError(`${hour.day_name}: The shop is closed on this day.`);
+                setToast({ visible: true, message: `${hour.day_name}: The shop is closed on this day.`, type: 'error' });
                 return;
             }
 
             // 2. Cannot start earlier than business
             if (hour.open_time < bizDay.open_time) {
-                setError(`${hour.day_name}: You cannot start earlier than the shop (${bizDay.open_time}).`);
+                setToast({ visible: true, message: `${hour.day_name}: You cannot start earlier than the shop (${bizDay.open_time}).`, type: 'error' });
                 return;
             }
 
             // 3. Cannot stay later than business
             if (hour.close_time > bizDay.close_time) {
-                setError(`${hour.day_name}: You cannot stay later than the shop (${bizDay.close_time}).`);
+                setToast({ visible: true, message: `${hour.day_name}: You cannot stay later than the shop (${bizDay.close_time}).`, type: 'error' });
                 return;
             }
 
             // 4. Start must be before end
             if (hour.open_time >= hour.close_time) {
-                setError(`${hour.day_name}: Start time must be before end time.`);
+                setToast({ visible: true, message: `${hour.day_name}: Start time must be before end time.`, type: 'error' });
                 return;
             }
         }
@@ -171,9 +173,10 @@ export default function StaffHoursScreen() {
                 });
             }
 
-            router.back();
-        } catch (error) {
-            console.error('Error saving staff hours:', error);
+            setToast({ visible: true, message: 'Working hours saved successfully!', type: 'success' });
+        } catch (err: any) {
+            console.error('Error saving hours:', err);
+            setToast({ visible: true, message: err.message || 'Failed to save hours. Please try again.', type: 'error' });
         } finally {
             setSaving(false);
         }
@@ -200,15 +203,6 @@ export default function StaffHoursScreen() {
 
                             <Text className="text-3xl font-bold text-neutral-900 mb-2">My Working Hours</Text>
                             <Text className="text-neutral-500 mb-8">Set your personal availability. These hours override the business defaults.</Text>
-
-                            {(error || !user) && (
-                                <View className="mb-6 p-4 bg-red-50 rounded-2xl border border-red-100 flex-row items-center">
-                                    <Feather name="alert-circle" size={20} color="#ef4444" />
-                                    <View className="flex-1">
-                                        <Text className="text-red-700 ml-2 font-medium">{error || 'Session expired. Please log in.'}</Text>
-                                    </View>
-                                </View>
-                            )}
 
                         {hours.map((day, index) => (
                             <View 
@@ -275,6 +269,13 @@ export default function StaffHoursScreen() {
                     </TouchableOpacity>
                 </View>
             </View>
+
+            <Toast 
+                visible={toast.visible} 
+                message={toast.message} 
+                type={toast.type} 
+                onHide={() => setToast(prev => ({ ...prev, visible: false }))} 
+            />
         </SafeAreaView>
     );
 }

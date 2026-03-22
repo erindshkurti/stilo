@@ -8,6 +8,7 @@ import { ActivityIndicator, Alert, Image, ScrollView, Text, TextInput, Touchable
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../components/Button';
 import { Header } from '../components/Header';
+import { Toast } from '../components/Toast';
 import { useAuth } from '../lib/auth';
 import { db, storage } from '../lib/firebase';
 
@@ -19,8 +20,7 @@ export default function ProfileScreen() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [uploadingAvatar, setUploadingAvatar] = useState(false);
-    const [showSuccess, setShowSuccess] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [toast, setToast] = useState<{ visible: boolean; message: string; type: 'success' | 'error' }>({ visible: false, message: '', type: 'success' });
 
     // Profile fields
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -139,16 +139,10 @@ export default function ProfileScreen() {
                 display_name: displayName,
                 phone: phone,
             }, { merge: true });
-            
-            setShowSuccess(true);
-            setTimeout(() => setShowSuccess(false), 3000);
+            setToast({ visible: true, message: 'Profile updated successfully!', type: 'success' });
         } catch (error: any) {
             console.error('Error updating profile:', error);
-            if (typeof window !== 'undefined' && window.alert) {
-                window.alert('Failed to update profile');
-            } else {
-                Alert.alert('Error', 'Failed to update profile');
-            }
+            setToast({ visible: true, message: 'Failed to update profile. Please try again.', type: 'error' });
         } finally {
             setSaving(false);
         }
@@ -177,22 +171,6 @@ export default function ProfileScreen() {
                                 Profile
                             </Text>
                             <Text className="text-neutral-500 mb-8">Manage your personal information and account settings.</Text>
-
-                            {error && (
-                                <View className="mb-6 p-4 bg-red-50 rounded-2xl border border-red-100 flex-row items-center">
-                                    <Feather name="alert-circle" size={20} color="#ef4444" />
-                                    <Text className="text-red-700 ml-2 font-medium">{error}</Text>
-                                </View>
-                            )}
-
-                            {showSuccess && (
-                                <View className="mb-6 bg-emerald-50 border border-emerald-100 p-4 rounded-2xl flex-row items-center">
-                                    <View className="w-8 h-8 rounded-full bg-emerald-500 items-center justify-center mr-3">
-                                        <Feather name="check" size={16} color="white" />
-                                    </View>
-                                    <Text className="text-emerald-900 font-medium">Profile updated successfully!</Text>
-                                </View>
-                            )}
 
                             {/* Avatar Upload */}
                             <View className="items-center mb-8">
@@ -280,6 +258,13 @@ export default function ProfileScreen() {
                     />
                 </View>
             </View>
+
+            <Toast 
+                visible={toast.visible} 
+                message={toast.message} 
+                type={toast.type} 
+                onHide={() => setToast(prev => ({ ...prev, visible: false }))} 
+            />
         </SafeAreaView>
     );
 }

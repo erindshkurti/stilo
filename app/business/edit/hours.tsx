@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { ScrollView, Switch, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../../../components/Header';
+import { Toast } from '../../../components/Toast';
 import { useAuth } from '../../../lib/auth';
 import { db } from '../../../lib/firebase';
 import { addDoc, collection, deleteDoc, getDocs, orderBy, query, where } from 'firebase/firestore';
@@ -40,6 +41,7 @@ export default function EditHoursScreen() {
     const [hours, setHours] = useState<BusinessHours[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [toast, setToast] = useState<{ visible: boolean; message: string; type: 'success' | 'error' }>({ visible: false, message: '', type: 'success' });
     const [showSuccess, setShowSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -116,9 +118,10 @@ export default function EditHoursScreen() {
                 });
             }
 
-            router.back();
+            setToast({ visible: true, message: 'Business hours saved successfully!', type: 'success' });
         } catch (error) {
-            console.error('Error saving hours:', error);
+            console.error('Error saving business hours:', error);
+            setToast({ visible: true, message: 'Failed to save hours. Please try again.', type: 'error' });
         } finally {
             setSaving(false);
         }
@@ -205,6 +208,13 @@ export default function EditHoursScreen() {
                     </TouchableOpacity>
                 </View>
             </View>
+
+            <Toast 
+                visible={toast.visible} 
+                message={toast.message} 
+                type={toast.type} 
+                onHide={() => setToast(prev => ({ ...prev, visible: false }))} 
+            />
         </SafeAreaView>
     );
 }
