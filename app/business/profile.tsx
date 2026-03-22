@@ -221,7 +221,7 @@ export default function BusinessSettings() {
                         <Text className={`font-bold mb-2 ${isLargeScreen ? 'text-3xl' : 'text-2xl'}`}>
                             Profile
                         </Text>
-                        <Text className="text-neutral-600 mb-8">Manage your business account details</Text>
+                        <Text className="text-neutral-600 mb-8">Manage your profile details.</Text>
 
                         {loading ? (
                             <View className="items-center py-8">
@@ -232,7 +232,7 @@ export default function BusinessSettings() {
                                 {/* Account Info */}
                                 <View className="bg-neutral-50 rounded-2xl p-6 mb-6">
                                     <View className="flex-row items-center justify-between mb-4">
-                                        <Text className="text-lg font-semibold">Account Information</Text>
+                                        <Text className="text-lg font-semibold">Owner Information</Text>
                                         <TouchableOpacity onPress={() => setEditMode(!editMode)}>
                                             <Feather name={editMode ? "x" : "edit-2"} size={20} color="#000" />
                                         </TouchableOpacity>

@@ -23,7 +23,7 @@ export default function RootLayout() {
           <Stack.Screen name="business-signup" />
           <Stack.Screen name="business/onboarding" />
           <Stack.Screen name="business/dashboard" />
-          <Stack.Screen name="business/settings" />
+          <Stack.Screen name="business/profile" />
           <Stack.Screen name="profile" />
           <Stack.Screen name="bookings" />
           <Stack.Screen name="search" />

@@ -185,7 +185,7 @@ export function Header() {
                                                                 <Text className="ml-3 text-neutral-900">Personal Bookings</Text>
                                                             </TouchableOpacity>
                                                         </Link>
-                                                        <Link href="/business/settings" asChild>
+                                                        <Link href="/business/profile" asChild>
                                                             <TouchableOpacity
                                                                 onPress={() => setProfileDropdownOpen(false)}
                                                                 className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
@@ -322,7 +322,7 @@ export function Header() {
                                         <TouchableOpacity
                                             onPress={() => {
                                                 setMenuOpen(false);
-                                                router.push('/business/settings');
+                                                router.push('/business/profile');
                                             }}
                                             className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-3"
                                         >
