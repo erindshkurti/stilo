@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { findNodeHandle, Platform, ScrollView, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { findNodeHandle, Platform, ScrollView, Text, TouchableOpacity, useWindowDimensions, View, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AutocompleteInput } from '../components/AutocompleteInput';
 import { Button } from '../components/Button';
@@ -58,6 +58,25 @@ export default function LandingPage() {
     const [isLoadingFeatured, setIsLoadingFeatured] = useState(true);
 
     const [lastCheckedUserId, setLastCheckedUserId] = useState<string | null>(null);
+
+    // Animation value for blinking/popping the service field
+    const serviceBlinkAnim = useRef(new Animated.Value(0)).current;
+
+    const triggerServiceBlink = () => {
+        serviceBlinkAnim.setValue(0);
+        Animated.sequence([
+            Animated.timing(serviceBlinkAnim, {
+                toValue: 1,
+                duration: 150,
+                useNativeDriver: true,
+            }),
+            Animated.timing(serviceBlinkAnim, {
+                toValue: 0,
+                duration: 350,
+                useNativeDriver: true,
+            })
+        ]).start();
+    };
 
     // Fetch Featured Businesses
     useEffect(() => {
@@ -310,7 +329,18 @@ export default function LandingPage() {
                                         </View>
 
                                         {/* Service Input */}
-                                        <View className={isLargeScreen ? 'flex-1' : 'w-full'} style={{ zIndex: 20 }}>
+                                        <Animated.View 
+                                            className={isLargeScreen ? 'flex-1' : 'w-full'} 
+                                            style={{ 
+                                                zIndex: 20,
+                                                transform: [{
+                                                    scale: serviceBlinkAnim.interpolate({
+                                                        inputRange: [0, 1],
+                                                        outputRange: [1, 1.03]
+                                                    })
+                                                }]
+                                            }}
+                                        >
                                             <AutocompleteInput
                                                 placeholder="Service"
                                                 value={service}
@@ -324,7 +354,7 @@ export default function LandingPage() {
                                                 icon="scissors"
                                                 loading={loadingServiceSuggestions}
                                             />
-                                        </View>
+                                        </Animated.View>
 
                                         {/* Date Input */}
                                         <View className={isLargeScreen ? 'flex-1' : 'w-full'} style={{ zIndex: 50 }}>
@@ -368,6 +398,7 @@ export default function LandingPage() {
                                                 onPress={() => {
                                                     serviceSelectionMade.current = true;
                                                     setService(item);
+                                                    triggerServiceBlink();
                                                     // Auto-scroll to Search Card ONLY if out of view
                                                     if (searchCardRef.current) {
                                                         if (Platform.OS === 'web') {
