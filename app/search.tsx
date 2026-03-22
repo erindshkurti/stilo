@@ -245,36 +245,41 @@ export default function SearchScreen() {
                 <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false} style={{ zIndex: 1 }}>
                     <View className="w-full px-6 py-8">
                         <View className="mx-auto w-full" style={{ maxWidth: 1200 }}>
-                            <Text className="text-xl font-bold mb-6 text-neutral-900">
-                                {results.length} {results.length === 1 ? 'Result' : 'Results'} Found
-                            </Text>
-
                             {loading ? (
                                 <View className="items-center justify-center py-20">
                                     <ActivityIndicator size="large" color="#000" />
                                 </View>
                             ) : results.length > 0 ? (
-                                <View className="flex-row flex-wrap -mx-3">
-                                    {results.map((item) => (
-                                        <View
-                                            key={item.id}
-                                            className={isLargeScreen ? 'w-1/3 px-3 mb-6' : 'w-full px-0 mb-6'}
-                                        >
-                                            <StylistCard
-                                                name={item.name}
-                                                location={item.city}
-                                                rating={item.rating || 0}
-                                                reviewCount={item.review_count || 0}
-                                                imageUrl={item.cover_image_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80'}
-                                                onPress={() => router.push(`/business/${item.id}`)}
-                                            />
-                                        </View>
-                                    ))}
-                                </View>
+                                <>
+                                    <Text className="text-xl font-bold mb-6 text-neutral-900">
+                                        {results.length} {results.length === 1 ? 'Result' : 'Results'} Found
+                                    </Text>
+                                    <View className="flex-row flex-wrap -mx-3">
+                                        {results.map((item) => (
+                                            <View
+                                                key={item.id}
+                                                className={isLargeScreen ? 'w-1/3 px-3 mb-6' : 'w-full px-0 mb-6'}
+                                            >
+                                                <StylistCard
+                                                    name={item.name}
+                                                    location={item.city}
+                                                    rating={item.rating || 0}
+                                                    reviewCount={item.review_count || 0}
+                                                    imageUrl={item.cover_image_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80'}
+                                                    onPress={() => router.push(`/business/${item.id}`)}
+                                                />
+                                            </View>
+                                        ))}
+                                    </View>
+                                </>
                             ) : (
-                                <View className="items-center justify-center py-20">
-                                    <Text className="text-neutral-500 text-lg text-center">
-                                        No businesses found matching your criteria.
+                                <View className="items-center justify-center py-32">
+                                    <Feather name="search" size={48} color="#e5e5e5" className="mb-6" />
+                                    <Text className="text-2xl font-bold text-neutral-900 mb-2">
+                                        0 Results Found
+                                    </Text>
+                                    <Text className="text-neutral-500 text-lg text-center max-w-sm">
+                                        No businesses found matching your criteria. Try adjusting your filters or searching a different area.
                                     </Text>
                                 </View>
                             )}
