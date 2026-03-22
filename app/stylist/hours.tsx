@@ -186,31 +186,29 @@ export default function StaffHoursScreen() {
     return (
         <SafeAreaView className="flex-1 bg-white">
             <Header />
-            <ScrollView className="flex-1">
-                <View className="px-6 py-8 items-center">
-                    <View style={{ maxWidth, width: '100%' }}>
-                        <TouchableOpacity onPress={() => router.back()} className="mb-4">
-                            <View className="flex-row items-center">
+            <View className="flex-1">
+                <ScrollView className="flex-1">
+                    <View className="px-6 py-8 items-center">
+                        <View style={{ maxWidth: 800, width: '100%' }}>
+                            <TouchableOpacity 
+                                onPress={() => router.back()}
+                                className="flex-row items-center mb-6"
+                            >
                                 <Feather name="arrow-left" size={20} color="#000" />
-                                <Text className="ml-2 font-medium">Back to Dashboard</Text>
-                            </View>
-                        </TouchableOpacity>
+                                <Text className="ml-2 font-bold text-neutral-900">Back to Dashboard</Text>
+                            </TouchableOpacity>
 
-                        <Text className={`font-bold mb-2 ${isLargeScreen ? 'text-3xl' : 'text-2xl'}`}>
-                            My Working Hours
-                        </Text>
-                        <Text className="text-neutral-600 mb-8">
-                            Set your personal availability. These hours override the business defaults.
-                        </Text>
+                            <Text className="text-3xl font-bold text-neutral-900 mb-2">My Working Hours</Text>
+                            <Text className="text-neutral-500 mb-8">Set your personal availability. These hours override the business defaults.</Text>
 
-                        {error && (
-                            <View className="bg-red-50 p-4 rounded-xl border border-red-200 mb-6">
-                                <View className="flex-row items-center">
-                                    <Feather name="alert-circle" size={18} color="#ef4444" />
-                                    <Text className="text-red-700 ml-2 font-medium">{error}</Text>
+                            {(error || !user) && (
+                                <View className="mb-6 p-4 bg-red-50 rounded-2xl border border-red-100 flex-row items-center">
+                                    <Feather name="alert-circle" size={20} color="#ef4444" />
+                                    <View className="flex-1">
+                                        <Text className="text-red-700 ml-2 font-medium">{error || 'Session expired. Please log in.'}</Text>
+                                    </View>
                                 </View>
-                            </View>
-                        )}
+                            )}
 
                         {hours.map((day, index) => (
                             <View key={day.day_of_week} className="bg-neutral-50 rounded-2xl p-4 mb-3">
@@ -257,18 +255,22 @@ export default function StaffHoursScreen() {
                             </View>
                         ))}
 
-                        <TouchableOpacity
-                            onPress={handleSave}
-                            disabled={saving}
-                            className={`mt-6 py-4 rounded-xl ${saving ? 'bg-neutral-300' : 'bg-black'}`}
-                        >
-                            <Text className="text-white font-medium text-center text-base">
-                                {saving ? 'Saving...' : 'Save My Hours'}
-                            </Text>
-                        </TouchableOpacity>
+                        </View>
                     </View>
+                </ScrollView>
+
+                <View className="p-6 border-t border-neutral-100 bg-white">
+                    <TouchableOpacity
+                        onPress={handleSave}
+                        disabled={saving}
+                        className={`py-4 rounded-xl ${saving ? 'bg-neutral-300' : 'bg-black'}`}
+                    >
+                        <Text className="text-white font-medium text-center text-base">
+                            {saving ? 'Saving...' : 'Save My Hours'}
+                        </Text>
+                    </TouchableOpacity>
                 </View>
-            </ScrollView>
+            </View>
         </SafeAreaView>
     );
 }

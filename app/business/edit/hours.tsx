@@ -40,6 +40,8 @@ export default function EditHoursScreen() {
     const [hours, setHours] = useState<BusinessHours[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const isLargeScreen = width > 768;
     const maxWidth = isLargeScreen ? 600 : width - 48;
@@ -126,22 +128,19 @@ export default function EditHoursScreen() {
         <SafeAreaView className="flex-1 bg-white">
             <Header />
 
-            <ScrollView className="flex-1">
-                <View className="px-6 py-8 items-center">
-                    <View style={{ maxWidth, width: '100%' }}>
-                        <TouchableOpacity onPress={() => router.back()} className="mb-4">
-                            <View className="flex-row items-center">
-                                <Feather name="arrow-left" size={20} color="#000" />
-                                <Text className="ml-2 font-medium">Back to Dashboard</Text>
-                            </View>
+            <View className="flex-1">
+                <ScrollView className="flex-1">
+                    <View className="px-6 py-8">
+                        <TouchableOpacity 
+                            onPress={() => router.back()}
+                            className="flex-row items-center mb-6"
+                        >
+                            <Feather name="arrow-left" size={20} color="#000" />
+                            <Text className="ml-2 font-bold text-neutral-900">Back</Text>
                         </TouchableOpacity>
 
-                        <Text className={`font-bold mb-2 ${isLargeScreen ? 'text-3xl' : 'text-2xl'}`}>
-                            Business Hours
-                        </Text>
-                        <Text className="text-neutral-600 mb-8">
-                            Set your operating hours for each day
-                        </Text>
+                        <Text className="text-3xl font-bold text-neutral-900 mb-2">Business Hours</Text>
+                        <Text className="text-neutral-500 mb-8">Set the default operating hours for your business.</Text>
 
                         {loading ? (
                             <Text className="text-neutral-500 text-center py-8">Loading...</Text>
@@ -185,21 +184,23 @@ export default function EditHoursScreen() {
                                         )}
                                     </View>
                                 ))}
-
-                                <TouchableOpacity
-                                    onPress={handleSave}
-                                    disabled={saving}
-                                    className={`mt-6 py-4 rounded-xl ${saving ? 'bg-neutral-300' : 'bg-black'}`}
-                                >
-                                    <Text className="text-white font-medium text-center text-base">
-                                        {saving ? 'Saving...' : 'Save Hours'}
-                                    </Text>
-                                </TouchableOpacity>
                             </>
                         )}
                     </View>
+                </ScrollView>
+
+                <View className="p-6 border-t border-neutral-100 bg-white">
+                    <TouchableOpacity
+                        onPress={handleSave}
+                        disabled={saving}
+                        className={`py-4 rounded-xl ${saving ? 'bg-neutral-300' : 'bg-black'}`}
+                    >
+                        <Text className="text-white font-medium text-center text-base">
+                            {saving ? 'Saving...' : 'Save Hours'}
+                        </Text>
+                    </TouchableOpacity>
                 </View>
-            </ScrollView>
+            </View>
         </SafeAreaView>
     );
 }

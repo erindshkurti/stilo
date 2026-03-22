@@ -20,6 +20,7 @@ export default function ProfileScreen() {
     const [saving, setSaving] = useState(false);
     const [uploadingAvatar, setUploadingAvatar] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     // Profile fields
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -168,110 +169,117 @@ export default function ProfileScreen() {
         <SafeAreaView className="flex-1 bg-white">
             <Header />
 
-            <ScrollView className="flex-1">
-                <View className="px-6 py-8 items-center">
-                    <View style={{ maxWidth: containerMaxWidth, width: '100%' }}>
-                        <Text className={`font-bold mb-2 ${isLargeScreen ? 'text-4xl' : 'text-3xl'}`}>
-                            Profile
-                        </Text>
-                        <Text className="text-neutral-600 mb-8">
-                            Update your personal information
-                        </Text>
+            <View className="flex-1">
+                <ScrollView className="flex-1">
+                    <View className="px-6 py-8 items-center pt-12">
+                        <View style={{ maxWidth: containerMaxWidth, width: '100%' }}>
+                            <Text className={`font-bold mb-2 ${isLargeScreen ? 'text-4xl' : 'text-3xl'}`}>
+                                Profile
+                            </Text>
+                            <Text className="text-neutral-500 mb-8">Manage your personal information and account settings.</Text>
 
-                        {showSuccess && (
-                            <View className="mb-6 bg-emerald-50 border border-emerald-100 p-4 rounded-2xl flex-row items-center">
-                                <View className="w-8 h-8 rounded-full bg-emerald-500 items-center justify-center mr-3">
-                                    <Feather name="check" size={16} color="white" />
-                                </View>
-                                <Text className="text-emerald-900 font-medium">Profile updated successfully!</Text>
-                            </View>
-                        )}
-
-                        {/* Avatar Upload */}
-                        <View className="items-center mb-8">
-                            <TouchableOpacity 
-                                onPress={pickImage} 
-                                disabled={uploadingAvatar}
-                                className="relative"
-                            >
-                                <View className="w-24 h-24 rounded-full overflow-hidden bg-neutral-100 mb-2 border-2 border-neutral-100 items-center justify-center">
-                                    {uploadingAvatar ? (
-                                        <ActivityIndicator color="#000" />
-                                    ) : avatarUrl ? (
-                                        <Image
-                                            source={{ uri: avatarUrl }}
-                                            className="w-full h-full"
-                                            resizeMode="cover"
-                                        />
-                                    ) : (
-                                        <Feather name="user" size={40} color="#9ca3af" />
-                                    )}
-                                </View>
-                                <View className="absolute bottom-2 right-0 bg-black w-8 h-8 rounded-full items-center justify-center border-2 border-white pointer-events-none">
-                                    <Feather name="camera" size={14} color="white" />
-                                </View>
-                            </TouchableOpacity>
-                            <Text className="text-neutral-500 text-sm mt-2">Tap to change profile picture</Text>
-                        </View>
-
-                        <View className="space-y-6">
-                            <View>
-                                <Text className="font-semibold text-neutral-900 mb-2 px-1">Email</Text>
-                                <TextInput
-                                    value={email}
-                                    editable={false}
-                                    className="h-14 bg-neutral-100 rounded-2xl px-4 border border-neutral-200 text-neutral-500 text-base"
-                                />
-                                <Text className="text-neutral-500 text-xs mt-2 px-1">Email cannot be changed natively at this time.</Text>
-                            </View>
-
-                            <View>
-                                <Text className="font-semibold text-neutral-900 mb-2 px-1">Full Name</Text>
-                                <TextInput
-                                    placeholder="Enter your full name"
-                                    value={displayName}
-                                    onChangeText={setDisplayName}
-                                    className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-black text-base"
-                                />
-                            </View>
-
-                            <View>
-                                <Text className="font-semibold text-neutral-900 mb-2 px-1">Phone Number</Text>
-                                <TextInput
-                                    placeholder="Enter your phone number"
-                                    value={phone}
-                                    onChangeText={setPhone}
-                                    keyboardType="phone-pad"
-                                    className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-black text-base"
-                                />
-                            </View>
-
-                            {businessName && (
-                                <View>
-                                    <Text className="font-semibold text-neutral-900 mb-2 px-1">Business Association</Text>
-                                    <View className="h-14 bg-neutral-100 rounded-2xl px-4 border border-neutral-200 justify-center">
-                                        <Text className="text-neutral-600 text-base font-medium">
-                                            {businessName}
-                                        </Text>
-                                    </View>
-                                    <Text className="text-neutral-500 text-xs mt-2 px-1">
-                                        Linked as a {user?.uid ? 'Staff Member' : 'Owner'}
-                                    </Text>
+                            {error && (
+                                <View className="mb-6 p-4 bg-red-50 rounded-2xl border border-red-100 flex-row items-center">
+                                    <Feather name="alert-circle" size={20} color="#ef4444" />
+                                    <Text className="text-red-700 ml-2 font-medium">{error}</Text>
                                 </View>
                             )}
 
-                            <View className="mt-4">
-                                <Button
-                                    label="Save Profile"
-                                    loading={saving}
-                                    onPress={handleSave}
-                                    className="w-full"
-                                />
+                            {showSuccess && (
+                                <View className="mb-6 bg-emerald-50 border border-emerald-100 p-4 rounded-2xl flex-row items-center">
+                                    <View className="w-8 h-8 rounded-full bg-emerald-500 items-center justify-center mr-3">
+                                        <Feather name="check" size={16} color="white" />
+                                    </View>
+                                    <Text className="text-emerald-900 font-medium">Profile updated successfully!</Text>
+                                </View>
+                            )}
+
+                            {/* Avatar Upload */}
+                            <View className="items-center mb-8">
+                                <TouchableOpacity 
+                                    onPress={pickImage} 
+                                    disabled={uploadingAvatar}
+                                    className="relative"
+                                >
+                                    <View className="w-24 h-24 rounded-full overflow-hidden bg-neutral-100 mb-2 border-2 border-neutral-100 items-center justify-center">
+                                        {uploadingAvatar ? (
+                                            <ActivityIndicator color="black" />
+                                        ) : avatarUrl ? (
+                                            <Image
+                                                source={{ uri: avatarUrl }}
+                                                className="w-full h-full"
+                                                resizeMode="cover"
+                                            />
+                                        ) : (
+                                            <Feather name="user" size={40} color="#9ca3af" />
+                                        )}
+                                    </View>
+                                    <View className="absolute bottom-2 right-0 bg-black w-8 h-8 rounded-full items-center justify-center border-2 border-white pointer-events-none">
+                                        <Feather name="camera" size={14} color="white" />
+                                    </View>
+                                </TouchableOpacity>
+                                <Text className="text-neutral-500 text-sm mt-2">Tap to change profile picture</Text>
+                            </View>
+
+                            <View className="space-y-6">
+                                <View>
+                                    <Text className="font-semibold text-neutral-900 mb-2 px-1">Email</Text>
+                                    <TextInput
+                                        value={email}
+                                        editable={false}
+                                        className="h-14 bg-neutral-100 rounded-2xl px-4 border border-neutral-200 text-neutral-500 text-base"
+                                    />
+                                    <Text className="text-neutral-500 text-xs mt-2 px-1">Email cannot be changed natively at this time.</Text>
+                                </View>
+
+                                <View>
+                                    <Text className="font-semibold text-neutral-900 mb-2 px-1">Full Name</Text>
+                                    <TextInput
+                                        placeholder="Enter your full name"
+                                        value={displayName}
+                                        onChangeText={setDisplayName}
+                                        className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-black text-base"
+                                    />
+                                </View>
+
+                                <View>
+                                    <Text className="font-semibold text-neutral-900 mb-2 px-1">Phone Number</Text>
+                                    <TextInput
+                                        placeholder="Enter your phone number"
+                                        value={phone}
+                                        onChangeText={setPhone}
+                                        keyboardType="phone-pad"
+                                        className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-black text-base"
+                                    />
+                                </View>
+
+                                {businessName && (
+                                    <View>
+                                        <Text className="font-semibold text-neutral-900 mb-2 px-1">Business Association</Text>
+                                        <View className="h-14 bg-neutral-100 rounded-2xl px-4 border border-neutral-200 justify-center">
+                                            <Text className="text-neutral-600 text-base font-medium">
+                                                {businessName}
+                                            </Text>
+                                        </View>
+                                        <Text className="text-neutral-500 text-xs mt-2 px-1">
+                                            Linked as a {user?.uid ? 'Staff Member' : 'Owner'}
+                                        </Text>
+                                    </View>
+                                )}
                             </View>
                         </View>
                     </View>
+                </ScrollView>
+
+                <View className="p-6 border-t border-neutral-100 bg-white">
+                    <Button
+                        label={saving ? "Saving..." : "Save Profile"}
+                        onPress={handleSave}
+                        variant="primary"
+                        disabled={saving}
+                    />
                 </View>
-            </ScrollView>
+            </View>
         </SafeAreaView>
     );
 }
