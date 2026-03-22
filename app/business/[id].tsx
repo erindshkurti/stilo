@@ -186,13 +186,13 @@ export default function BusinessPage() {
 
                                     {/* Desktop: Book Button & Logo */}
                                     <View className="items-end">
-                                        {business.logo_url && !isLargeScreen && (
+                                        {!!business.logo_url && !isLargeScreen && (
                                             <Image
                                                 source={{ uri: business.logo_url }}
                                                 className="w-16 h-16 rounded-full border-2 border-white shadow-sm mb-4"
                                             />
                                         )}
-                                        {business.logo_url && isLargeScreen && !router.canGoBack() && (
+                                        {!!business.logo_url && isLargeScreen && !router.canGoBack() && (
                                             <Image
                                                 source={{ uri: business.logo_url }}
                                                 className="w-16 h-16 rounded-full border-2 border-white shadow-sm mb-4"
@@ -211,7 +211,7 @@ export default function BusinessPage() {
                                 </View>
 
                                 {/* Description */}
-                                {business.description && (
+                                {!!business.description && (
                                     <Text className="mt-4 text-neutral-600 leading-6" numberOfLines={3}>
                                         {business.description}
                                     </Text>

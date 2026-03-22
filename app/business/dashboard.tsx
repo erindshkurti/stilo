@@ -253,13 +253,13 @@ export default function BusinessDashboard() {
                                                     {business.address}, {business.city}
                                                 </Text>
                                             </View>
-                                            {business.phone && (
+                                            {!!business.phone && (
                                                 <View className="flex-row items-center mb-3">
                                                     <Feather name="phone" size={18} color="#737373" />
                                                     <Text className="ml-3 text-neutral-700">{business.phone}</Text>
                                                 </View>
                                             )}
-                                            {business.email && (
+                                            {!!business.email && (
                                                 <View className="flex-row items-center">
                                                     <Feather name="mail" size={18} color="#737373" />
                                                     <Text className="ml-3 text-neutral-700">{business.email}</Text>
