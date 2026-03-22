@@ -201,8 +201,8 @@ export default function LandingPage() {
                         console.log('[Landing] No existing business. Converting user...');
 
                         // Update Firestore profile to business type
-                        await setDoc(doc(db, 'profiles', user.uid), { user_type: 'business' }, { merge: true });
-                        userType = 'business';
+                        await setDoc(doc(db, 'profiles', user.uid), { user_type: 'business_owner' }, { merge: true });
+                        userType = 'business_owner';
                         await AsyncStorage.removeItem('pending_business_signup');
                         router.replace('/business/onboarding');
                         return;
@@ -216,7 +216,7 @@ export default function LandingPage() {
                     }
 
                     // 3. Routing Logic
-                    if (userType === 'business') {
+                    if (userType === 'business_owner') {
                         console.log('[Landing] Checking for existing business profile...');
                         const bizQ = query(collection(db, 'businesses'), where('owner_id', '==', user.uid));
                         const bizSnap = await getDocs(bizQ);

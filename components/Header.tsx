@@ -80,7 +80,7 @@ export function Header() {
                 const profileSnap = await getDoc(doc(db, 'profiles', user.uid));
                 if (profileSnap.exists()) {
                     const data = profileSnap.data();
-                    setIsBusinessOwner(data.user_type === 'business');
+                    setIsBusinessOwner(data.user_type === 'business_owner');
                     if (data.avatar_url) setAvatarUrl(data.avatar_url);
                 }
             } catch (error) {
@@ -175,15 +175,26 @@ export function Header() {
                                                 onClick={(e: any) => e.stopPropagation()}
                                             >
                                                 {isBusinessOwner ? (
-                                                    <Link href="/business/settings" asChild>
-                                                        <TouchableOpacity
-                                                            onPress={() => setProfileDropdownOpen(false)}
-                                                            className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
-                                                        >
-                                                            <Feather name="settings" size={18} color="#737373" />
-                                                            <Text className="ml-3 text-neutral-900">Settings</Text>
-                                                        </TouchableOpacity>
-                                                    </Link>
+                                                    <>
+                                                        <Link href="/profile" asChild>
+                                                            <TouchableOpacity
+                                                                onPress={() => setProfileDropdownOpen(false)}
+                                                                className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
+                                                            >
+                                                                <Feather name="user" size={18} color="#737373" />
+                                                                <Text className="ml-3 text-neutral-900">Profile</Text>
+                                                            </TouchableOpacity>
+                                                        </Link>
+                                                        <Link href="/business/settings" asChild>
+                                                            <TouchableOpacity
+                                                                onPress={() => setProfileDropdownOpen(false)}
+                                                                className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
+                                                            >
+                                                                <Feather name="settings" size={18} color="#737373" />
+                                                                <Text className="ml-3 text-neutral-900">Settings</Text>
+                                                            </TouchableOpacity>
+                                                        </Link>
+                                                    </>
                                                 ) : (
                                                     <Link href="/profile" asChild>
                                                         <TouchableOpacity
@@ -191,7 +202,7 @@ export function Header() {
                                                             className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
                                                         >
                                                             <Feather name="user" size={18} color="#737373" />
-                                                            <Text className="ml-3 text-neutral-900">My Account</Text>
+                                                            <Text className="ml-3 text-neutral-900">Profile</Text>
                                                         </TouchableOpacity>
                                                     </Link>
                                                 )}
@@ -285,6 +296,18 @@ export function Header() {
                                             </View>
                                         </TouchableOpacity>
 
+                                        <Link href="/profile" asChild>
+                                            <TouchableOpacity
+                                                onPress={() => setMenuOpen(false)}
+                                                className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-3"
+                                            >
+                                                <View className="flex-row items-center">
+                                                    <Feather name="user" size={18} color="#737373" />
+                                                    <Text className="ml-3 text-neutral-900 font-medium text-base">Profile</Text>
+                                                </View>
+                                            </TouchableOpacity>
+                                        </Link>
+
                                         <TouchableOpacity
                                             onPress={() => {
                                                 setMenuOpen(false);
@@ -320,7 +343,7 @@ export function Header() {
                                             >
                                                 <View className="flex-row items-center">
                                                     <Feather name="user" size={18} color="#737373" />
-                                                    <Text className="ml-3 text-neutral-900 font-medium text-base">My Account</Text>
+                                                    <Text className="ml-3 text-neutral-900 font-medium text-base">Profile</Text>
                                                 </View>
                                             </TouchableOpacity>
                                         </Link>

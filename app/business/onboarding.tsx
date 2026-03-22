@@ -74,9 +74,9 @@ export default function BusinessOnboardingScreen() {
                     const { getDoc, setDoc } = await import('firebase/firestore');
                     const profileRef = doc(db, 'profiles', user.uid);
                     const profileSnap = await getDoc(profileRef);
-                    if (!profileSnap.exists() || profileSnap.data()?.user_type !== 'business') {
-                        await setDoc(profileRef, { user_type: 'business' }, { merge: true });
-                        console.log('[Onboarding] Set profile user_type to business');
+                    if (!profileSnap.exists() || profileSnap.data()?.user_type !== 'business_owner') {
+                        await setDoc(profileRef, { user_type: 'business_owner' }, { merge: true });
+                        console.log('[Onboarding] Set profile user_type to business_owner');
                     }
                 } catch (e) {
                     console.error('[Onboarding] Failed to update profile:', e);

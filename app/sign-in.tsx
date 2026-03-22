@@ -78,7 +78,7 @@ export default function SignInScreen() {
                 }
 
                 console.log('Redirecting based on userType:', userType);
-                if (userType === 'business') {
+                if (userType === 'business_owner') {
                     router.replace('/business/dashboard');
                 } else {
                     router.replace('/');

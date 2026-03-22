@@ -86,7 +86,7 @@ export default function BusinessSignUpScreen() {
 
             // Create profile document in Firestore
             await setDoc(doc(db, 'profiles', cred.user.uid), {
-                user_type: 'business',
+                user_type: 'business_owner',
                 business_name: businessName,
                 email: cred.user.email,
                 created_at: new Date().toISOString(),
@@ -131,7 +131,7 @@ export default function BusinessSignUpScreen() {
 
             // Create/update profile in Firestore as business
             await setDoc(doc(db, 'profiles', cred.user.uid), {
-                user_type: 'business',
+                user_type: 'business_owner',
                 business_name: businessName,
                 email: cred.user.email,
                 avatar_url: cred.user.photoURL ?? null,
