@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../../../components/Header';
 import { useAuth } from '../../../lib/auth';
 import { db, storage } from '../../../lib/firebase';
-import { addDoc, collection, deleteDoc, doc, getDocs, query, where } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 
 interface Stylist {
@@ -17,6 +17,7 @@ interface Stylist {
     image_url?: string;
     storage_path?: string;
     local_image_uri?: string; // used for preview before uploading
+    has_new_image?: boolean; // track if they picked a new one
 }
 
 export default function EditTeamScreen() {
@@ -28,6 +29,7 @@ export default function EditTeamScreen() {
     const [currentStylist, setCurrentStylist] = useState<Stylist>({ name: '', bio: '' });
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
 
     const isLargeScreen = width > 768;
     const maxWidth = isLargeScreen ? 600 : width - 48;
@@ -69,7 +71,7 @@ export default function EditTeamScreen() {
             });
 
             if (!result.canceled && result.assets[0]) {
-                setCurrentStylist({ ...currentStylist, local_image_uri: result.assets[0].uri });
+                setCurrentStylist({ ...currentStylist, local_image_uri: result.assets[0].uri, has_new_image: true });
             }
         } catch (error) {
             console.error('Error picking image:', error);
@@ -77,43 +79,83 @@ export default function EditTeamScreen() {
         }
     };
 
-    const addStylist = async () => {
+    const saveStylist = async () => {
         if (!business || !currentStylist.name.trim()) return;
         setActionLoading(true);
         try {
-            let imageUrl = null;
-            let storagePath = null;
+            let imageUrl = currentStylist.image_url || null;
+            let storagePath = currentStylist.storage_path || null;
 
-            // Upload image if selected
-            if (currentStylist.local_image_uri) {
-                const response = await fetch(currentStylist.local_image_uri);
-                const blob = await response.blob();
-                const fileExt = currentStylist.local_image_uri.split('.').pop()?.toLowerCase() || 'jpg';
-                // Note: Stylists belong to the business, we store images under businesses/{bizId}/stylists
-                storagePath = `businesses/${business.id}/stylists/${Date.now()}.${fileExt}`;
-                const storageRef = ref(storage, storagePath);
-                
-                await uploadBytes(storageRef, blob, { contentType: `image/${fileExt}` });
-                imageUrl = await getDownloadURL(storageRef);
+            // Upload image if selected a NEW one or removed it
+            if (currentStylist.has_new_image) {
+                if (currentStylist.local_image_uri) {
+                    const response = await fetch(currentStylist.local_image_uri);
+                    const blob = await response.blob();
+                    const fileExt = currentStylist.local_image_uri.split('.').pop()?.toLowerCase() || 'jpg';
+                    const newStoragePath = `businesses/${business.id}/stylists/${Date.now()}.${fileExt}`;
+                    const storageRef = ref(storage, newStoragePath);
+                    
+                    await uploadBytes(storageRef, blob, { contentType: `image/${fileExt}` });
+                    imageUrl = await getDownloadURL(storageRef);
+                    
+                    // Delete old image if it existed to save space
+                    if (storagePath) {
+                        try { await deleteObject(ref(storage, storagePath)); } catch (e) {}
+                    }
+                    storagePath = newStoragePath;
+                } else {
+                    // Removed photo completely
+                    if (storagePath) {
+                        try { await deleteObject(ref(storage, storagePath)); } catch (e) {}
+                    }
+                    imageUrl = null;
+                    storagePath = null;
+                }
             }
 
-            await addDoc(collection(db, 'businesses', business.id, 'stylists'), {
+            const stylistData: any = {
                 name: currentStylist.name,
                 bio: currentStylist.bio,
                 image_url: imageUrl,
                 storage_path: storagePath,
-                specialties: [],
-                is_active: true,
-                created_at: new Date().toISOString(),
-            });
-            setCurrentStylist({ name: '', bio: '', local_image_uri: undefined });
+                updated_at: new Date().toISOString(),
+            };
+
+            if (isEditing && currentStylist.id) {
+                // Update
+                const docRef = doc(db, 'businesses', business.id, 'stylists', currentStylist.id);
+                await updateDoc(docRef, stylistData);
+            } else {
+                // Create
+                stylistData.specialties = [];
+                stylistData.is_active = true;
+                stylistData.created_at = new Date().toISOString();
+                await addDoc(collection(db, 'businesses', business.id, 'stylists'), stylistData);
+            }
+
+            setCurrentStylist({ name: '', bio: '', local_image_uri: undefined, has_new_image: false, image_url: undefined, storage_path: undefined });
+            setIsEditing(false);
             await loadStylists(business.id);
         } catch (error) {
-            console.error('Error adding stylist:', error);
-            alert('Failed to add team member. Please try again.');
+            console.error('Error saving stylist:', error);
+            alert('Failed to save team member. Please try again.');
         } finally {
             setActionLoading(false);
         }
+    };
+
+    const editStylist = (stylist: Stylist) => {
+        setCurrentStylist({
+            ...stylist,
+            local_image_uri: stylist.image_url,
+            has_new_image: false
+        });
+        setIsEditing(true);
+    };
+
+    const cancelEdit = () => {
+        setCurrentStylist({ name: '', bio: '', local_image_uri: undefined, has_new_image: false, image_url: undefined, storage_path: undefined });
+        setIsEditing(false);
     };
 
     const removeStylist = async (stylist: Stylist) => {
@@ -190,9 +232,14 @@ export default function EditTeamScreen() {
                                                         )}
                                                     </View>
                                                 </View>
-                                                <TouchableOpacity onPress={() => removeStylist(stylist)} className="ml-3 p-2">
-                                                    <Feather name="trash-2" size={18} color="#ef4444" />
-                                                </TouchableOpacity>
+                                                <View className="flex-row">
+                                                    <TouchableOpacity onPress={() => editStylist(stylist)} className="ml-1 p-2">
+                                                        <Feather name="edit-2" size={18} color="#000" />
+                                                    </TouchableOpacity>
+                                                    <TouchableOpacity onPress={() => removeStylist(stylist)} className="ml-1 p-2">
+                                                        <Feather name="trash-2" size={18} color="#ef4444" />
+                                                    </TouchableOpacity>
+                                                </View>
                                             </View>
                                         ))}
                                     </View>
@@ -201,7 +248,7 @@ export default function EditTeamScreen() {
                                 {/* Add New Team Member */}
                                 <View className="bg-neutral-50 rounded-2xl p-4 mb-6">
                                     <Text className="font-semibold text-base mb-4">
-                                        {stylists.length === 0 ? 'Add Your First Team Member' : 'Add Another Team Member'}
+                                        {isEditing ? 'Edit Team Member' : stylists.length === 0 ? 'Add Your First Team Member' : 'Add Another Team Member'}
                                     </Text>
 
                                     <View className="items-center mb-6">
@@ -223,7 +270,7 @@ export default function EditTeamScreen() {
                                         </TouchableOpacity>
                                         {currentStylist.local_image_uri && (
                                             <TouchableOpacity 
-                                                onPress={() => setCurrentStylist({ ...currentStylist, local_image_uri: undefined })}
+                                                onPress={() => setCurrentStylist({ ...currentStylist, local_image_uri: undefined, has_new_image: true })}
                                                 className="mt-2"
                                             >
                                                 <Text className="text-sm text-red-500 font-medium">Remove Photo</Text>
@@ -254,22 +301,32 @@ export default function EditTeamScreen() {
                                         />
                                     </View>
 
-                                    <TouchableOpacity
-                                        onPress={addStylist}
-                                        disabled={!currentStylist.name.trim() || actionLoading}
-                                        className={`h-12 rounded-xl items-center justify-center flex-row ${
-                                            currentStylist.name.trim() && !actionLoading ? 'bg-black' : 'bg-neutral-200'
-                                        }`}
-                                    >
-                                        {actionLoading ? (
-                                            <ActivityIndicator color="white" size="small" />
-                                        ) : (
-                                            <Feather name="plus" size={20} color={currentStylist.name.trim() ? "white" : "#a3a3a3"} />
+                                    <View className="flex-row gap-3">
+                                        {isEditing && (
+                                            <TouchableOpacity
+                                                onPress={cancelEdit}
+                                                className="h-12 flex-1 rounded-xl items-center justify-center bg-neutral-200"
+                                            >
+                                                <Text className="text-neutral-900 font-medium">Cancel</Text>
+                                            </TouchableOpacity>
                                         )}
-                                        <Text className={`${currentStylist.name.trim() && !actionLoading ? 'text-white' : 'text-neutral-500'} font-medium ml-2`}>
-                                            {actionLoading ? 'Adding...' : 'Add Team Member'}
-                                        </Text>
-                                    </TouchableOpacity>
+                                        <TouchableOpacity
+                                            onPress={saveStylist}
+                                            disabled={!currentStylist.name.trim() || actionLoading}
+                                            className={`h-12 flex-1 rounded-xl items-center justify-center flex-row ${
+                                                currentStylist.name.trim() && !actionLoading ? 'bg-black' : 'bg-neutral-200'
+                                            }`}
+                                        >
+                                            {actionLoading ? (
+                                                <ActivityIndicator color="white" size="small" />
+                                            ) : (
+                                                <Feather name={isEditing ? "save" : "plus"} size={20} color={currentStylist.name.trim() ? "white" : "#a3a3a3"} />
+                                            )}
+                                            <Text className={`${currentStylist.name.trim() && !actionLoading ? 'text-white' : 'text-neutral-500'} font-medium ml-2`}>
+                                                {actionLoading ? 'Saving...' : isEditing ? 'Save Changes' : 'Add Team Member'}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </View>
                                 </View>
                             </>
                         )}
