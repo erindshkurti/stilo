@@ -33,7 +33,8 @@ interface BusinessHour {
 }
 
 export default function BookingScreen() {
-    const { id: businessId } = useLocalSearchParams();
+    const { id: businessIdRaw } = useLocalSearchParams();
+    const businessId = businessIdRaw as string;
     const router = useRouter();
     const { width } = useWindowDimensions();
     const isLargeScreen = width > 1024;
@@ -170,14 +171,41 @@ export default function BookingScreen() {
             const dayOfWeek = selectedDate.getDay();
             const businessHour = hours.find(h => h.day_of_week === dayOfWeek);
 
-            // 1. Check if closed
-            if (!businessHour || businessHour.is_closed || !businessHour.open_time || !businessHour.close_time) {
+            // 1. Determine base operating window (Business Hours or Staff Hours)
+            let openTimeStr = businessHour?.open_time;
+            let closeTimeStr = businessHour?.close_time;
+            let isClosed = !businessHour || businessHour.is_closed;
+
+            const stylistBlocks: any[] = [];
+
+            if (selectedStylist !== 'any') {
+                const sId = (selectedStylist as Stylist).id;
+                
+                // Fetch staff-specific hours
+                const staffHoursSnap = await getDocs(
+                    query(collection(db, 'businesses', businessId, 'stylists', sId, 'hours'), where('day_of_week', '==', dayOfWeek))
+                );
+                if (!staffHoursSnap.empty) {
+                    const sh = staffHoursSnap.docs[0].data();
+                    openTimeStr = sh.open_time;
+                    closeTimeStr = sh.close_time;
+                    isClosed = sh.is_closed;
+                }
+
+                // Fetch staff-specific blocks for this date
+                const blocksSnap = await getDocs(
+                    query(collection(db, 'businesses', businessId, 'stylists', sId, 'blocks'), where('date', '==', selectedDate.toISOString().split('T')[0]))
+                );
+                stylistBlocks.push(...blocksSnap.docs.map(d => d.data()));
+            }
+
+            if (isClosed || !openTimeStr || !closeTimeStr) {
                 setAvailableSlots([]);
                 setSlotsLoading(false);
                 return;
             }
 
-            // 2. Fetch existing bookings for that date from Firestore 'bookings' collection
+            // 2. Fetch existing bookings for that date
             const startOfDay = new Date(selectedDate);
             startOfDay.setHours(0, 0, 0, 0);
             const endOfDay = new Date(selectedDate);
@@ -185,7 +213,6 @@ export default function BookingScreen() {
             const startIso = startOfDay.toISOString();
             const endIso = endOfDay.toISOString();
 
-            // We query only by business_id to avoid requiring a composite index in Firestore
             const bookingsSnap = await getDocs(
                 query(collection(db, 'bookings'), where('business_id', '==', businessId))
             );
@@ -202,8 +229,8 @@ export default function BookingScreen() {
 
             // 3. Generate Time Slots
             const slots: string[] = [];
-            const [openHour, openMinute] = businessHour.open_time.split(':').map(Number);
-            const [closeHour, closeMinute] = businessHour.close_time.split(':').map(Number);
+            const [openHour, openMinute] = openTimeStr.split(':').map(Number);
+            const [closeHour, closeMinute] = closeTimeStr.split(':').map(Number);
 
             let current = new Date(selectedDate);
             current.setHours(openHour, openMinute, 0, 0);
@@ -211,28 +238,36 @@ export default function BookingScreen() {
             const closeTime = new Date(selectedDate);
             closeTime.setHours(closeHour, closeMinute, 0, 0);
 
-            // Duration in ms
             const durationMs = selectedService.duration_minutes * 60000;
-
             const totalStylistsCount = stylists.length;
 
             while (current.getTime() + durationMs <= closeTime.getTime()) {
                 const slotStart = new Date(current);
                 const slotEnd = new Date(current.getTime() + durationMs);
 
-                // Check collision
                 let isBusy = false;
 
                 if (selectedStylist !== 'any') {
-                    // Specific stylist: Busy if ANY of their bookings overlap
-                    isBusy = existingBookings.some(booking => {
+                    // Check against Bookings
+                    const hasBookingOverlap = existingBookings.some(booking => {
                         const bStart = new Date(booking.start_time);
                         const bEnd = new Date(booking.end_time);
                         return slotStart < bEnd && slotEnd > bStart;
                     });
+
+                    // Check against Blocks
+                    const hasBlockOverlap = stylistBlocks.some(block => {
+                        const [bStartH, bStartM] = block.start_time.split(':').map(Number);
+                        const [bEndH, bEndM] = block.end_time.split(':').map(Number);
+                        const bStart = new Date(selectedDate);
+                        bStart.setHours(bStartH, bStartM, 0, 0);
+                        const bEnd = new Date(selectedDate);
+                        bEnd.setHours(bEndH, bEndM, 0, 0);
+                        return slotStart < bEnd && slotEnd > bStart;
+                    });
+
+                    isBusy = hasBookingOverlap || hasBlockOverlap;
                 } else {
-                    // "Any" stylist: Busy only if CONCURRENT overlapping bookings >= TOTAL stylists
-                    // We count how many bookings overlap this specific slot
                     const concurrentBookings = existingBookings.filter(booking => {
                         const bStart = new Date(booking.start_time);
                         const bEnd = new Date(booking.end_time);
@@ -242,7 +277,6 @@ export default function BookingScreen() {
                     isBusy = concurrentBookings >= totalStylistsCount;
                 }
 
-                // Also check if slot is in the past (for today)
                 const now = new Date();
                 const isPast = slotStart < now;
 
@@ -250,7 +284,6 @@ export default function BookingScreen() {
                     slots.push(current.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }));
                 }
 
-                // Increment by 30 mins (could be service duration or fixed interval)
                 current.setMinutes(current.getMinutes() + 30);
             }
 

@@ -1,10 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { collection, collectionGroup, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../components/Button';
 import { GoogleLogo } from '../components/GoogleLogo';
@@ -21,6 +21,7 @@ export default function SignInScreen() {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [fullName, setFullName] = useState('');
     const [loading, setLoading] = useState(false);
     const [isSignUp, setIsSignUp] = useState(false);
     const [error, setError] = useState('');
@@ -47,41 +48,61 @@ export default function SignInScreen() {
     useEffect(() => {
         async function handleAuthRedirect() {
             if (user) {
-                console.log('Authenticated user detected. ReturnTo:', returnTo);
-
-                if (returnTo) {
-                    console.log('Redirecting to returnTo:', returnTo);
-                    try {
-                        router.replace(returnTo as any);
-                    } catch (e) {
-                        console.error('Redirect failed:', e);
-                        // Fallback?
-                        router.replace('/');
-                    }
-                    return;
-                }
-
-                // user_type is stored in Firestore profiles doc
-                let userType: string | null = null;
+                let profile: any = null;
                 try {
-                    const { getDoc } = await import('firebase/firestore');
                     const profileSnap = await getDoc(doc(db, 'profiles', user.uid));
-                    userType = profileSnap.data()?.user_type ?? 'customer';
+                    if (profileSnap.exists()) {
+                        profile = profileSnap.data();
+                    } else {
+                        // Create default customer profile
+                        profile = {
+                            user_type: 'customer',
+                            email: user.email,
+                            created_at: new Date().toISOString()
+                        };
+                        await setDoc(doc(db, 'profiles', user.uid), profile, { merge: true });
+                    }
 
-                    // Ensure profile exists
-                    if (!profileSnap.exists()) {
-                        await setDoc(doc(db, 'profiles', user.uid), { user_type: 'customer' }, { merge: true });
+                    // 1. Check for Stylist Invitation (ONLY for Customers)
+                    if (profile.user_type === 'customer') {
+                        try {
+                            const stylistQ = query(collectionGroup(db, 'stylists'), where('email', '==', user.email?.toLowerCase()));
+                            const stylistSnap = await getDocs(stylistQ);
+                            
+                            if (!stylistSnap.empty) {
+                                // Found an invitation! Redirect to acceptance page
+                                const stylistDoc = stylistSnap.docs[0];
+                                const bizId = stylistDoc.ref.parent.parent?.id;
+                                
+                                // Only redirect if not already linked (as a safety, though userType would be stylist)
+                                if (bizId) {
+                                    router.replace(`/stylist/invite?businessId=${bizId}&stylistId=${stylistDoc.id}` as any);
+                                    return;
+                                }
+                            }
+                        } catch (indexError) {
+                            // If index is building, we skip elite sync for now to allow login
+                            console.log('[Auth] Index building or missing, skipping invite check');
+                        }
                     }
                 } catch (e) {
-                    console.error('Error reading profile:', e);
-                    userType = 'customer';
+                    console.error('[Auth] Error fetching profile:', e);
+                    profile = profile || { user_type: 'customer' };
                 }
 
-                console.log('Redirecting based on userType:', userType);
-                if (userType === 'business_owner') {
-                    router.replace('/business/dashboard');
+                const userType = profile.user_type;
+
+                // 2. Common-Sense Redirection
+                // Priority: Use role-based destination UNLESS a specific deep-link is requested
+                const defaultDest = userType === 'business_owner' ? '/business/dashboard' :
+                                   userType === 'stylist' ? '/stylist/dashboard' :
+                                   '/bookings';
+
+                // Only respect returnTo if it's a specific route (not home or generic profile)
+                if (returnTo && returnTo !== '/' && returnTo !== '/profile' && !returnTo.startsWith('/profile?')) {
+                    router.replace(returnTo as any);
                 } else {
-                    router.replace('/');
+                    router.replace(defaultDest);
                 }
             }
         }
@@ -119,6 +140,12 @@ export default function SignInScreen() {
             return;
         }
 
+        if (isSignUp && !fullName.trim()) {
+            setError('Please enter your full name');
+            setLoading(false);
+            return;
+        }
+
         if (isSignUp) {
             try {
                 const cred = await createUserWithEmailAndPassword(auth, email, password);
@@ -126,9 +153,10 @@ export default function SignInScreen() {
                 await setDoc(doc(db, 'profiles', cred.user.uid), {
                     user_type: 'customer',
                     email: cred.user.email,
+                    full_name: fullName.trim(),
                     created_at: new Date().toISOString(),
                 });
-                // useEffect handles redirect when user state updates
+                // handleAuthRedirect effect will take over and update roles based on invites
             } catch (signUpError: any) {
                 setError(signUpError.message || 'Failed to create account.');
                 setLoading(false);
@@ -177,12 +205,22 @@ export default function SignInScreen() {
                     created_at: new Date().toISOString(),
                 }, { merge: true });
             }
+            // handleAuthRedirect effect will take over role checking
             // useEffect handles redirect when user state updates
         } catch (error: any) {
             console.error('Google auth error:', error);
             setError(error.message || 'Failed to sign in with Google');
             setLoading(false);
         }
+    }
+
+    // Show loading screen while checking auth or redirecting in the effect
+    if (user && !error) {
+        return (
+            <View className="flex-1 items-center justify-center bg-white">
+                <ActivityIndicator size="large" color="#10b981" />
+            </View>
+        );
     }
 
     return (
@@ -218,6 +256,14 @@ export default function SignInScreen() {
                         </View>
 
                         <View className="space-y-3">
+                            {isSignUp && (
+                                <TextInput
+                                    placeholder="Full Name"
+                                    value={fullName}
+                                    onChangeText={setFullName}
+                                    className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-100 focus:border-neutral-300 text-base"
+                                />
+                            )}
                             <TextInput
                                 placeholder="Email"
                                 value={email}

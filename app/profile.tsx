@@ -19,6 +19,7 @@ export default function ProfileScreen() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [uploadingAvatar, setUploadingAvatar] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
 
     // Profile fields
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -42,11 +43,9 @@ export default function ProfileScreen() {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     
-                    // Role Guard: If business owner, redirect to business profile
-                    if (data.user_type === 'business_owner') {
-                        router.replace('/business/profile');
-                        return;
-                    }
+                    // No more aggressive redirects here - just let the page load or be 
+                    // handled by the sign-in/header logic.
+                    // If a user is on this page, they probably meant to be.
 
                     setDisplayName(data.full_name || data.display_name || '');
                     setPhone(data.phone || '');
@@ -117,11 +116,8 @@ export default function ProfileScreen() {
                 phone: phone,
             }, { merge: true });
             
-            if (typeof window !== 'undefined' && window.alert) {
-                window.alert('Profile updated successfully');
-            } else {
-                Alert.alert('Success', 'Profile updated successfully');
-            }
+            setShowSuccess(true);
+            setTimeout(() => setShowSuccess(false), 3000);
         } catch (error: any) {
             console.error('Error updating profile:', error);
             if (typeof window !== 'undefined' && window.alert) {
@@ -158,6 +154,15 @@ export default function ProfileScreen() {
                         <Text className="text-neutral-600 mb-8">
                             Update your personal information
                         </Text>
+
+                        {showSuccess && (
+                            <View className="mb-6 bg-emerald-50 border border-emerald-100 p-4 rounded-2xl flex-row items-center">
+                                <View className="w-8 h-8 rounded-full bg-emerald-500 items-center justify-center mr-3">
+                                    <Feather name="check" size={16} color="white" />
+                                </View>
+                                <Text className="text-emerald-900 font-medium">Profile updated successfully!</Text>
+                            </View>
+                        )}
 
                         {/* Avatar Upload */}
                         <View className="items-center mb-8">

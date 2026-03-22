@@ -18,6 +18,8 @@ interface Stylist {
     storage_path?: string;
     local_image_uri?: string; // used for preview before uploading
     has_new_image?: boolean; // track if they picked a new one
+    email?: string;
+    userId?: string;
 }
 
 export default function EditTeamScreen() {
@@ -114,9 +116,15 @@ export default function EditTeamScreen() {
                 }
             }
 
+            // Note: We no longer resolve userId from here to avoid permission errors.
+            // Linking happens automatically when the stylist first signs in.
+            const linkedUserId = currentStylist.userId || null;
+
             const stylistData: any = {
                 name: currentStylist.name,
                 bio: currentStylist.bio,
+                email: currentStylist.email?.trim().toLowerCase() || null,
+                userId: linkedUserId,
                 image_url: imageUrl,
                 storage_path: storagePath,
                 updated_at: new Date().toISOString(),
@@ -134,7 +142,7 @@ export default function EditTeamScreen() {
                 await addDoc(collection(db, 'businesses', business.id, 'stylists'), stylistData);
             }
 
-            setCurrentStylist({ name: '', bio: '', local_image_uri: undefined, has_new_image: false, image_url: undefined, storage_path: undefined });
+            setCurrentStylist({ name: '', bio: '', email: '', local_image_uri: undefined, has_new_image: false, image_url: undefined, storage_path: undefined });
             setIsEditing(false);
             setIsModalVisible(false);
             await loadStylists(business.id);
@@ -147,7 +155,7 @@ export default function EditTeamScreen() {
     };
 
     const handleAddClick = () => {
-        setCurrentStylist({ name: '', bio: '', local_image_uri: undefined, has_new_image: false, image_url: undefined, storage_path: undefined });
+        setCurrentStylist({ name: '', bio: '', email: '', local_image_uri: undefined, has_new_image: false, image_url: undefined, storage_path: undefined });
         setIsEditing(false);
         setIsModalVisible(true);
     };
@@ -175,6 +183,9 @@ export default function EditTeamScreen() {
         try {
             // Delete the document
             await deleteDoc(doc(db, 'businesses', business.id, 'stylists', stylist.id));
+
+            // Note: We no longer reset the user profile from here due to permissions.
+            // Role synchronization happens automatically when the user next signs in.
             
             // Delete the image from Storage if it exists
             if (stylist.storage_path) {
@@ -326,6 +337,19 @@ export default function EditTeamScreen() {
                                     <Text className="text-sm text-red-600 font-medium">Remove Photo</Text>
                                 </TouchableOpacity>
                             )}
+                        </View>
+
+                        <View className="mb-5">
+                            <Text className="text-sm font-medium text-neutral-700 mb-2">Email Address (Optional)</Text>
+                            <TextInput
+                                placeholder="stylist@example.com"
+                                value={currentStylist.email}
+                                onChangeText={(value) => setCurrentStylist({ ...currentStylist, email: value })}
+                                autoCapitalize="none"
+                                keyboardType="email-address"
+                                className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
+                            />
+                            <Text className="text-xs text-neutral-500 mt-1">Linking an email allows the stylist to log in and manage their own schedule.</Text>
                         </View>
 
                         <View className="mb-5">

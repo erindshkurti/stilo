@@ -16,8 +16,10 @@ export function Header() {
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const isMobile = width < 768;
 
-    // Check if user is a business owner
+    // Check user roles
     const [isBusinessOwner, setIsBusinessOwner] = useState(false);
+    const [isStylist, setIsStylist] = useState(false);
+    const [userType, setUserType] = useState<string | null>(null);
 
     // Animation values
     const slideAnim = useRef(new Animated.Value(0)).current;
@@ -70,6 +72,8 @@ export function Header() {
             if (!user) {
                 setAvatarUrl(null);
                 setIsBusinessOwner(false);
+                setIsStylist(false);
+                setUserType(null);
                 return;
             }
 
@@ -80,11 +84,16 @@ export function Header() {
                 const profileSnap = await getDoc(doc(db, 'profiles', user.uid));
                 if (profileSnap.exists()) {
                     const data = profileSnap.data();
+                    setUserType(data.user_type);
                     setIsBusinessOwner(data.user_type === 'business_owner');
+                    setIsStylist(data.user_type === 'stylist');
                     if (data.avatar_url) setAvatarUrl(data.avatar_url);
                 }
-            } catch (error) {
-                console.error('Error loading profile:', error);
+            } catch (error: any) {
+                if (error.message?.includes('requires an index')) {
+                    console.warn('Calendar query failed: Missing Firestore index. Please click the link in your console to create it.');
+                }
+                console.error('Error loading profile:', error); // Changed from 'calendar' to 'profile' for context
             }
         }
 
@@ -121,7 +130,7 @@ export function Header() {
             <View className="px-6 py-4" style={{ overflow: 'visible' }}>
                 <View className="flex-row items-center justify-between mx-auto w-full" style={{ overflow: 'visible', maxWidth: 1200 }}>
                     {/* Logo */}
-                    <Link href="/?noredirect=true" asChild>
+                    <Link href="/" asChild>
                         <TouchableOpacity onPress={() => setMenuOpen(false)}>
                             <Text className="text-2xl font-bold">Stilo</Text>
                         </TouchableOpacity>
@@ -134,6 +143,12 @@ export function Header() {
                                 <>
                                     {isBusinessOwner && (
                                         <TouchableOpacity onPress={() => router.push('/business/dashboard')}>
+                                            <Text className="text-neutral-700 font-medium">Dashboard</Text>
+                                        </TouchableOpacity>
+                                    )}
+
+                                    {isStylist && (
+                                        <TouchableOpacity onPress={() => router.push('/stylist/dashboard')}>
                                             <Text className="text-neutral-700 font-medium">Dashboard</Text>
                                         </TouchableOpacity>
                                     )}
@@ -174,8 +189,17 @@ export function Header() {
                                                 // @ts-ignore - stop propagation to prevent closing when clicking inside
                                                 onClick={(e: any) => e.stopPropagation()}
                                             >
-                                                {isBusinessOwner ? (
+                                                {isBusinessOwner && (
                                                     <>
+                                                        <Link href="/business/calendar" asChild>
+                                                            <TouchableOpacity
+                                                                onPress={() => setProfileDropdownOpen(false)}
+                                                                className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
+                                                            >
+                                                                <Feather name="grid" size={18} color="#737373" />
+                                                                <Text className="ml-3 text-neutral-900">Business Calendar</Text>
+                                                            </TouchableOpacity>
+                                                        </Link>
                                                         <Link href="/bookings" asChild>
                                                             <TouchableOpacity
                                                                 onPress={() => setProfileDropdownOpen(false)}
@@ -195,7 +219,50 @@ export function Header() {
                                                             </TouchableOpacity>
                                                         </Link>
                                                     </>
-                                                ) : (
+                                                )}
+
+                                                {isStylist && (
+                                                    <>
+                                                        <Link href="/stylist/dashboard" asChild>
+                                                            <TouchableOpacity
+                                                                onPress={() => setProfileDropdownOpen(false)}
+                                                                className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
+                                                            >
+                                                                <Feather name="layout" size={18} color="#737373" />
+                                                                <Text className="ml-3 text-neutral-900">Staff Dashboard</Text>
+                                                            </TouchableOpacity>
+                                                        </Link>
+                                                        <Link href="/stylist/hours" asChild>
+                                                            <TouchableOpacity
+                                                                onPress={() => setProfileDropdownOpen(false)}
+                                                                className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
+                                                            >
+                                                                <Feather name="clock" size={18} color="#737373" />
+                                                                <Text className="ml-3 text-neutral-900">Working Hours</Text>
+                                                            </TouchableOpacity>
+                                                        </Link>
+                                                        <Link href="/stylist/blocks" asChild>
+                                                            <TouchableOpacity
+                                                                onPress={() => setProfileDropdownOpen(false)}
+                                                                className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
+                                                            >
+                                                                <Feather name="slash" size={18} color="#737373" />
+                                                                <Text className="ml-3 text-neutral-900">Blocked Time</Text>
+                                                            </TouchableOpacity>
+                                                        </Link>
+                                                        <Link href="/profile" asChild>
+                                                            <TouchableOpacity
+                                                                onPress={() => setProfileDropdownOpen(false)}
+                                                                className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
+                                                            >
+                                                                <Feather name="user" size={18} color="#737373" />
+                                                                <Text className="ml-3 text-neutral-900">My Profile</Text>
+                                                            </TouchableOpacity>
+                                                        </Link>
+                                                    </>
+                                                )}
+
+                                                {!isBusinessOwner && !isStylist && (
                                                     <>
                                                         <Link href="/bookings" asChild>
                                                             <TouchableOpacity
@@ -307,6 +374,19 @@ export function Header() {
                                             </View>
                                         </TouchableOpacity>
 
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                setMenuOpen(false);
+                                                router.push('/business/calendar');
+                                            }}
+                                            className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-3"
+                                        >
+                                            <View className="flex-row items-center">
+                                                <Feather name="grid" size={18} color="#737373" />
+                                                <Text className="ml-3 text-neutral-900 font-medium text-base">Business Calendar</Text>
+                                            </View>
+                                        </TouchableOpacity>
+
                                         <Link href="/bookings" asChild>
                                             <TouchableOpacity
                                                 onPress={() => setMenuOpen(false)}
@@ -331,17 +411,58 @@ export function Header() {
                                                 <Text className="ml-3 text-neutral-900 font-medium text-base">Profile</Text>
                                             </View>
                                         </TouchableOpacity>
+                                    </>
+                                ) : isStylist ? (
+                                    <>
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                setMenuOpen(false);
+                                                router.push('/stylist/dashboard');
+                                            }}
+                                            className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-3"
+                                        >
+                                            <View className="flex-row items-center">
+                                                <Feather name="layout" size={18} color="#737373" />
+                                                <Text className="ml-3 text-neutral-900 font-medium text-base">Staff Dashboard</Text>
+                                            </View>
+                                        </TouchableOpacity>
 
                                         <TouchableOpacity
                                             onPress={() => {
                                                 setMenuOpen(false);
-                                                handleSignOut();
+                                                router.push('/stylist/hours');
                                             }}
-                                            className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100"
+                                            className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-3"
                                         >
                                             <View className="flex-row items-center">
-                                                <Feather name="log-out" size={18} color="#737373" />
-                                                <Text className="ml-3 text-neutral-900 font-medium text-base">Sign Out</Text>
+                                                <Feather name="clock" size={18} color="#737373" />
+                                                <Text className="ml-3 text-neutral-900 font-medium text-base">Working Hours</Text>
+                                            </View>
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                setMenuOpen(false);
+                                                router.push('/stylist/blocks');
+                                            }}
+                                            className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-3"
+                                        >
+                                            <View className="flex-row items-center">
+                                                <Feather name="slash" size={18} color="#737373" />
+                                                <Text className="ml-3 text-neutral-900 font-medium text-base">Blocked Time</Text>
+                                            </View>
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                setMenuOpen(false);
+                                                router.push('/profile');
+                                            }}
+                                            className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-3"
+                                        >
+                                            <View className="flex-row items-center">
+                                                <Feather name="user" size={18} color="#737373" />
+                                                <Text className="ml-3 text-neutral-900 font-medium text-base">My Profile</Text>
                                             </View>
                                         </TouchableOpacity>
                                     </>
@@ -370,21 +491,21 @@ export function Header() {
                                                 </View>
                                             </TouchableOpacity>
                                         </Link>
-
-                                        <TouchableOpacity
-                                            onPress={() => {
-                                                setMenuOpen(false);
-                                                handleSignOut();
-                                            }}
-                                            className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100"
-                                        >
-                                            <View className="flex-row items-center">
-                                                <Feather name="log-out" size={18} color="#737373" />
-                                                <Text className="ml-3 text-neutral-900 font-medium text-base">Sign Out</Text>
-                                            </View>
-                                        </TouchableOpacity>
                                     </>
                                 )}
+
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        setMenuOpen(false);
+                                        handleSignOut();
+                                    }}
+                                    className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100"
+                                >
+                                    <View className="flex-row items-center">
+                                        <Feather name="log-out" size={18} color="#737373" />
+                                        <Text className="ml-3 text-neutral-900 font-medium text-base">Sign Out</Text>
+                                    </View>
+                                </TouchableOpacity>
                             </View>
                         ) : (
                             <View className="space-y-6">

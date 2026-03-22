@@ -14,7 +14,7 @@ import { StylistCard } from '../components/StylistCard';
 import { useAuth } from '../lib/auth';
 import { db } from '../lib/firebase';
 import { fetchLocationSuggestions, fetchServiceSuggestions } from '../lib/search';
-import { collection, doc, getDocs, getDoc, limit, query, setDoc, where } from 'firebase/firestore';
+import { collection, collectionGroup, doc, getDocs, getDoc, limit, query, setDoc, updateDoc, where } from 'firebase/firestore';
 
 
 // Match DB Schema
@@ -149,22 +149,17 @@ export default function LandingPage() {
 
     useEffect(() => {
         async function handleAuthRedirect() {
-            // Check for explicit no-redirect flag (from URL)
-            // If they clicked "Stilo" (Home) or explicitly went to /?noredirect=true, stay here.
-            if (params.noredirect === 'true') {
-                console.log('[Landing] No-redirect flag present. Skipping auth redirect.');
-                return;
-            }
-
             // Prevent redundant checks if we are already processing or redirecting
             if (user && !isChecking && !redirecting && user.uid !== lastCheckedUserId) {
-                console.log('[Landing] User detected:', user.uid);
                 setIsChecking(true);
                 setRedirecting(true);
                 setLastCheckedUserId(user.uid);
 
                 try {
-                    // 0. Fetch User Type first to make smarter redirection decisions
+                    // 1. Check for pending auth redirect (from Sign In flow)
+                    const savedReturnTo = await AsyncStorage.getItem('auth_return_url');
+                    
+                    // Fetch user type to make smart decisions
                     let userType: string | null = null;
                     try {
                         const profileSnap = await getDoc(doc(db, 'profiles', user.uid));
@@ -173,81 +168,54 @@ export default function LandingPage() {
                         console.error('[Landing] Error reading profile:', e);
                     }
 
-                    // 1. Check for pending auth redirect (from Sign In flow)
-                    const savedReturnTo = await AsyncStorage.getItem('auth_return_url');
                     if (savedReturnTo) {
-                        console.log('[Landing] Found saved return URL, redirecting:', savedReturnTo);
                         await AsyncStorage.removeItem('auth_return_url');
                         
-                        // Smart Redirection: If business owner is trying to go to generic /profile, 
-                        // send them to /business/profile instead.
-                        if (userType === 'business_owner' && savedReturnTo === '/profile') {
-                            console.log('[Landing] Business owner detected on generic profile, redirecting to /business/profile');
-                            router.replace('/business/profile');
+                        const defaultDest = userType === 'business_owner' ? '/business/dashboard' :
+                                           userType === 'stylist' ? '/stylist/dashboard' :
+                                           '/bookings';
+
+                        // Only respect savedReturnTo if it's a specific deep link
+                        if (savedReturnTo !== '/' && savedReturnTo !== '/profile' && !savedReturnTo.startsWith('/profile?')) {
+                            try {
+                                router.replace(savedReturnTo as any);
+                            } catch (e) {
+                                router.replace(defaultDest);
+                            }
                         } else {
-                            router.replace(savedReturnTo as any);
+                            router.replace(defaultDest);
                         }
                         return;
                     }
+
+                    // 2. Check if this is a pending business signup
                     const pendingBusinessSignup = await AsyncStorage.getItem('pending_business_signup');
-
-                    // 1. Check if this is a pending business signup
                     if (pendingBusinessSignup === 'true') {
-                        console.log('[Landing] Found pending business signup flag. Checking restrictions...');
-
                         // Preliminary Check: Does this user ALREADY have a business?
                         const bizQ = query(collection(db, 'businesses'), where('owner_id', '==', user.uid));
                         const bizSnap = await getDocs(bizQ);
 
                         if (!bizSnap.empty) {
-                            console.log('[Landing] User already has a business. Preventing duplicate creation.');
                             await AsyncStorage.removeItem('pending_business_signup');
                             router.replace('/business/dashboard?warning=duplicate_business');
                             return;
                         }
 
-                        console.log('[Landing] No existing business. Converting user...');
-
                         // Update Firestore profile to business type
                         await setDoc(doc(db, 'profiles', user.uid), { user_type: 'business_owner' }, { merge: true });
-                        userType = 'business_owner';
                         await AsyncStorage.removeItem('pending_business_signup');
                         router.replace('/business/onboarding');
                         return;
                     }
 
-                    // 2. Default User Type Logic if not set
-                    if (!userType) {
-                        console.log('[Landing] User type not set. Defaulting to customer.');
-                        await setDoc(doc(db, 'profiles', user.uid), { user_type: 'customer' }, { merge: true });
-                        userType = 'customer';
-                    }
-
-                    // 3. Routing Logic
-                    if (userType === 'business_owner') {
-                        console.log('[Landing] Checking for existing business profile...');
-                        const bizQ = query(collection(db, 'businesses'), where('owner_id', '==', user.uid));
-                        const bizSnap = await getDocs(bizQ);
-
-                        if (!bizSnap.empty) {
-                            console.log('[Landing] Business found. Going to Dashboard.');
-                            router.replace('/business/dashboard');
-                        } else {
-                            console.log('[Landing] No business found. Going to Onboarding.');
-                            router.replace('/business/onboarding');
-                        }
-                    } else {
-                        // Customer - Stay on Landing Page (do nothing)
-                        console.log('[Landing] Customer detected. Staying on landing page.');
-                        setIsChecking(false);
-                        setRedirecting(false);
-                    }
-                } catch (error) {
-                    console.error('[Landing] Error in auth redirect:', error);
+                    // No default redirect here! 
+                    // This allows logged-in business owners/staff to browse the search page.
+                    // Redirection to dashboards is handled by the initial sign-in logic in sign-in.tsx.
+                } catch (e) {
+                    console.error('[Landing] Auth redirect error:', e);
+                } finally {
                     setIsChecking(false);
                     setRedirecting(false);
-                    // allow retry on error
-                    setLastCheckedUserId(null);
                 }
             } else if (!user && lastCheckedUserId) {
                 // User logged out, reset check
@@ -258,7 +226,7 @@ export default function LandingPage() {
         if (!isLoading) {
             handleAuthRedirect();
         }
-    }, [user, isLoading, router, lastCheckedUserId, isChecking, redirecting, params]);
+    }, [user, isLoading, params, lastCheckedUserId, isChecking, redirecting]);
 
     // Show loading screen while checking auth or redirecting
     if (isLoading || redirecting) {

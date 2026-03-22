@@ -13,6 +13,10 @@ service cloud.firestore {
     match /{path=**}/services/{serviceId} {
       allow read: if true;
     }
+    
+    match /{path=**}/stylists/{stylistId} {
+      allow read: if true;
+    }
 
     // ─── Businesses ─────────────────────────────────────────────────────────────
     // Public read; only owner can write
