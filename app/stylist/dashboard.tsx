@@ -164,7 +164,24 @@ export default function StylistDashboard() {
         );
     }
 
-    const upcomingBookings = bookings.filter(b => b.status === 'confirmed' && new Date(b.start_time) >= new Date());
+    const now = new Date();
+    const todayStr = now.toDateString();
+
+    const todayBookings = bookings.filter(b => 
+        new Date(b.start_time).toDateString() === todayStr &&
+        b.status !== 'cancelled'
+    );
+
+    const scheduleBookings = bookings.filter(b => 
+        b.status !== 'cancelled' && 
+        (new Date(b.start_time).toDateString() === todayStr || new Date(b.start_time) > now)
+    );
+
+    const formatDate = (dateStr: string) => {
+        const d = new Date(dateStr);
+        if (d.toDateString() === todayStr) return 'Today';
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    };
 
     return (
         <SafeAreaView className="flex-1 bg-white">
@@ -185,7 +202,7 @@ export default function StylistDashboard() {
                         <View className="flex-row gap-4 mb-8">
                             <View className="flex-1 bg-neutral-50 p-6 rounded-3xl border border-neutral-100">
                                 <Text className="text-neutral-500 text-sm font-medium uppercase tracking-wider mb-1">Today</Text>
-                                <Text className="text-3xl font-bold text-neutral-900">{upcomingBookings.length}</Text>
+                                <Text className="text-3xl font-bold text-neutral-900">{todayBookings.length}</Text>
                                 <Text className="text-neutral-400 text-xs mt-1">Appointments</Text>
                             </View>
                              <View className="flex-1 bg-neutral-50 p-6 rounded-3xl border border-neutral-100">
@@ -225,15 +242,22 @@ export default function StylistDashboard() {
                                 </TouchableOpacity>
                             </View>
 
-                            {upcomingBookings.length > 0 ? (
+                            {scheduleBookings.length > 0 ? (
                                 <View className="space-y-4">
-                                    {upcomingBookings.map((booking) => (
+                                    {scheduleBookings.map((booking) => (
                                         <View key={booking.id} className="bg-white border border-neutral-100 rounded-2xl p-5 flex-row items-center shadow-sm">
-                                            <View className="items-center justify-center bg-neutral-50 w-16 h-16 rounded-xl mr-5">
-                                                <Text className="text-neutral-900 font-bold text-lg">
-                                                    {new Date(booking.start_time).getHours().toString().padStart(2, '0')}:
-                                                    {new Date(booking.start_time).getMinutes().toString().padStart(2, '0')}
-                                                </Text>
+                                            <View className="mr-5 items-center">
+                                                <View className="bg-neutral-50 px-2.5 py-1 rounded-lg mb-2">
+                                                    <Text className="text-[10px] font-bold text-neutral-400 uppercase tracking-tighter">
+                                                        {formatDate(booking.start_time)}
+                                                    </Text>
+                                                </View>
+                                                <View className="items-center justify-center bg-neutral-900 w-16 h-12 rounded-xl">
+                                                    <Text className="text-white font-bold text-sm">
+                                                        {new Date(booking.start_time).getHours().toString().padStart(2, '0')}:
+                                                        {new Date(booking.start_time).getMinutes().toString().padStart(2, '0')}
+                                                    </Text>
+                                                </View>
                                             </View>
                                             <View className="flex-1">
                                                 <Text className="text-lg font-bold text-neutral-900">{booking.customerName}</Text>
@@ -257,7 +281,7 @@ export default function StylistDashboard() {
                             ) : (
                                 <View className="bg-neutral-50 rounded-3xl py-12 items-center border border-dashed border-neutral-200">
                                     <Feather name="calendar" size={40} color="#d4d4d4" />
-                                    <Text className="text-neutral-500 mt-4 text-center px-8">You don't have any appointments scheduled for today.</Text>
+                                    <Text className="text-neutral-500 mt-4 text-center px-8">You don't have any upcoming appointments.</Text>
                                 </View>
                             )}
                         </View>
