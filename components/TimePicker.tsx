@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 interface TimePickerProps {
@@ -12,15 +12,32 @@ interface TimePickerProps {
 
 export function TimePicker({ value, onChange, placeholder, className, ...props }: TimePickerProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const scrollRef = useRef<ScrollView>(null);
 
     // Generate times from 00:00 to 23:30 in 30-minute intervals
-    const times = [];
+    const times: string[] = [];
     for (let h = 0; h < 24; h++) {
         for (let m = 0; m < 60; m += 30) {
             const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
             times.push(time);
         }
     }
+
+    // Auto-scroll logic
+    useEffect(() => {
+        if (isOpen && value) {
+            const index = times.indexOf(value);
+            if (index !== -1) {
+                // Wait a tiny bit for the View to be ready and measured
+                setTimeout(() => {
+                    scrollRef.current?.scrollTo({
+                        y: index * 48, // Based on h-12 (48px)
+                        animated: false
+                    });
+                }, 10);
+            }
+        }
+    }, [isOpen, value]);
 
     const handleSelect = (time: string) => {
         onChange(time);
@@ -51,12 +68,15 @@ export function TimePicker({ value, onChange, placeholder, className, ...props }
                     />
 
                     <View className="absolute top-full left-0 mt-1 w-full max-h-60 bg-white rounded-xl shadow-xl border border-neutral-200 overflow-hidden z-50">
-                        <ScrollView showsVerticalScrollIndicator={false}>
+                        <ScrollView 
+                            ref={scrollRef}
+                            showsVerticalScrollIndicator={false}
+                        >
                             {times.map((t) => (
                                 <TouchableOpacity
                                     key={t}
                                     onPress={() => handleSelect(t)}
-                                    className={`px-4 py-3 border-b border-neutral-50 ${value === t ? 'bg-neutral-50' : ''}`}
+                                    className={`h-12 px-4 justify-center border-b border-neutral-50 ${value === t ? 'bg-neutral-50' : ''}`}
                                 >
                                     <Text className={`text-center ${value === t ? 'font-bold text-black' : 'text-neutral-600'}`}>
                                         {t}
