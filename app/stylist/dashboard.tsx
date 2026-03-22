@@ -124,7 +124,7 @@ export default function StylistDashboard() {
                         {/* Welcome Header */}
                         <View className="flex-row items-center justify-between mb-8">
                             <View>
-                                <Text className="text-3xl font-bold text-neutral-900">Hello, {stylistRecord?.name || 'Stylist'}</Text>
+                                <Text className="text-3xl font-bold text-neutral-900">Hello, {stylistRecord?.name?.split(' ')[0] || 'Stylist'}</Text>
                                 <Text className="text-neutral-500 mt-1">Here is your schedule for today</Text>
                             </View>
                             {stylistRecord?.image_url && (
@@ -185,10 +185,8 @@ export default function StylistDashboard() {
                                         <View key={booking.id} className="bg-white border border-neutral-100 rounded-2xl p-5 flex-row items-center shadow-sm">
                                             <View className="items-center justify-center bg-neutral-50 w-16 h-16 rounded-xl mr-5">
                                                 <Text className="text-neutral-900 font-bold text-lg">
-                                                    {new Date(booking.start_time).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: false }).split(':')[0]}
-                                                </Text>
-                                                <Text className="text-neutral-500 font-bold text-[10px] uppercase">
-                                                    :{new Date(booking.start_time).toLocaleTimeString([], { minute: '2-digit' })}
+                                                    {new Date(booking.start_time).getHours().toString().padStart(2, '0')}:
+                                                    {new Date(booking.start_time).getMinutes().toString().padStart(2, '0')}
                                                 </Text>
                                             </View>
                                             <View className="flex-1">

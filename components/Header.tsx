@@ -5,7 +5,7 @@ import { Animated, Image, Text, TouchableOpacity, useWindowDimensions, View } fr
 import { useAuth } from '../lib/auth';
 import { auth, db } from '../lib/firebase';
 import { signOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, getDocs, collection, query, where } from 'firebase/firestore';
 
 export function Header() {
     const { user } = useAuth();
@@ -87,7 +87,18 @@ export function Header() {
                     setUserType(data.user_type);
                     setIsBusinessOwner(data.user_type === 'business_owner');
                     setIsStylist(data.user_type === 'stylist');
-                    if (data.avatar_url) setAvatarUrl(data.avatar_url);
+                    if (data.avatar_url) {
+                        setAvatarUrl(data.avatar_url);
+                    } else if (data.user_type === 'stylist' && data.business_id) {
+                        // Fallback: Try to get avatar from stylist record
+                        const stylistsSnap = await getDocs(
+                            query(collection(db, 'businesses', data.business_id, 'stylists'), where('userId', '==', user.uid))
+                        );
+                        if (!stylistsSnap.empty) {
+                            const stylistData = stylistsSnap.docs[0].data();
+                            if (stylistData.image_url) setAvatarUrl(stylistData.image_url);
+                        }
+                    }
                 }
             } catch (error: any) {
                 if (error.message?.includes('requires an index')) {
