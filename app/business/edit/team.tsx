@@ -235,7 +235,7 @@ export default function EditTeamScreen() {
                                                     )}
                                                     <View className="flex-1">
                                                         <Text className="font-semibold text-base">{stylist.name}</Text>
-                                                        {stylist.bio && (
+                                                        {!!stylist.bio && (
                                                             <Text className="text-sm text-neutral-600 mt-1" numberOfLines={1}>
                                                                 {stylist.bio}
                                                             </Text>
@@ -318,7 +318,7 @@ export default function EditTeamScreen() {
                                     </>
                                 )}
                             </TouchableOpacity>
-                            {currentStylist.local_image_uri && (
+                            {!!currentStylist.local_image_uri && (
                                 <TouchableOpacity 
                                     onPress={() => setCurrentStylist({ ...currentStylist, local_image_uri: undefined, has_new_image: true })}
                                     className="mt-4 bg-red-50 px-4 py-2 rounded-full"
