@@ -65,9 +65,14 @@ export default function StylistInviteScreen() {
 
             // 3. Success! Go to dashboard
             router.replace('/stylist/dashboard');
-        } catch (e) {
+        } catch (e: any) {
             console.error('Error accepting invite:', e);
-            setError('Failed to accept invitation. Please try again.');
+            const msg = e.message || '';
+            if (msg.includes('permissions')) {
+                setError('Permission error: Please ensure you are signed in with the correct email address.');
+            } else {
+                setError('Failed to accept invitation. Please try again.');
+            }
             setAccepting(false);
         }
     };

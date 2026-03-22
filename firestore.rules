@@ -27,12 +27,24 @@ service cloud.firestore {
       allow update, delete: if request.auth != null
                              && resource.data.owner_id == request.auth.uid;
 
-      // Subcollections: hours, stylists, services, portfolio
-      match /{subcollection}/{docId} {
+      // Specific rules for stylists to allow self-linking during invitation
+      match /stylists/{stylistId} {
         allow read: if true;
-        allow write: if request.auth != null
-                     && get(/databases/$(database)/documents/businesses/$(businessId)).data.owner_id == request.auth.uid;
+        allow update: if request.auth != null && (
+          // 1. Business owner can update any field
+          get(/databases/$(database)/documents/businesses/$(businessId)).data.owner_id == request.auth.uid ||
+          // 2. Stylist can ONLY update their own 'userId' field to link their account
+          (request.auth.token.email.lower() == resource.data.email.lower() && 
+           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['userId']))
+        );
+        allow create, delete: if request.auth != null && 
+          get(/databases/$(database)/documents/businesses/$(businessId)).data.owner_id == request.auth.uid;
       }
+
+      // Other Subcollections: hours, services, portfolio
+      match /hours/{docId} { allow read: if true; allow write: if request.auth != null && get(/databases/$(database)/documents/businesses/$(businessId)).data.owner_id == request.auth.uid; }
+      match /services/{docId} { allow read: if true; allow write: if request.auth != null && get(/databases/$(database)/documents/businesses/$(businessId)).data.owner_id == request.auth.uid; }
+      match /portfolio/{docId} { allow read: if true; allow write: if request.auth != null && get(/databases/$(database)/documents/businesses/$(businessId)).data.owner_id == request.auth.uid; }
     }
 
     // ─── Bookings ───────────────────────────────────────────────────────────────
