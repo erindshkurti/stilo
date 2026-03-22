@@ -164,22 +164,30 @@ export default function LandingPage() {
                 setLastCheckedUserId(user.uid);
 
                 try {
-                    // Check for pending auth redirect (from Sign In flow)
-                    const savedReturnTo = await AsyncStorage.getItem('auth_return_url');
-                    if (savedReturnTo) {
-                        console.log('[Landing] Found saved return URL, redirecting:', savedReturnTo);
-                        await AsyncStorage.removeItem('auth_return_url');
-                        router.replace(savedReturnTo as any);
-                        return;
-                    }
-
-                    // Read user_type from Firestore profile
+                    // 0. Fetch User Type first to make smarter redirection decisions
                     let userType: string | null = null;
                     try {
                         const profileSnap = await getDoc(doc(db, 'profiles', user.uid));
                         userType = profileSnap.data()?.user_type ?? null;
                     } catch (e) {
                         console.error('[Landing] Error reading profile:', e);
+                    }
+
+                    // 1. Check for pending auth redirect (from Sign In flow)
+                    const savedReturnTo = await AsyncStorage.getItem('auth_return_url');
+                    if (savedReturnTo) {
+                        console.log('[Landing] Found saved return URL, redirecting:', savedReturnTo);
+                        await AsyncStorage.removeItem('auth_return_url');
+                        
+                        // Smart Redirection: If business owner is trying to go to generic /profile, 
+                        // send them to /business/profile instead.
+                        if (userType === 'business_owner' && savedReturnTo === '/profile') {
+                            console.log('[Landing] Business owner detected on generic profile, redirecting to /business/profile');
+                            router.replace('/business/profile');
+                        } else {
+                            router.replace(savedReturnTo as any);
+                        }
+                        return;
                     }
                     const pendingBusinessSignup = await AsyncStorage.getItem('pending_business_signup');
 

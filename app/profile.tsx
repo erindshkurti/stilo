@@ -41,6 +41,13 @@ export default function ProfileScreen() {
                 const docSnap = await getDoc(doc(db, 'profiles', user.uid));
                 if (docSnap.exists()) {
                     const data = docSnap.data();
+                    
+                    // Role Guard: If business owner, redirect to business profile
+                    if (data.user_type === 'business_owner') {
+                        router.replace('/business/profile');
+                        return;
+                    }
+
                     setDisplayName(data.full_name || data.display_name || '');
                     setPhone(data.phone || '');
                     setEmail(data.email || user.email || '');
