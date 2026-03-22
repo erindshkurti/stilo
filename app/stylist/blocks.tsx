@@ -1,12 +1,14 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View, useWindowDimensions, ActivityIndicator, Alert, TextInput } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View, useWindowDimensions, ActivityIndicator, Alert, TextInput, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../../components/Header';
 import { useAuth } from '../../lib/auth';
 import { db } from '../../lib/firebase';
 import { addDoc, collection, deleteDoc, getDocs, query, where, doc, getDoc, orderBy, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { DatePicker } from '../../components/DatePicker';
+import { TimePicker } from '../../components/TimePicker';
 
 interface Block {
     id: string;
@@ -174,64 +176,93 @@ export default function StaffBlocksScreen() {
                                 }}
                                 className={`w-12 h-12 rounded-full items-center justify-center ${showForm ? 'bg-neutral-100' : 'bg-black'}`}
                             >
-                                <Feather name={showForm ? 'x' : 'plus'} size={24} color={showForm ? 'black' : 'white'} />
+                                <Feather name="plus" size={24} color="white" />
                             </TouchableOpacity>
                         </View>
 
-                        {showForm && (
-                            <View className="bg-neutral-50 p-6 rounded-3xl border border-neutral-200 mb-8">
-                                <Text className="font-bold text-lg mb-4">{editingBlockId ? 'Edit Block' : 'Add Block'}</Text>
-                                
-                                <View className="mb-4">
-                                    <Text className="text-xs font-bold text-neutral-500 uppercase mb-2">Date (YYYY-MM-DD)</Text>
-                                    <TextInput 
-                                        value={newBlock.date}
-                                        onChangeText={(t) => setNewBlock(prev => ({ ...prev, date: t }))}
-                                        className="h-12 bg-white rounded-xl px-4 border border-neutral-200"
-                                        placeholder="2023-12-25"
-                                    />
-                                </View>
+                        {/* Add/Edit Block Modal */}
+                        <Modal visible={showForm} transparent animationType="fade">
+                            <View className="flex-1 bg-black/40 justify-center items-center px-6">
+                                <View className="bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl">
+                                    <View className="flex-row justify-between items-center mb-6">
+                                        <Text className="text-2xl font-bold text-neutral-900">{editingBlockId ? 'Edit Block' : 'Add Block'}</Text>
+                                        <TouchableOpacity 
+                                            onPress={() => {
+                                                setShowForm(false);
+                                                setEditingBlockId(null);
+                                                setNewBlock({
+                                                    date: new Date().toISOString().split('T')[0],
+                                                    start_time: '12:00',
+                                                    end_time: '13:00',
+                                                    reason: 'Lunch Break'
+                                                });
+                                            }}
+                                            className="p-2 bg-neutral-100 rounded-full"
+                                        >
+                                            <Feather name="x" size={20} color="#000" />
+                                        </TouchableOpacity>
+                                    </View>
+                                    
+                                    <View className="mb-4" style={{ zIndex: 20 }}>
+                                        <Text className="text-xs font-bold text-neutral-500 uppercase mb-2">Date</Text>
+                                        <View className="h-12 bg-white rounded-xl px-4 border border-neutral-200 justify-center">
+                                            <DatePicker 
+                                                value={newBlock.date}
+                                                onChange={(date) => setNewBlock(prev => ({ ...prev, date }))}
+                                                placeholder="Select Date"
+                                            />
+                                        </View>
+                                    </View>
 
-                                <View className="flex-row gap-4 mb-4">
-                                    <View className="flex-1">
-                                        <Text className="text-xs font-bold text-neutral-500 uppercase mb-2">Start Time</Text>
+                                    <View className="flex-row gap-4 mb-4" style={{ zIndex: 10 }}>
+                                        <View className="flex-1">
+                                            <Text className="text-xs font-bold text-neutral-500 uppercase mb-2">Start Time</Text>
+                                            <View className="h-12 bg-white rounded-xl px-4 border border-neutral-200 justify-center">
+                                                <TimePicker 
+                                                    value={newBlock.start_time}
+                                                    onChange={(t) => setNewBlock(prev => ({ ...prev, start_time: t }))}
+                                                    placeholder="Start"
+                                                />
+                                            </View>
+                                        </View>
+                                        <View className="flex-1">
+                                            <Text className="text-xs font-bold text-neutral-500 uppercase mb-2">End Time</Text>
+                                            <View className="h-12 bg-white rounded-xl px-4 border border-neutral-200 justify-center">
+                                                <TimePicker 
+                                                    value={newBlock.end_time}
+                                                    onChange={(t) => setNewBlock(prev => ({ ...prev, end_time: t }))}
+                                                    placeholder="End"
+                                                />
+                                            </View>
+                                        </View>
+                                    </View>
+
+                                    <View className="mb-8">
+                                        <Text className="text-xs font-bold text-neutral-500 uppercase mb-2">Reason</Text>
                                         <TextInput 
-                                            value={newBlock.start_time}
-                                            onChangeText={(t) => setNewBlock(prev => ({ ...prev, start_time: t }))}
+                                            value={newBlock.reason}
+                                            onChangeText={(t) => setNewBlock(prev => ({ ...prev, reason: t }))}
                                             className="h-12 bg-white rounded-xl px-4 border border-neutral-200"
-                                            placeholder="12:00"
+                                            placeholder="Lunch Break, Off, etc."
                                         />
                                     </View>
-                                    <View className="flex-1">
-                                        <Text className="text-xs font-bold text-neutral-500 uppercase mb-2">End Time</Text>
-                                        <TextInput 
-                                            value={newBlock.end_time}
-                                            onChangeText={(t) => setNewBlock(prev => ({ ...prev, end_time: t }))}
-                                            className="h-12 bg-white rounded-xl px-4 border border-neutral-200"
-                                            placeholder="13:00"
-                                        />
-                                    </View>
-                                </View>
 
-                                <View className="mb-6">
-                                    <Text className="text-xs font-bold text-neutral-500 uppercase mb-2">Reason</Text>
-                                    <TextInput 
-                                        value={newBlock.reason}
-                                        onChangeText={(t) => setNewBlock(prev => ({ ...prev, reason: t }))}
-                                        className="h-12 bg-white rounded-xl px-4 border border-neutral-200"
-                                        placeholder="Lunch, Meeting, etc."
-                                    />
+                                    <TouchableOpacity 
+                                        onPress={handleSaveBlock}
+                                        disabled={saving}
+                                        className="bg-black py-4 rounded-2xl items-center"
+                                    >
+                                        {saving ? (
+                                            <ActivityIndicator color="white" />
+                                        ) : (
+                                            <Text className="text-white font-bold text-lg">
+                                                {editingBlockId ? 'Save Changes' : 'Add Block'}
+                                            </Text>
+                                        )}
+                                    </TouchableOpacity>
                                 </View>
-
-                                <TouchableOpacity 
-                                    onPress={handleSaveBlock}
-                                    disabled={saving}
-                                    className="bg-black py-4 rounded-xl items-center"
-                                >
-                                    <Text className="text-white font-bold">{saving ? 'Saving...' : editingBlockId ? 'Save Changes' : 'Add Block'}</Text>
-                                </TouchableOpacity>
                             </View>
-                        )}
+                        </Modal>
 
                         <View className="space-y-4">
                             {blocks.length > 0 ? (
