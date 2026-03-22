@@ -6,42 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../components/Header';
 import { useAuth } from '../lib/auth';
 import { db } from '../lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
-
-// Mock data for bookings
-const MOCK_BOOKINGS = {
-    upcoming: [
-        {
-            id: '1',
-            businessName: 'Bella Hair Studio',
-            service: 'Haircut & Styling',
-            date: 'Tomorrow, 2:00 PM',
-            location: '123 Main St, New York, NY',
-            imageUrl: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200&h=200&fit=crop',
-            status: 'confirmed'
-        }
-    ],
-    recent: [
-        {
-            id: '2',
-            businessName: 'The Cut Above',
-            service: 'Full Color',
-            date: 'Dec 15, 2023',
-            location: '456 Broadway, New York, NY',
-            imageUrl: 'https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=200&h=200&fit=crop',
-            status: 'completed'
-        },
-        {
-            id: '3',
-            businessName: 'Style & Grace',
-            service: 'Blowout',
-            date: 'Nov 28, 2023',
-            location: '789 5th Ave, New York, NY',
-            imageUrl: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=200&h=200&fit=crop',
-            status: 'completed'
-        }
-    ]
-};
+import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 
 export default function ProfileScreen() {
     const router = useRouter();
@@ -50,13 +15,19 @@ export default function ProfileScreen() {
     const [activeTab, setActiveTab] = useState<'upcoming' | 'recent'>('upcoming');
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const [fullName, setFullName] = useState<string>('');
+    
+    // Real booking states
+    const [upcomingBookings, setUpcomingBookings] = useState<any[]>([]);
+    const [recentBookings, setRecentBookings] = useState<any[]>([]);
+    const [loadingBookings, setLoadingBookings] = useState(true);
+
     const isLargeScreen = width > 768;
 
     useEffect(() => {
-        async function loadProfile() {
+        async function loadProfileAndBookings() {
             if (!user) return;
 
-            // Prioritize Google/Firebase user photo
+            // 1. Load Profile
             if (user.photoURL) setAvatarUrl(user.photoURL);
             if (user.displayName) setFullName(user.displayName);
 
@@ -70,9 +41,73 @@ export default function ProfileScreen() {
             } catch (error) {
                 console.error('Error loading profile details:', error);
             }
+
+            // 2. Load Real Bookings
+            try {
+                const bookingsSnap = await getDocs(
+                    query(collection(db, 'bookings'), where('customer_id', '==', user.uid))
+                );
+
+                const now = new Date();
+                const upcoming: any[] = [];
+                const recent: any[] = [];
+
+                const bizCache: Record<string, any> = {};
+                const serviceCache: Record<string, any> = {};
+
+                const rawBookings = bookingsSnap.docs.map(d => ({id: d.id, ...d.data() as any}));
+                rawBookings.sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
+
+                for (const b of rawBookings) {
+                    if (b.status === 'cancelled') continue;
+
+                    if (!bizCache[b.business_id]) {
+                        const bizDoc = await getDoc(doc(db, 'businesses', b.business_id));
+                        bizCache[b.business_id] = bizDoc.exists() ? bizDoc.data() : { name: 'Unknown Salon', address: '' };
+                    }
+                    if (!serviceCache[b.service_id] && b.service_id) {
+                        const srvDoc = await getDoc(doc(db, 'businesses', b.business_id, 'services', b.service_id));
+                        serviceCache[b.service_id] = srvDoc.exists() ? srvDoc.data() : { name: 'Service' };
+                    }
+
+                    const bizData = bizCache[b.business_id];
+                    const srvData = serviceCache[b.service_id] || { name: 'Service' };
+
+                    const startDate = new Date(b.start_time);
+                    const isUpcoming = startDate >= now && b.status === 'confirmed';
+                    
+                    const formattedDate = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ' + startDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+                    const formattedBooking = {
+                        id: b.id,
+                        businessName: bizData.name || 'Salon',
+                        service: srvData.name || 'Service',
+                        date: formattedDate,
+                        location: bizData.address ? `${bizData.address}${bizData.city ? `, ${bizData.city}` : ''}` : 'Location hidden',
+                        imageUrl: bizData.cover_image_url || bizData.logo_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200&h=200&fit=crop',
+                        status: b.status,
+                        rawDate: startDate
+                    };
+
+                    if (isUpcoming) {
+                        upcoming.push(formattedBooking);
+                    } else {
+                        recent.push(formattedBooking);
+                    }
+                }
+
+                recent.sort((a, b) => b.rawDate.getTime() - a.rawDate.getTime());
+
+                setUpcomingBookings(upcoming);
+                setRecentBookings(recent);
+            } catch (error) {
+                console.error('Error loading bookings:', error);
+            } finally {
+                setLoadingBookings(false);
+            }
         }
 
-        loadProfile();
+        loadProfileAndBookings();
     }, [user]);
 
     if (isLoading) {
@@ -153,9 +188,13 @@ export default function ProfileScreen() {
 
                         {/* Booking Lists */}
                         <View className="min-h-[300px]">
-                            {MOCK_BOOKINGS[activeTab].length > 0 ? (
+                            {loadingBookings ? (
+                                <View className="items-center justify-center py-20">
+                                    <Text className="text-neutral-500">Loading bookings...</Text>
+                                </View>
+                            ) : (activeTab === 'upcoming' ? upcomingBookings : recentBookings).length > 0 ? (
                                 <View className="space-y-4">
-                                    {MOCK_BOOKINGS[activeTab].map((booking) => (
+                                    {(activeTab === 'upcoming' ? upcomingBookings : recentBookings).map((booking) => (
                                         <View
                                             key={booking.id}
                                             className="bg-white border border-neutral-100 rounded-xl p-4 flex-row items-center shadow-sm"
