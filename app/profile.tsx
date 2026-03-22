@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -50,7 +50,21 @@ export default function ProfileScreen() {
                     setDisplayName(data.full_name || data.display_name || '');
                     setPhone(data.phone || '');
                     setEmail(data.email || user.email || '');
-                    setAvatarUrl(data.avatar_url || user.photoURL || null);
+                    
+                    if (data.avatar_url) {
+                        setAvatarUrl(data.avatar_url);
+                    } else if (data.user_type === 'stylist' && data.business_id) {
+                        // Fallback: Try to get avatar from stylist record
+                        const stylistsSnap = await getDocs(
+                            query(collection(db, 'businesses', data.business_id, 'stylists'), where('userId', '==', user.uid))
+                        );
+                        if (!stylistsSnap.empty) {
+                            const stylistData = stylistsSnap.docs[0].data();
+                            if (stylistData.image_url) setAvatarUrl(stylistData.image_url);
+                        }
+                    } else {
+                        setAvatarUrl(user.photoURL || null);
+                    }
                 } else {
                     setEmail(user.email || '');
                 }
