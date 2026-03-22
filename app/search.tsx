@@ -101,11 +101,12 @@ export default function SearchScreen() {
 
             // If service filter is provided, find matching business IDs
             if (searchService) {
+                const formattedService = searchService.charAt(0).toUpperCase() + searchService.slice(1).toLowerCase();
                 const serviceSnap = await getDocs(
                     query(
                         collectionGroup(db, 'services'),
-                        where('category', '>=', searchService),
-                        where('category', '<=', searchService + '\uf8ff')
+                        where('category', '>=', formattedService),
+                        where('category', '<=', formattedService + '\uf8ff')
                     )
                 );
                 // Firestore subcollection path: businesses/{businessId}/services/{serviceId}
@@ -142,8 +143,9 @@ export default function SearchScreen() {
             }
 
             setResults(results);
-        } catch (err) {
+        } catch (err: any) {
             console.error('Search error:', err);
+            alert(`Search Failed: ${err.message}`);
         } finally {
             setLoading(false);
         }

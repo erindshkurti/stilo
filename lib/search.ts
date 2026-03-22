@@ -8,12 +8,14 @@ export async function fetchServiceSuggestions(queryStr: string): Promise<string[
     if (!queryStr.trim()) return [];
 
     try {
+        const formattedQuery = queryStr.charAt(0).toUpperCase() + queryStr.slice(1).toLowerCase();
+        
         // Firestore range query for prefix matching on category
         const servicesRef = collectionGroup(db, 'services');
         const q = query(
             servicesRef,
-            where('category', '>=', queryStr),
-            where('category', '<=', queryStr + '\uf8ff'),
+            where('category', '>=', formattedQuery),
+            where('category', '<=', formattedQuery + '\uf8ff'),
             limit(20)
         );
 
