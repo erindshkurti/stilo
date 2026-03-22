@@ -203,7 +203,6 @@ export default function BusinessOnboardingScreen() {
 
             console.log('Creating business for user:', user.uid);
 
-            // Step 1: Create business document in Firestore
             const businessRef = await addDoc(collection(db, 'businesses'), {
                 owner_id: user.uid,
                 name: businessData.name,
@@ -212,12 +211,14 @@ export default function BusinessOnboardingScreen() {
                 city: businessData.city,
                 state: businessData.state,
                 zip_code: businessData.zip_code,
+                country: 'US',
                 phone: businessData.phone,
                 email: businessData.email,
                 is_featured: false,
                 rating: 0,
                 review_count: 0,
                 created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
             });
 
             const businessId = businessRef.id;
@@ -255,6 +256,8 @@ export default function BusinessOnboardingScreen() {
                         name: stylist.name,
                         bio: stylist.bio,
                         specialties: stylist.specialties,
+                        is_active: true,
+                        created_at: new Date().toISOString(),
                     });
                 }
             }
@@ -269,6 +272,8 @@ export default function BusinessOnboardingScreen() {
                         duration_minutes: service.duration_minutes,
                         price: service.price,
                         category: service.category,
+                        is_active: true,
+                        created_at: new Date().toISOString(),
                     });
                 }
             }

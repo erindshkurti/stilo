@@ -62,6 +62,8 @@ export default function EditTeamScreen() {
                 name: currentStylist.name,
                 bio: currentStylist.bio,
                 specialties: [],
+                is_active: true,
+                created_at: new Date().toISOString(),
             });
             setCurrentStylist({ name: '', bio: '' });
             await loadStylists(business.id);

@@ -30,11 +30,11 @@ A modern, full-stack salon booking application built with React Native and Expo,
 - **TypeScript** - Type-safe development
 
 ### Backend & Services
-- **Supabase** - Backend-as-a-Service
-  - PostgreSQL database
-  - Authentication (Email/Password & Google OAuth)
-  - Storage for images
-  - Row Level Security (RLS)
+- **Firebase** - Backend-as-a-Service
+  - Cloud Firestore (NoSQL Document Database)
+  - Firebase Authentication (Email/Password & Google OAuth)
+  - Firebase Storage (Image uploads)
+  - Firebase Security Rules
 
 ### Key Libraries
 - `expo-image-picker` - Image selection and upload
@@ -48,7 +48,7 @@ A modern, full-stack salon booking application built with React Native and Expo,
 - Node.js (v16 or higher)
 - npm or yarn
 - Expo CLI (`npm install -g expo-cli`)
-- Supabase account and project
+- Firebase account and project
 
 ## 🚀 Getting Started
 
@@ -70,25 +70,27 @@ npm install
 Create a `.env` file in the root directory:
 
 ```env
-EXPO_PUBLIC_SUPABASE_URL=your_supabase_url
-EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+EXPO_PUBLIC_FIREBASE_API_KEY=your_api_key
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_id
+EXPO_PUBLIC_FIREBASE_APP_ID=your_app_id
 ```
 
-### 4. Database Setup
+### 4. Database & Storage Setup
 
-Run the SQL migrations in your Supabase project:
+1. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com)
+2. Enable **Firestore Database** (Production mode)
+3. Enable **Firebase Storage**
+4. Enable **Authentication** (Email/Password and Google providers)
 
-1. Execute `bookings_schema.sql` to create the database schema
-2. (Optional) Run `seed_data.sql` to populate with sample data
+### 5. Deploy Security Rules
 
-### 5. Configure Supabase Storage
-
-Create the following storage buckets in Supabase:
-- `avatars` - For user profile pictures
-- `business-covers` - For business cover images
-- `portfolio` - For business portfolio images
-
-Enable public access and configure RLS policies as needed.
+Install the Firebase CLI and deploy the custom security rules:
+```bash
+npx firebase-tools deploy --only firestore:rules,storage
+```
 
 ### 6. Start the Development Server
 
@@ -139,22 +141,28 @@ stilo/
 │   ├── AutocompleteInput.tsx
 │   └── onboarding/        # Onboarding form components
 ├── lib/                   # Utilities and services
-│   ├── supabase.ts       # Supabase client
-│   ├── auth.tsx          # Authentication context
+│   ├── firebase.ts       # Firebase initialization & exports
+│   ├── auth.tsx          # Authentication context listener
 │   └── search.ts         # Search utilities
-└── data/                  # Mock data (deprecated)
+├── firestore.rules        # Firestore security rules
+├── storage.rules          # Firebase Storage security rules
+└── firebase.json          # Firebase deployment config
 ```
 
-## 🗄 Database Schema
+## 🗄 Database Schema (Firestore)
 
-### Main Tables
-- `profiles` - User profiles (customers and business owners)
-- `businesses` - Salon/business information
-- `services` - Services offered by businesses
-- `business_hours` - Operating hours
-- `stylists` - Team members
-- `bookings` - Customer appointments
-- `business_portfolio_images` - Portfolio gallery images
+The app uses a NoSQL document structure in Cloud Firestore:
+
+### Top Level Collections
+- `profiles/{userId}` - Customer and business owner profiles
+- `businesses/{businessId}` - Salon/business information
+- `bookings/{bookingId}` - All customer appointments across businesses
+
+### Subcollections (under `businesses/{businessId}`)
+- `services/{serviceId}` - Offerings and prices
+- `hours/{hourId}` - Operating hours
+- `stylists/{stylistId}` - Team members
+- `portfolio/{imageId}` - Gallery images
 
 ## 🔐 Authentication
 
@@ -190,11 +198,13 @@ The application is configured for deployment to Vercel. For detailed deployment 
 - `docs/vercel_deployment.md` - Complete Vercel deployment guide
 - `docs/deployment_guide.md` - General deployment overview
 
-### Database Setup
+### Firebase Setup
 
-For Supabase configuration and database setup, see:
-- `docs/supabase_setup.md` - Supabase project configuration
-- `docs/database_setup.md` - Database schema setup
+For deployment of database rules and configuration:
+- Ensure `.firebaserc` points to your project aliases.
+- Deploy changes with `npx firebase-tools deploy`.
+
+> **Note**: Legacy Supabase documentation remains in `docs/` for historical context only. The application is now fully reliant on Firebase.
 
 ### Mobile Deployment
 

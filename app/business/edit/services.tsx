@@ -74,6 +74,8 @@ export default function EditServicesScreen() {
                 duration_minutes: currentService.duration_minutes,
                 price: currentService.price,
                 category: currentService.category,
+                is_active: true,
+                created_at: new Date().toISOString(),
             });
             setCurrentService({ name: '', description: '', duration_minutes: 60, price: 0, category: 'Haircut' });
             await loadServices(business.id);
