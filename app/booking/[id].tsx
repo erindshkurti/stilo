@@ -20,7 +20,7 @@ interface Service {
 interface Stylist {
     id: string;
     name: string;
-    avatar_url: string | null;
+    image_url: string | null;
     specialties: string[] | null;
 }
 
@@ -359,8 +359,8 @@ export default function BookingScreen() {
                         }`}
                 >
                     <View className="w-12 h-12 rounded-full bg-neutral-100 mr-4 overflow-hidden border border-neutral-100">
-                        {stylist.avatar_url ? (
-                            <Image source={{ uri: stylist.avatar_url }} className="w-full h-full" />
+                        {stylist.image_url ? (
+                            <Image source={{ uri: stylist.image_url }} className="w-full h-full" />
                         ) : (
                             <View className="w-full h-full items-center justify-center bg-neutral-200">
                                 <Feather name="user" size={20} color="#a3a3a3" />
