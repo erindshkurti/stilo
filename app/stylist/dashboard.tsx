@@ -127,12 +127,6 @@ export default function StylistDashboard() {
                                 <Text className="text-3xl font-bold text-neutral-900">Hello, {stylistRecord?.name?.split(' ')[0] || 'Stylist'}</Text>
                                 <Text className="text-neutral-500 mt-1">Here is your schedule for today</Text>
                             </View>
-                            {stylistRecord?.image_url && (
-                                <Image 
-                                    source={{ uri: stylistRecord.image_url }} 
-                                    className="w-16 h-16 rounded-full border-2 border-neutral-100"
-                                />
-                            )}
                         </View>
 
                         {/* Summary Stats */}

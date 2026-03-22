@@ -158,11 +158,6 @@ export function Header() {
                                         </TouchableOpacity>
                                     )}
 
-                                    {isStylist && (
-                                        <TouchableOpacity onPress={() => router.push('/stylist/dashboard')}>
-                                            <Text className="text-neutral-700 font-medium">Dashboard</Text>
-                                        </TouchableOpacity>
-                                    )}
 
                                     {/* Unified Profile Dropdown */}
                                     <View style={{ position: 'relative', zIndex: 9999 }} data-dropdown="profile">
