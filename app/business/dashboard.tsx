@@ -334,7 +334,14 @@ export default function BusinessDashboard() {
                                         {stylists.length > 0 ? (
                                             <View className="flex-row flex-wrap gap-2">
                                                 {stylists.map((stylist) => (
-                                                    <View key={stylist.id} className="bg-white border border-neutral-200 rounded-full px-4 py-2">
+                                                    <View key={stylist.id} className="bg-white border border-neutral-200 rounded-full py-1.5 px-1.5 pr-4 flex-row items-center">
+                                                        {stylist.image_url ? (
+                                                            <Image source={{ uri: stylist.image_url }} className="w-6 h-6 rounded-full mr-2 bg-neutral-100" />
+                                                        ) : (
+                                                            <View className="w-6 h-6 rounded-full mr-2 bg-neutral-100 items-center justify-center">
+                                                                <Feather name="user" size={12} color="#737373" />
+                                                            </View>
+                                                        )}
                                                         <Text className="font-medium text-neutral-900">{stylist.name}</Text>
                                                     </View>
                                                 ))}
