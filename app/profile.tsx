@@ -250,7 +250,7 @@ export default function ProfileScreen() {
                                                 {activeTab === 'upcoming' ? (
                                                     <>
                                                         <TouchableOpacity 
-                                                            onPress={() => router.push(`/booking/${booking.businessId}?serviceId=${booking.serviceId}`)}
+                                                            onPress={() => router.push(`/booking/${booking.businessId}?serviceId=${booking.serviceId}&rescheduleId=${booking.id}`)}
                                                             className="bg-black px-4 py-2 rounded-lg items-center"
                                                         >
                                                             <Text className="text-white font-medium text-sm">Reschedule</Text>

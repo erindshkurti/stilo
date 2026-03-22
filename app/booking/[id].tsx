@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Image, ScrollView, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { useAuth } from '../../lib/auth';
 import { db } from '../../lib/firebase';
-import { addDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { addDoc, updateDoc, doc, collection, getDocs, query, where } from 'firebase/firestore';
 
 // Types
 type Step = 1 | 2 | 3 | 4 | 5;
@@ -99,7 +99,7 @@ export default function BookingScreen() {
 
     // Restore state from URL params (e.g. after return from sign-in)
     // We decode params manually if needed, but expo-router does most of it
-    const { restore, sId, stId, d, t, serviceId } = useLocalSearchParams<{ restore: string; sId: string; stId: string; d: string; t: string; serviceId: string }>();
+    const { restore, sId, stId, d, t, serviceId, rescheduleId } = useLocalSearchParams<{ restore: string; sId: string; stId: string; d: string; t: string; serviceId: string; rescheduleId: string }>();
 
     useEffect(() => {
         // 1. Full State Restore (e.g. from Auth Redirect)
@@ -284,16 +284,26 @@ export default function BookingScreen() {
             const endTimeDate = new Date(startTimeDate.getTime() + selectedService.duration_minutes * 60000);
             const finalStylistId = selectedStylist === 'any' ? null : (selectedStylist as Stylist)?.id;
 
-            await addDoc(collection(db, 'bookings'), {
-                business_id: businessId,
-                customer_id: user.uid,
-                service_id: selectedService.id,
-                stylist_id: finalStylistId,
-                start_time: startTimeDate.toISOString(),
-                end_time: endTimeDate.toISOString(),
-                status: 'confirmed',
-                created_at: new Date().toISOString(),
-            });
+            if (rescheduleId) {
+                await updateDoc(doc(db, 'bookings', rescheduleId), {
+                    service_id: selectedService.id,
+                    stylist_id: finalStylistId,
+                    start_time: startTimeDate.toISOString(),
+                    end_time: endTimeDate.toISOString(),
+                    status: 'confirmed'
+                });
+            } else {
+                await addDoc(collection(db, 'bookings'), {
+                    business_id: businessId,
+                    customer_id: user.uid,
+                    service_id: selectedService.id,
+                    stylist_id: finalStylistId,
+                    start_time: startTimeDate.toISOString(),
+                    end_time: endTimeDate.toISOString(),
+                    status: 'confirmed',
+                    created_at: new Date().toISOString(),
+                });
+            }
 
             setStep(5);
 
@@ -470,7 +480,7 @@ export default function BookingScreen() {
             <View className="w-24 h-24 bg-green-100 rounded-full items-center justify-center mb-6">
                 <Feather name="check" size={48} color="#16a34a" />
             </View>
-            <Text className="text-2xl font-bold text-neutral-900 mb-2 text-center">Booking Confirmed!</Text>
+            <Text className="text-2xl font-bold text-neutral-900 mb-2 text-center">{rescheduleId ? 'Successfully Rescheduled!' : 'Booking Confirmed!'}</Text>
             <Text className="text-neutral-500 text-center mb-8 leading-6">
                 Your appointment has been successfully scheduled.
             </Text>
@@ -516,7 +526,7 @@ export default function BookingScreen() {
                 {step !== 5 && (
                     <View className="flex-row items-center justify-between px-6 py-4 border-b border-neutral-100 bg-white">
                         <View className="w-10" />
-                        <Text className="text-lg font-bold text-neutral-900">Book Appointment</Text>
+                        <Text className="text-lg font-bold text-neutral-900">{rescheduleId ? 'Reschedule Appointment' : 'Book Appointment'}</Text>
                         <TouchableOpacity onPress={() => router.replace(`/business/${businessId}`)} className="w-10 h-10 items-center justify-center rounded-full active:bg-neutral-100">
                             <Feather name="x" size={24} color="#000" />
                         </TouchableOpacity>
@@ -565,6 +575,7 @@ export default function BookingScreen() {
                                                 d: selectedDate?.toISOString() || '',
                                                 t: selectedTime || ''
                                             });
+                                            if (rescheduleId) innerParams.append('rescheduleId', rescheduleId);
 
                                             const returnUrl = `/booking/${businessId}?${innerParams.toString()}`;
                                             console.log('Generated Return URL:', returnUrl);
@@ -600,7 +611,7 @@ export default function BookingScreen() {
                                 ) : (
                                     <Text className={`font-bold ${((step === 1 && !selectedService) || (step === 2 && !selectedStylist) || (step === 3 && (!selectedDate || !selectedTime))) ? 'text-neutral-400' : 'text-white'}`}>
                                         {step === 4
-                                            ? (!user ? 'Sign In to Book' : 'Confirm Booking')
+                                            ? (!user ? 'Sign In to Book' : (rescheduleId ? 'Confirm Reschedule' : 'Confirm Booking'))
                                             : 'Next'
                                         }
                                     </Text>
