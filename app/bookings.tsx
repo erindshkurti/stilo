@@ -160,8 +160,12 @@ export default function BookingsScreen() {
             <SafeAreaView className="flex-1" edges={['top']}>
                 <Header />
 
-                <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-                    <View className="max-w-4xl mx-auto w-full px-6 py-8">
+                <ScrollView 
+                    contentContainerStyle={{ flexGrow: 1 }} 
+                    showsVerticalScrollIndicator={false}
+                    scrollEnabled={(activeTab === 'upcoming' ? upcomingBookings : recentBookings).length > 0}
+                >
+                    <View className="max-w-4xl mx-auto w-full px-6 py-8 flex-1">
 
                         {/* Profile Header */}
                         <View className="items-center mb-10">
@@ -213,7 +217,7 @@ export default function BookingsScreen() {
                         </View>
 
                         {/* Booking Lists */}
-                        <View className="min-h-[300px]">
+                        <View className="flex-1 justify-center py-6">
                             {loadingBookings ? (
                                 <View className="items-center justify-center py-20">
                                     <Text className="text-neutral-500">Loading bookings...</Text>
@@ -275,11 +279,27 @@ export default function BookingsScreen() {
                                     ))}
                                 </View>
                             ) : (
-                                <View className="items-center justify-center py-20">
-                                    <Feather name="calendar" size={48} color="#e5e5e5" />
-                                    <Text className="text-neutral-400 mt-4 text-center">
-                                        No {activeTab} bookings found.
+                                <View className="items-center justify-center py-20 px-8">
+                                    <View className="mb-6 bg-neutral-50 p-6 rounded-full border border-neutral-100">
+                                        <Feather name="calendar" size={48} color="#d4d4d4" />
+                                    </View>
+                                    <Text className="text-xl font-bold text-neutral-900 mb-2 text-center">
+                                        No {activeTab} bookings found
                                     </Text>
+                                    <View className="max-w-[280px]">
+                                        <Text className="text-neutral-500 mb-8 text-center text-base leading-6">
+                                            {activeTab === 'upcoming' 
+                                                ? "Ready for a new look? Find a top-rated professional near you." 
+                                                : "You haven't completed any appointments yet."}
+                                        </Text>
+                                    </View>
+                                    <TouchableOpacity 
+                                        onPress={() => router.push('/')}
+                                        className="bg-black px-10 py-4 rounded-2xl flex-row items-center shadow-lg"
+                                    >
+                                        <Feather name="search" size={20} color="white" />
+                                        <Text className="text-white font-bold text-lg ml-3">Find a Stylist</Text>
+                                    </TouchableOpacity>
                                 </View>
                             )}
                         </View>
