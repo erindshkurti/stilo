@@ -39,7 +39,7 @@ interface Service {
 interface Stylist {
     id: string;
     name: string;
-    avatar_url: string | null;
+    image_url: string | null;
     specialties: string[] | null;
 }
 
@@ -280,8 +280,8 @@ export default function BusinessPage() {
                                         className={`${isLargeScreen ? 'w-auto items-start' : 'w-1/3 px-2 mb-4 items-center'}`}
                                     >
                                         <View className="w-20 h-20 rounded-full bg-neutral-100 mb-2 overflow-hidden shadow-sm border border-neutral-100">
-                                            {member.avatar_url ? (
-                                                <Image source={{ uri: member.avatar_url }} className="w-full h-full" />
+                                            {member.image_url ? (
+                                                <Image source={{ uri: member.image_url }} className="w-full h-full" />
                                             ) : (
                                                 <View className="w-full h-full items-center justify-center bg-neutral-200">
                                                     <Feather name="user" size={24} color="#a3a3a3" />
