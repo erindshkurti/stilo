@@ -99,3 +99,17 @@ New businesses undergo a 5-step verification process before being listed:
 *   **Storage**: All images (Avatars and Portfolio) are stored in Firebase Storage buckets.
 *   **Portfolio Rules**: Businesses can upload multiple images to a dedicated subcollection.
 *   **Featured Image**: One portfolio image can be marked as the "Cover/Featured" image for display on Search Cards and the Dashboard.
+
+---
+
+## 6. Data Privacy & Security
+
+Stilo adheres to "Least Privilege" principles to protect user and business data.
+
+### **Profile Visibility**
+*   **Authenticated Read**: Any verified user can read basic profile fields (Full Name, Avatar, User Type). This is required for stylists to identify clients and for customers to find professionals.
+*   **Owner-Only Write**: A user's profile can only be modified by the authenticated user matching that UID.
+
+### **Staff Invitation Integrity**
+*   **Email Verification**: Account linking during the invitation flow requires a match between the auth token email and the invitation email.
+*   **Restricted Updates**: When a stylist accepts an invite, the security rules restrict their update to *only* the `userId` field. They cannot modify business-controlled data like commission rates or staff roles.
