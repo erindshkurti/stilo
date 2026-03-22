@@ -280,15 +280,18 @@ export default function EditTeamScreen() {
             {/* Modal Form for Add/Edit using native PageSheet */}
             <Modal
                 visible={isModalVisible}
-                animationType="slide"
-                presentationStyle="pageSheet"
+                animationType={isLargeScreen ? "fade" : "slide"}
+                presentationStyle={isLargeScreen ? "overFullScreen" : "pageSheet"}
+                transparent={isLargeScreen}
                 onRequestClose={cancelEdit}
             >
-                <KeyboardAvoidingView 
-                    behavior={Platform.OS === "ios" ? "padding" : "height"}
-                    className="flex-1 bg-white"
-                >
-                    <View className="flex-row items-center justify-between px-6 py-4 border-b border-neutral-100">
+                <View style={isLargeScreen ? { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' } : { flex: 1 }}>
+                    <KeyboardAvoidingView 
+                        behavior={Platform.OS === "ios" ? "padding" : undefined}
+                        className={isLargeScreen ? "bg-white" : "flex-1 bg-white"}
+                        style={isLargeScreen ? { width: 600, maxHeight: '90%', borderRadius: 24, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 30 } : { width: '100%' }}
+                    >
+                        <View className="flex-row items-center justify-between px-6 py-4 border-b border-neutral-100">
                         <Text className="text-xl font-bold">
                             {isEditing ? 'Edit Stylist' : 'Add Stylist'}
                         </Text>
@@ -297,7 +300,7 @@ export default function EditTeamScreen() {
                         </TouchableOpacity>
                     </View>
 
-                    <ScrollView className="flex-1 px-6 pt-8 pb-32">
+                    <ScrollView className={isLargeScreen ? "px-6 py-6" : "flex-1 px-6 pt-8 pb-32"}>
                         <View className="items-center mb-8">
                             <TouchableOpacity 
                                 onPress={pickImage}
@@ -364,9 +367,10 @@ export default function EditTeamScreen() {
                                 {actionLoading ? 'Saving...' : isEditing ? 'Save Stylist' : 'Add Stylist'}
                             </Text>
                         </TouchableOpacity>
-                        <View className="h-20" />
+                        {!isLargeScreen && <View className="h-20" />}
                     </ScrollView>
-                </KeyboardAvoidingView>
+                    </KeyboardAvoidingView>
+                </View>
             </Modal>
         </SafeAreaView>
     );
