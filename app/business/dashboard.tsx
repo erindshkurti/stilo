@@ -437,25 +437,21 @@ export default function BusinessDashboard() {
                                                                 style={{ width: '100%', height: '100%', borderRadius: 12 }}
                                                             />
 
-                                                            {/* Featured Badge */}
-                                                            {image.is_featured && (
-                                                                <View className="absolute top-2 left-2 bg-black px-2 py-1 rounded-lg flex-row items-center">
-                                                                    <Feather name="star" size={12} color="#FFD700" />
-                                                                    <Text className="text-white text-xs ml-1 font-medium">Featured</Text>
-                                                                </View>
-                                                            )}
-
                                                             {/* Action Buttons */}
                                                             <View className="absolute top-2 right-2 flex-row gap-1">
-                                                                {!image.is_featured && (
-                                                                    <TouchableOpacity
-                                                                        onPress={() => setFeaturedImage(image.id)}
-                                                                        className="bg-white p-2 rounded-lg"
-                                                                        style={{ opacity: 0.9 }}
-                                                                    >
-                                                                        <Feather name="star" size={16} color="#000" />
-                                                                    </TouchableOpacity>
-                                                                )}
+                                                                <TouchableOpacity
+                                                                    onPress={() => {
+                                                                        if (!image.is_featured) setFeaturedImage(image.id);
+                                                                    }}
+                                                                    className="bg-white p-2 rounded-lg items-center justify-center"
+                                                                    style={{ opacity: 0.9 }}
+                                                                >
+                                                                    <Feather 
+                                                                        name="star" 
+                                                                        size={16} 
+                                                                        color={image.is_featured ? "#eab308" : "#000"} 
+                                                                    />
+                                                                </TouchableOpacity>
                                                                 <TouchableOpacity
                                                                     onPress={() => {
                                                                         if (typeof window !== 'undefined' && window.confirm) {

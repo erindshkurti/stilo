@@ -25,6 +25,7 @@ interface PortfolioImage {
     id: string;
     image_url: string;
     caption: string;
+    is_featured?: boolean;
 }
 
 interface Service {
@@ -229,7 +230,7 @@ export default function BusinessPage() {
                                     </TouchableOpacity>
                                 </View>
                                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 24, gap: 12 }}>
-                                    {portfolio.map((item) => (
+                                    {[...portfolio].sort((a, b) => (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0)).map((item) => (
                                         <TouchableOpacity key={item.id} className="rounded-xl overflow-hidden shadow-sm">
                                             <Image
                                                 source={{ uri: item.image_url }}
