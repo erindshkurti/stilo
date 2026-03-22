@@ -194,6 +194,26 @@ export default function BusinessDashboard() {
 
     const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+    const renderStatsTile = () => (
+        <View className="bg-neutral-50 rounded-2xl p-6 mb-6">
+            <Text className="text-lg font-semibold mb-4">This Week</Text>
+            <View className="flex-row justify-between">
+                <View>
+                    <Text className="text-2xl font-bold">0</Text>
+                    <Text className="text-neutral-600 text-sm">Bookings</Text>
+                </View>
+                <View>
+                    <Text className="text-2xl font-bold">0</Text>
+                    <Text className="text-neutral-600 text-sm">New Clients</Text>
+                </View>
+                <View>
+                    <Text className="text-2xl font-bold">$0</Text>
+                    <Text className="text-neutral-600 text-sm">Revenue</Text>
+                </View>
+            </View>
+        </View>
+    );
+
     return (
         <SafeAreaView className="flex-1 bg-white">
             <Header />
@@ -231,6 +251,9 @@ export default function BusinessDashboard() {
                         </View>
                     ) : business ? (
                         <>
+                            {/* Mobile: Show Stats Tile First */}
+                            {!isLargeScreen && renderStatsTile()}
+                            
                             {/* Desktop: 2-column layout, Mobile: single column */}
                             <View className={isLargeScreen ? 'flex-row gap-6' : undefined}>
                                 {/* Left Column */}
@@ -357,24 +380,8 @@ export default function BusinessDashboard() {
 
                                 {/* Right Column */}
                                 <View className={isLargeScreen ? 'flex-1' : undefined}>
-                                    {/* Stats */}
-                                    <View className="bg-neutral-50 rounded-2xl p-6 mb-6">
-                                        <Text className="text-lg font-semibold mb-4">This Week</Text>
-                                        <View className="flex-row justify-between">
-                                            <View>
-                                                <Text className="text-2xl font-bold">0</Text>
-                                                <Text className="text-neutral-600 text-sm">Bookings</Text>
-                                            </View>
-                                            <View>
-                                                <Text className="text-2xl font-bold">0</Text>
-                                                <Text className="text-neutral-600 text-sm">New Clients</Text>
-                                            </View>
-                                            <View>
-                                                <Text className="text-2xl font-bold">$0</Text>
-                                                <Text className="text-neutral-600 text-sm">Revenue</Text>
-                                            </View>
-                                        </View>
-                                    </View>
+                                    {/* Stats (Desktop Only) */}
+                                    {isLargeScreen && renderStatsTile()}
 
                                     {/* Cover Image */}
                                     <View className="bg-neutral-50 rounded-2xl p-6 mb-6">
