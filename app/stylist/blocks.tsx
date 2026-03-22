@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../../components/Header';
 import { useAuth } from '../../lib/auth';
 import { db } from '../../lib/firebase';
-import { addDoc, collection, deleteDoc, getDocs, query, where, doc, getDoc, orderBy, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, getDocs, query, where, doc, getDoc, orderBy, serverTimestamp, updateDoc } from 'firebase/firestore';
 
 interface Block {
     id: string;
@@ -26,6 +26,7 @@ export default function StaffBlocksScreen() {
     const [profile, setProfile] = useState<any>(null);
     const [stylistId, setStylistId] = useState<string | null>(null);
     const [blocks, setBlocks] = useState<Block[]>([]);
+    const [editingBlockId, setEditingBlockId] = useState<string | null>(null);
 
     // New Block Form
     const [showForm, setShowForm] = useState(false);
@@ -76,23 +77,50 @@ export default function StaffBlocksScreen() {
         }
     }
 
-    const handleAddBlock = async () => {
+    const handleSaveBlock = async () => {
         if (!profile?.business_id || !stylistId) return;
         setSaving(true);
         try {
             const blocksCol = collection(db, 'businesses', profile.business_id, 'stylists', stylistId, 'blocks');
-            await addDoc(blocksCol, {
-                ...newBlock,
-                created_at: serverTimestamp()
-            });
+            
+            if (editingBlockId) {
+                await updateDoc(doc(blocksCol, editingBlockId), {
+                    ...newBlock,
+                    updated_at: serverTimestamp()
+                });
+            } else {
+                await addDoc(blocksCol, {
+                    ...newBlock,
+                    created_at: serverTimestamp()
+                });
+            }
+
             setShowForm(false);
+            setEditingBlockId(null);
+            setNewBlock({
+                date: new Date().toISOString().split('T')[0],
+                start_time: '12:00',
+                end_time: '13:00',
+                reason: 'Lunch Break'
+            });
             loadData();
         } catch (error) {
-            console.error('Error adding block:', error);
-            Alert.alert('Error', 'Failed to add block');
+            console.error('Error saving block:', error);
+            Alert.alert('Error', `Failed to ${editingBlockId ? 'update' : 'add'} block`);
         } finally {
             setSaving(false);
         }
+    };
+
+    const handleEditClick = (block: Block) => {
+        setNewBlock({
+            date: block.date,
+            start_time: block.start_time,
+            end_time: block.end_time,
+            reason: block.reason
+        });
+        setEditingBlockId(block.id);
+        setShowForm(true);
     };
 
     const handleDeleteBlock = async (id: string) => {
@@ -132,7 +160,18 @@ export default function StaffBlocksScreen() {
                                 </Text>
                             </View>
                             <TouchableOpacity 
-                                onPress={() => setShowForm(!showForm)}
+                                onPress={() => {
+                                    if (showForm) {
+                                        setEditingBlockId(null);
+                                        setNewBlock({
+                                            date: new Date().toISOString().split('T')[0],
+                                            start_time: '12:00',
+                                            end_time: '13:00',
+                                            reason: 'Lunch Break'
+                                        });
+                                    }
+                                    setShowForm(!showForm);
+                                }}
                                 className={`w-12 h-12 rounded-full items-center justify-center ${showForm ? 'bg-neutral-100' : 'bg-black'}`}
                             >
                                 <Feather name={showForm ? 'x' : 'plus'} size={24} color={showForm ? 'black' : 'white'} />
@@ -141,7 +180,7 @@ export default function StaffBlocksScreen() {
 
                         {showForm && (
                             <View className="bg-neutral-50 p-6 rounded-3xl border border-neutral-200 mb-8">
-                                <Text className="font-bold text-lg mb-4">Add Block</Text>
+                                <Text className="font-bold text-lg mb-4">{editingBlockId ? 'Edit Block' : 'Add Block'}</Text>
                                 
                                 <View className="mb-4">
                                     <Text className="text-xs font-bold text-neutral-500 uppercase mb-2">Date (YYYY-MM-DD)</Text>
@@ -185,11 +224,11 @@ export default function StaffBlocksScreen() {
                                 </View>
 
                                 <TouchableOpacity 
-                                    onPress={handleAddBlock}
+                                    onPress={handleSaveBlock}
                                     disabled={saving}
                                     className="bg-black py-4 rounded-xl items-center"
                                 >
-                                    <Text className="text-white font-bold">{saving ? 'Adding...' : 'Add Block'}</Text>
+                                    <Text className="text-white font-bold">{saving ? 'Saving...' : editingBlockId ? 'Save Changes' : 'Add Block'}</Text>
                                 </TouchableOpacity>
                             </View>
                         )}
@@ -208,9 +247,14 @@ export default function StaffBlocksScreen() {
                                                 <Text className="text-neutral-500 ml-1.5 text-sm">{block.start_time} - {block.end_time}</Text>
                                             </View>
                                         </View>
-                                        <TouchableOpacity onPress={() => handleDeleteBlock(block.id)} className="p-2">
-                                            <Feather name="trash-2" size={18} color="#ef4444" />
-                                        </TouchableOpacity>
+                                        <View className="flex-row items-center gap-1">
+                                            <TouchableOpacity onPress={() => handleEditClick(block)} className="p-2">
+                                                <Feather name="edit-2" size={18} color="#737373" />
+                                            </TouchableOpacity>
+                                            <TouchableOpacity onPress={() => handleDeleteBlock(block.id)} className="p-2">
+                                                <Feather name="trash-2" size={18} color="#ef4444" />
+                                            </TouchableOpacity>
+                                        </View>
                                     </View>
                                 ))
                             ) : (
