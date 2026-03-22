@@ -89,9 +89,11 @@ export default function StylistDashboard() {
                 const custSnap = await getDoc(doc(db, 'profiles', b.customer_id));
                 const srvSnap = await getDoc(doc(db, 'businesses', b.business_id, 'services', b.service_id));
                 
+                const custData = custSnap.exists() ? custSnap.data() : null;
+                
                 fetchedBookings.push({
                     ...b,
-                    customerName: custSnap.exists() ? custSnap.data().full_name : 'Customer',
+                    customerName: custData ? (custData.full_name || custData.display_name || custData.email?.split('@')[0] || 'Customer') : 'Customer',
                     serviceName: srvSnap.exists() ? srvSnap.data().name : 'Service'
                 });
             }
@@ -124,7 +126,7 @@ export default function StylistDashboard() {
                         {/* Welcome Header */}
                         <View className="flex-row items-center justify-between mb-8">
                             <View>
-                                <Text className="text-3xl font-bold text-neutral-900">Hello, {stylistRecord?.name?.split(' ')[0] || 'Stylist'}</Text>
+                                <Text className="text-3xl font-bold text-neutral-900">Hello, {stylistRecord?.name?.split(' ')[0] || user?.email?.split('@')[0] || 'Stylist'}</Text>
                                 <Text className="text-neutral-500 mt-1">Here is your schedule for today</Text>
                             </View>
                         </View>

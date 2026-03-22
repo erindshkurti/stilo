@@ -14,6 +14,7 @@ export function Header() {
     const [menuOpen, setMenuOpen] = useState(false);
     const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+    const [displayName, setDisplayName] = useState<string | null>(null);
     const isMobile = width < 768;
 
     // Check user roles
@@ -87,6 +88,7 @@ export function Header() {
                     setUserType(data.user_type);
                     setIsBusinessOwner(data.user_type === 'business_owner');
                     setIsStylist(data.user_type === 'stylist');
+                    setDisplayName(data.full_name || data.display_name || null);
                     if (data.avatar_url) {
                         setAvatarUrl(data.avatar_url);
                     } else if (data.user_type === 'stylist' && data.business_id) {
@@ -195,6 +197,11 @@ export function Header() {
                                                 // @ts-ignore - stop propagation to prevent closing when clicking inside
                                                 onClick={(e: any) => e.stopPropagation()}
                                             >
+                                                <View className="px-4 py-3 border-b border-neutral-100 mb-1">
+                                                    <Text className="text-neutral-900 font-semibold text-base">
+                                                        {displayName || user?.email?.split('@')[0] || 'Account'}
+                                                    </Text>
+                                                </View>
                                                 {isBusinessOwner && (
                                                     <>
                                                         <Link href="/business/calendar" asChild>
