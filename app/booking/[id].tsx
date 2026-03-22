@@ -182,24 +182,23 @@ export default function BookingScreen() {
             startOfDay.setHours(0, 0, 0, 0);
             const endOfDay = new Date(selectedDate);
             endOfDay.setHours(23, 59, 59, 999);
+            const startIso = startOfDay.toISOString();
+            const endIso = endOfDay.toISOString();
 
-            let bookingConstraints: any[] = [
-                where('business_id', '==', businessId),
-                where('start_time', '>=', startOfDay.toISOString()),
-                where('start_time', '<=', endOfDay.toISOString()),
-            ];
-
-            if (selectedStylist && selectedStylist !== 'any') {
-                bookingConstraints.push(where('stylist_id', '==', (selectedStylist as Stylist).id));
-            }
-
+            // We query only by business_id to avoid requiring a composite index in Firestore
             const bookingsSnap = await getDocs(
-                query(collection(db, 'bookings'), ...bookingConstraints)
+                query(collection(db, 'bookings'), where('business_id', '==', businessId))
             );
 
-            const existingBookings = bookingsSnap.docs
+            let existingBookings = bookingsSnap.docs
                 .map(d => d.data())
-                .filter(b => b.status !== 'cancelled');
+                .filter(b => b.status !== 'cancelled')
+                .filter(b => b.start_time >= startIso && b.start_time <= endIso);
+
+            if (selectedStylist && selectedStylist !== 'any') {
+                const stylistId = (selectedStylist as Stylist).id;
+                existingBookings = existingBookings.filter(b => b.stylist_id === stylistId);
+            }
 
             // 3. Generate Time Slots
             const slots: string[] = [];
