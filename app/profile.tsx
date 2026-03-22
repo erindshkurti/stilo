@@ -1,12 +1,12 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Image, ScrollView, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { Image, ScrollView, Text, TouchableOpacity, useWindowDimensions, View, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../components/Header';
 import { useAuth } from '../lib/auth';
 import { db } from '../lib/firebase';
-import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
 
 export default function ProfileScreen() {
     const router = useRouter();
@@ -80,6 +80,8 @@ export default function ProfileScreen() {
 
                     const formattedBooking = {
                         id: b.id,
+                        businessId: b.business_id,
+                        serviceId: b.service_id,
                         businessName: bizData.name || 'Salon',
                         service: srvData.name || 'Service',
                         date: formattedDate,
@@ -109,6 +111,30 @@ export default function ProfileScreen() {
 
         loadProfileAndBookings();
     }, [user]);
+
+    const handleCancel = (bookingId: string) => {
+        Alert.alert(
+            "Cancel Appointment",
+            "Are you sure you want to cancel this appointment?",
+            [
+                { text: "No", style: "cancel" },
+                { 
+                    text: "Yes, Cancel", 
+                    style: "destructive", 
+                    onPress: async () => {
+                        try {
+                            setUpcomingBookings(prev => prev.filter(b => b.id !== bookingId));
+                            await updateDoc(doc(db, 'bookings', bookingId), {
+                                status: 'cancelled'
+                            });
+                        } catch (e) {
+                            console.error('Failed to cancel:', e);
+                        }
+                    } 
+                }
+            ]
+        );
+    };
 
     if (isLoading) {
         return (
@@ -215,13 +241,27 @@ export default function ProfileScreen() {
                                                     <Text className="text-neutral-500 text-sm ml-1.5 truncate" numberOfLines={1}>{booking.location}</Text>
                                                 </View>
                                             </View>
-                                            <View className="ml-2">
+                                            <View className="ml-2 gap-2">
                                                 {activeTab === 'upcoming' ? (
-                                                    <TouchableOpacity className="bg-black px-4 py-2 rounded-lg">
-                                                        <Text className="text-white font-medium text-sm">Reschedule</Text>
-                                                    </TouchableOpacity>
+                                                    <>
+                                                        <TouchableOpacity 
+                                                            onPress={() => router.push(`/booking/${booking.businessId}?serviceId=${booking.serviceId}`)}
+                                                            className="bg-black px-4 py-2 rounded-lg items-center"
+                                                        >
+                                                            <Text className="text-white font-medium text-sm">Reschedule</Text>
+                                                        </TouchableOpacity>
+                                                        <TouchableOpacity 
+                                                            onPress={() => handleCancel(booking.id)}
+                                                            className="bg-red-50 px-4 py-2 rounded-lg items-center border border-red-100"
+                                                        >
+                                                            <Text className="text-red-600 font-medium text-sm">Cancel</Text>
+                                                        </TouchableOpacity>
+                                                    </>
                                                 ) : (
-                                                    <TouchableOpacity className="bg-neutral-100 px-4 py-2 rounded-lg">
+                                                    <TouchableOpacity 
+                                                        onPress={() => router.push(`/booking/${booking.businessId}?serviceId=${booking.serviceId}`)}
+                                                        className="bg-neutral-100 px-4 py-2 rounded-lg items-center"
+                                                    >
                                                         <Text className="text-neutral-900 font-medium text-sm">Rebook</Text>
                                                     </TouchableOpacity>
                                                 )}
