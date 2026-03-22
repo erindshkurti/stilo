@@ -7,10 +7,11 @@ interface DatePickerProps {
     onChange: (date: string) => void;
     placeholder?: string;
     className?: string;
+    isInline?: boolean;
     [key: string]: any;
 }
 
-export function DatePicker({ value, onChange, placeholder, className, ...props }: DatePickerProps) {
+export function DatePicker({ value, onChange, placeholder, className, isInline, ...props }: DatePickerProps) {
     const [isOpen, setIsOpen] = useState(false);
     // Parse value to viewDate (month/year)
     const initialDate = value ? new Date(value) : new Date();
@@ -83,13 +84,13 @@ export function DatePicker({ value, onChange, placeholder, className, ...props }
     };
 
     return (
-        <View className={`relative flex-1 ${className}`} style={{ zIndex: isOpen ? 1000 : 1 }}>
+        <View className={`${isInline ? '' : 'relative flex-1'} ${className}`} style={{ zIndex: isOpen ? 1000 : 1 }}>
             {/* Main Input Display */}
             {/* We render a Text element to look like an input, but purely controlled by the picker */}
             <TouchableOpacity
-                activeOpacity={1} // No opacity change on press
+                activeOpacity={1}
                 onPress={() => setIsOpen(!isOpen)}
-                className="w-full h-full justify-center"
+                className={`w-full ${isInline ? 'h-12 bg-neutral-50 rounded-xl px-4 border border-neutral-200' : 'h-full'} justify-center`}
             >
                 <Text
                     className={`text-base ${value ? 'text-neutral-900' : 'text-neutral-400'}`}
@@ -104,14 +105,16 @@ export function DatePicker({ value, onChange, placeholder, className, ...props }
                 <>
                     {/* Transparent Backdrop to close on outside click */}
                     {/* On Web, this acts as a fixed overlay. On Native, absolute fill. */}
-                    <TouchableOpacity
-                        activeOpacity={1}
-                        className="absolute w-[9999px] h-[9999px] top-[-5000px] left-[-5000px] bg-transparent"
-                        style={Platform.OS === 'web' ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, cursor: 'default', zIndex: 40 } as any : { zIndex: 40 }}
-                        onPress={() => setIsOpen(false)}
-                    />
+                    {!isInline && (
+                        <TouchableOpacity
+                            activeOpacity={1}
+                            className="absolute w-[9999px] h-[9999px] top-[-5000px] left-[-5000px] bg-transparent"
+                            style={Platform.OS === 'web' ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, cursor: 'default', zIndex: 40 } as any : { zIndex: 40 }}
+                            onPress={() => setIsOpen(false)}
+                        />
+                    )}
 
-                    <View className="absolute top-full left-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-neutral-200 p-4 z-50">
+                    <View className={`${isInline ? 'mt-2 w-full' : 'absolute top-full left-0 mt-2 w-72'} bg-white rounded-xl shadow-xl border border-neutral-200 p-4 z-50`}>
                         {/* Header */}
                         <View className="flex-row justify-between items-center mb-4">
                             <TouchableOpacity onPress={() => changeMonth(-1)} className="p-2 rounded-full active:bg-neutral-100">

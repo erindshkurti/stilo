@@ -73,10 +73,11 @@ service cloud.firestore {
       allow create: if request.auth != null 
                     && request.resource.data.customer_id == request.auth.uid;
                     
-      // Only the customer or the business owner can edit/cancel the booking
+      // Only the customer, the business owner, or the assigned stylist can edit/cancel the booking
       allow update, delete: if request.auth != null && (
         resource.data.customer_id == request.auth.uid || 
-        get(/databases/$(database)/documents/businesses/$(resource.data.business_id)).data.owner_id == request.auth.uid
+        get(/databases/$(database)/documents/businesses/$(resource.data.business_id)).data.owner_id == request.auth.uid ||
+        get(/databases/$(database)/documents/businesses/$(resource.data.business_id)/stylists/$(resource.data.stylist_id)).data.userId == request.auth.uid
       );
     }
   }

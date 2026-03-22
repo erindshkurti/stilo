@@ -274,6 +274,7 @@ export default function StylistDashboard() {
                 }}
                 booking={selectedBooking}
                 onUpdate={loadDashboard}
+                isStylistView={true}
             />
         </SafeAreaView>
     );

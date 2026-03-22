@@ -7,10 +7,11 @@ interface TimePickerProps {
     onChange: (time: string) => void;
     placeholder?: string;
     className?: string;
+    isInline?: boolean;
     [key: string]: any;
 }
 
-export function TimePicker({ value, onChange, placeholder, className, ...props }: TimePickerProps) {
+export function TimePicker({ value, onChange, placeholder, className, isInline, ...props }: TimePickerProps) {
     const [isOpen, setIsOpen] = useState(false);
     const scrollRef = useRef<ScrollView>(null);
 
@@ -45,10 +46,10 @@ export function TimePicker({ value, onChange, placeholder, className, ...props }
     };
 
     return (
-        <View className={`relative flex-1 ${className}`} style={{ zIndex: isOpen ? 1000 : 1 }}>
+        <View className={`${isInline ? '' : 'relative flex-1'} ${className}`} style={{ zIndex: isOpen ? 1000 : 1 }}>
             <TouchableOpacity
                 onPress={() => setIsOpen(!isOpen)}
-                className="w-full h-full justify-center"
+                className={`w-full ${isInline ? 'h-12 bg-neutral-50 rounded-xl px-4 border border-neutral-200' : 'h-full'} justify-center`}
             >
                 <View className="flex-row items-center justify-between">
                     <Text className={`text-base ${value ? 'text-neutral-900' : 'text-neutral-400'}`}>
@@ -60,14 +61,16 @@ export function TimePicker({ value, onChange, placeholder, className, ...props }
 
             {isOpen && (
                 <>
-                    <TouchableOpacity
-                        activeOpacity={1}
-                        className="absolute w-[9999px] h-[9999px] top-[-5000px] left-[-5000px] bg-transparent"
-                        style={Platform.OS === 'web' ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 40 } as any : { zIndex: 40 }}
-                        onPress={() => setIsOpen(false)}
-                    />
+                    {!isInline && (
+                        <TouchableOpacity
+                            activeOpacity={1}
+                            className="absolute w-[9999px] h-[9999px] top-[-5000px] left-[-5000px] bg-transparent"
+                            style={Platform.OS === 'web' ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 40 } as any : { zIndex: 40 }}
+                            onPress={() => setIsOpen(false)}
+                        />
+                    )}
 
-                    <View className="absolute top-full left-0 mt-1 w-full max-h-60 bg-white rounded-xl shadow-xl border border-neutral-200 overflow-hidden z-50">
+                    <View className={`${isInline ? 'mt-1 w-full' : 'absolute top-full left-0 mt-1 w-full'} max-h-60 bg-white rounded-xl shadow-xl border border-neutral-200 overflow-hidden z-50`}>
                         <ScrollView 
                             ref={scrollRef}
                             showsVerticalScrollIndicator={false}

@@ -1,9 +1,11 @@
 import React from 'react';
-import { Modal, View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { db } from '../lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useRouter } from 'expo-router';
+import { DatePicker } from './DatePicker';
+import { TimePicker } from './TimePicker';
 
 interface Booking {
     id: string;
@@ -23,10 +25,24 @@ interface Props {
     onClose: () => void;
     booking: Booking | null;
     onUpdate: () => void;
+    isStylistView?: boolean;
 }
 
-export function BookingDetailModal({ visible, onClose, booking, onUpdate }: Props) {
+export function BookingDetailModal({ visible, onClose, booking, onUpdate, isStylistView }: Props) {
     const router = useRouter();
+    const [isRescheduling, setIsRescheduling] = React.useState(false);
+    const [resDate, setResDate] = React.useState('');
+    const [resTime, setResTime] = React.useState('');
+    const [saving, setSaving] = React.useState(false);
+
+    React.useEffect(() => {
+        if (visible && booking) {
+            setIsRescheduling(false);
+            const start = new Date(booking.start_time);
+            setResDate(start.toISOString().split('T')[0]);
+            setResTime(`${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`);
+        }
+    }, [visible, booking]);
 
     if (!booking) return null;
 
@@ -46,8 +62,39 @@ export function BookingDetailModal({ visible, onClose, booking, onUpdate }: Prop
     };
 
     const handleReschedule = () => {
-        onClose();
-        router.push(`/booking/${booking.business_id}?rescheduleId=${booking.id}`);
+        if (isStylistView) {
+            setIsRescheduling(true);
+        } else {
+            onClose();
+            router.push(`/booking/${booking.business_id}?rescheduleId=${booking.id}`);
+        }
+    };
+
+    const handleSaveReschedule = async () => {
+        if (!booking) return;
+        setSaving(true);
+        try {
+            const start = new Date(resDate);
+            const [h, m] = resTime.split(':').map(Number);
+            start.setHours(h, m, 0, 0);
+
+            const durationMs = new Date(booking.end_time).getTime() - new Date(booking.start_time).getTime();
+            const end = new Date(start.getTime() + durationMs);
+
+            await updateDoc(doc(db, 'bookings', booking.id), {
+                start_time: start.toISOString(),
+                end_time: end.toISOString(),
+                status: 'confirmed' // Reset to confirmed if it was in-progress
+            });
+
+            onUpdate();
+            onClose();
+        } catch (error) {
+            console.error('Error rescheduling:', error);
+            Alert.alert('Error', 'Failed to reschedule appointment');
+        } finally {
+            setSaving(false);
+        }
     };
 
     const getStatusColor = (status: string) => {
@@ -64,11 +111,13 @@ export function BookingDetailModal({ visible, onClose, booking, onUpdate }: Prop
         <Modal
             visible={visible}
             transparent
-            animationType="fade"
+            animationType={isStylistView ? "slide" : "fade"}
             onRequestClose={onClose}
         >
-            <View className="flex-1 bg-black/60 items-center justify-center px-6">
-                <View className="bg-white w-full max-w-md rounded-3xl overflow-hidden">
+            <View className={`flex-1 ${isStylistView ? 'bg-white' : 'bg-black/60 items-center justify-center px-6'}`}>
+                <View className={`${isStylistView ? 'flex-1' : 'bg-white w-full max-w-md rounded-3xl'} overflow-hidden`}>
+                    {isStylistView && <View className="w-12 h-1.5 bg-neutral-200 rounded-full self-center mt-3 mb-1" />}
+                    
                     {/* Header */}
                     <View className="px-6 py-6 border-b border-neutral-100 flex-row items-center justify-between">
                         <Text className="text-xl font-bold text-neutral-900">Appointment Details</Text>
@@ -78,6 +127,51 @@ export function BookingDetailModal({ visible, onClose, booking, onUpdate }: Prop
                     </View>
 
                     <ScrollView className="p-6">
+                        {isRescheduling ? (
+                            <View>
+                                <View className="mb-6" style={!isStylistView ? { zIndex: 100 } : undefined}>
+                                    <Text className="text-neutral-500 text-xs font-bold uppercase mb-2 tracking-wider">New Date</Text>
+                                    <View className={!isStylistView ? 'h-12 bg-neutral-50 rounded-xl px-4 border border-neutral-200 justify-center' : ''}>
+                                        <DatePicker 
+                                            value={resDate}
+                                            onChange={setResDate}
+                                            isInline={isStylistView}
+                                        />
+                                    </View>
+                                </View>
+
+                                <View className="mb-10" style={!isStylistView ? { zIndex: 90 } : undefined}>
+                                    <Text className="text-neutral-500 text-xs font-bold uppercase mb-2 tracking-wider">New Time</Text>
+                                    <View className={!isStylistView ? 'h-12 bg-neutral-50 rounded-xl px-4 border border-neutral-200 justify-center' : ''}>
+                                        <TimePicker 
+                                            value={resTime}
+                                            onChange={setResTime}
+                                            isInline={isStylistView}
+                                        />
+                                    </View>
+                                </View>
+
+                                <View className="space-y-3 pt-4">
+                                    <TouchableOpacity
+                                        onPress={handleSaveReschedule}
+                                        disabled={saving}
+                                        className="w-full bg-neutral-900 py-4 rounded-xl items-center"
+                                    >
+                                        <Text className="text-white font-bold text-base">
+                                            {saving ? 'Updating...' : 'Update Appointment'}
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        onPress={() => setIsRescheduling(false)}
+                                        className="w-full py-2 items-center"
+                                    >
+                                        <Text className="text-neutral-500 font-bold">Cancel</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        ) : (
+                            <>
                         {/* Status Badge */}
                         <View className="mb-6 flex-row">
                             <View className={`px-3 py-1 rounded-full ${getStatusColor(booking.status).split(' ')[0]}`}>
@@ -130,19 +224,10 @@ export function BookingDetailModal({ visible, onClose, booking, onUpdate }: Prop
 
                         {/* Actions */}
                         <View className="space-y-3 pb-4">
-                            {booking.status === 'confirmed' && (
-                                <TouchableOpacity
-                                    onPress={() => updateStatus('in-progress')}
-                                    className="w-full bg-neutral-900 py-4 rounded-xl items-center"
-                                >
-                                    <Text className="text-white font-bold text-base">Check In</Text>
-                                </TouchableOpacity>
-                            )}
-
-                            {booking.status === 'in-progress' && (
+                            {['confirmed', 'in-progress'].includes(booking.status) && (
                                 <TouchableOpacity
                                     onPress={() => updateStatus('completed')}
-                                    className="w-full bg-green-600 py-4 rounded-xl items-center"
+                                    className="w-full bg-neutral-900 py-4 rounded-xl items-center"
                                 >
                                     <Text className="text-white font-bold text-base">Mark as Completed</Text>
                                 </TouchableOpacity>
@@ -169,6 +254,8 @@ export function BookingDetailModal({ visible, onClose, booking, onUpdate }: Prop
                                 </TouchableOpacity>
                             )}
                         </View>
+                        </>
+                        )}
                     </ScrollView>
                 </View>
             </View>
