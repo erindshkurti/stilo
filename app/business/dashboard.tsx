@@ -214,7 +214,7 @@ export default function BusinessDashboard() {
             )}
 
             <ScrollView className="flex-1">
-                <View className="py-8 mx-auto w-full" style={{ maxWidth: 1200 }}>
+                <View className="px-6 md:px-8 py-8 mx-auto w-full" style={{ maxWidth: 1200 }}>
                     {/* Welcome Section */}
                     <View className="mb-8">
                         <Text className="text-3xl font-bold mb-2">
