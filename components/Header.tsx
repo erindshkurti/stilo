@@ -279,7 +279,10 @@ export function Header() {
                                             }}
                                             className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-3"
                                         >
-                                            <Text className="text-neutral-900 font-medium text-base">Dashboard</Text>
+                                            <View className="flex-row items-center">
+                                                <Feather name="layout" size={18} color="#737373" />
+                                                <Text className="ml-3 text-neutral-900 font-medium text-base">Dashboard</Text>
+                                            </View>
                                         </TouchableOpacity>
 
                                         <TouchableOpacity
