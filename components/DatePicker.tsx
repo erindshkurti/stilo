@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Platform, Text, TouchableOpacity, View } from 'react-native';
+import { parseLocalYYYYMMDD } from '@/lib/utils';
 
 interface DatePickerProps {
     value: string; // "YYYY-MM-DD" or similar
@@ -14,7 +15,7 @@ interface DatePickerProps {
 export function DatePicker({ value, onChange, placeholder, className, isInline, ...props }: DatePickerProps) {
     const [isOpen, setIsOpen] = useState(false);
     // Parse value to viewDate (month/year)
-    const initialDate = value ? new Date(value) : new Date();
+    const initialDate = value ? parseLocalYYYYMMDD(value) : new Date();
     // Handle invalid dates gracefully and ensure we show current month if no value
     const safeInitialDate = isNaN(initialDate.getTime()) ? new Date() : initialDate;
 

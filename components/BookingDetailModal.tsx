@@ -1,7 +1,8 @@
 import React from 'react';
 import { Modal, View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { db } from '../lib/firebase';
+import { db } from '@/lib/firebase';
+import { parseLocalBookingDate } from '@/lib/utils';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useRouter } from 'expo-router';
 import { DatePicker } from './DatePicker';
@@ -74,11 +75,8 @@ export function BookingDetailModal({ visible, onClose, booking, onUpdate, isStyl
         if (!booking) return;
         setSaving(true);
         try {
-            const start = new Date(resDate);
-            const [h, m] = resTime.split(':').map(Number);
-            start.setHours(h, m, 0, 0);
-
-            const durationMs = new Date(booking.end_time).getTime() - new Date(booking.start_time).getTime();
+            const start = parseLocalBookingDate(resDate, resTime);
+            const durationMs = (booking.end_time ? new Date(booking.end_time).getTime() - new Date(booking.start_time).getTime() : 30 * 60000);
             const end = new Date(start.getTime() + durationMs);
 
             await updateDoc(doc(db, 'bookings', booking.id), {

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Image, ScrollView, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { useAuth } from '../../lib/auth';
 import { db } from '../../lib/firebase';
+import { parseLocalBookingDate } from '@/lib/utils';
 import { addDoc, updateDoc, doc, collection, getDocs, query, where } from 'firebase/firestore';
 
 // Types
@@ -307,12 +308,7 @@ export default function BookingScreen() {
         try {
             if (!user) return;
 
-            const startTimeDate = new Date(selectedDate);
-            const [timePart, modifier] = selectedTime.split(' ');
-            let [hours, minutes] = timePart.split(':').map(Number);
-            if (modifier === 'PM' && hours < 12) hours += 12;
-            if (modifier === 'AM' && hours === 12) hours = 0;
-            startTimeDate.setHours(hours, minutes, 0, 0);
+            const startTimeDate = parseLocalBookingDate(selectedDate, selectedTime);
 
             const endTimeDate = new Date(startTimeDate.getTime() + selectedService.duration_minutes * 60000);
             const finalStylistId = selectedStylist === 'any' ? null : (selectedStylist as Stylist)?.id;

@@ -9,6 +9,7 @@ import { db } from '../../lib/firebase';
 import { addDoc, collection, deleteDoc, getDocs, query, where, doc, getDoc, orderBy, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { DatePicker } from '../../components/DatePicker';
 import { TimePicker } from '../../components/TimePicker';
+import { getLocalTodayStr } from '@/lib/utils';
 
 interface Block {
     id: string;
@@ -33,7 +34,7 @@ export default function StaffBlocksScreen() {
     // New Block Form
     const [showForm, setShowForm] = useState(false);
     const [newBlock, setNewBlock] = useState({
-        date: new Date().toISOString().split('T')[0],
+        date: getLocalTodayStr(),
         start_time: '12:00',
         end_time: '13:00',
         reason: 'Lunch Break'
@@ -100,7 +101,7 @@ export default function StaffBlocksScreen() {
             setShowForm(false);
             setEditingBlockId(null);
             setNewBlock({
-                date: new Date().toISOString().split('T')[0],
+                date: getLocalTodayStr(),
                 start_time: '12:00',
                 end_time: '13:00',
                 reason: 'Lunch Break'
@@ -166,7 +167,7 @@ export default function StaffBlocksScreen() {
                                     if (showForm) {
                                         setEditingBlockId(null);
                                         setNewBlock({
-                                            date: new Date().toISOString().split('T')[0],
+                                            date: getLocalTodayStr(),
                                             start_time: '12:00',
                                             end_time: '13:00',
                                             reason: 'Lunch Break'
@@ -191,7 +192,7 @@ export default function StaffBlocksScreen() {
                                                 setShowForm(false);
                                                 setEditingBlockId(null);
                                                 setNewBlock({
-                                                    date: new Date().toISOString().split('T')[0],
+                                                    date: getLocalTodayStr(),
                                                     start_time: '12:00',
                                                     end_time: '13:00',
                                                     reason: 'Lunch Break'
