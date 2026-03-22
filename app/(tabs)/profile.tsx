@@ -3,14 +3,15 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../../components/Header';
 import { useAuth } from '../../lib/auth';
-import { supabase } from '../../lib/supabase';
+import { auth } from '../../lib/firebase';
+import { signOut } from 'firebase/auth';
 
 export default function ProfileScreen() {
     const { user } = useAuth();
     const router = useRouter();
 
     const handleSignOut = async () => {
-        await supabase.auth.signOut();
+        await signOut(auth);
         router.replace('/');
     };
 

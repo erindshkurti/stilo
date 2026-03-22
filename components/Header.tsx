@@ -3,7 +3,9 @@ import { Link, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Image, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { useAuth } from '../lib/auth';
-import { supabase } from '../lib/supabase';
+import { auth, db } from '../lib/firebase';
+import { signOut } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 
 export function Header() {
     const { user } = useAuth();
@@ -15,7 +17,7 @@ export function Header() {
     const isMobile = width < 768;
 
     // Check if user is a business owner
-    const isBusinessOwner = user?.user_metadata?.user_type === 'business';
+    const [isBusinessOwner, setIsBusinessOwner] = useState(false);
 
     // Animation values
     const slideAnim = useRef(new Animated.Value(0)).current;
@@ -57,7 +59,7 @@ export function Header() {
     });
 
     const handleSignOut = async () => {
-        await supabase.auth.signOut();
+        await signOut(auth);
         setProfileDropdownOpen(false);
         router.replace('/');
     };
@@ -67,29 +69,22 @@ export function Header() {
         async function loadProfile() {
             if (!user) {
                 setAvatarUrl(null);
+                setIsBusinessOwner(false);
                 return;
             }
 
-            try {
-                const { data } = await supabase
-                    .from('profiles')
-                    .select('avatar_url')
-                    .eq('id', user.id)
-                    .single();
+            // Try Firebase user photo first
+            if (user.photoURL) setAvatarUrl(user.photoURL);
 
-                if (data?.avatar_url) {
-                    setAvatarUrl(data.avatar_url);
-                } else if (user?.user_metadata?.avatar_url) {
-                    // Fallback to Google/Auth provider metadata
-                    setAvatarUrl(user.user_metadata.avatar_url);
+            try {
+                const profileSnap = await getDoc(doc(db, 'profiles', user.uid));
+                if (profileSnap.exists()) {
+                    const data = profileSnap.data();
+                    setIsBusinessOwner(data.user_type === 'business');
+                    if (data.avatar_url) setAvatarUrl(data.avatar_url);
                 }
             } catch (error) {
                 console.error('Error loading profile:', error);
-
-                // Fallback on error too
-                if (user?.user_metadata?.avatar_url) {
-                    setAvatarUrl(user.user_metadata.avatar_url);
-                }
             }
         }
 

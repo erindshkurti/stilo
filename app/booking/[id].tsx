@@ -3,7 +3,8 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Image, ScrollView, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { useAuth } from '../../lib/auth';
-import { supabase } from '../../lib/supabase';
+import { db } from '../../lib/firebase';
+import { addDoc, collection, getDocs, query, where } from 'firebase/firestore';
 
 // Types
 type Step = 1 | 2 | 3 | 4 | 5;
@@ -24,6 +25,7 @@ interface Stylist {
 }
 
 interface BusinessHour {
+    id?: string;
     day_of_week: number;
     open_time: string;
     close_time: string;
@@ -62,33 +64,28 @@ export default function BookingScreen() {
 
         async function fetchData() {
             try {
-                // Fetch Business Name
-                const { data: biz } = await supabase.from('businesses').select('name').eq('id', businessId).single();
-                if (biz) setBusinessName(biz.name);
+                // Fetch Business Name directly by doc ID
+                const { getDoc, doc } = await import('firebase/firestore');
+                const bizDoc = await getDoc(doc(db, 'businesses', businessId as string));
+                if (bizDoc.exists()) setBusinessName(bizDoc.data().name);
 
-                // Fetch Services
-                const { data: servicesData } = await supabase
-                    .from('services')
-                    .select('*')
-                    .eq('business_id', businessId)
-                    .eq('is_active', true)
-                    .order('price');
-                if (servicesData) setServices(servicesData);
+                // Fetch Services (subcollection)
+                const servicesSnap = await getDocs(
+                    collection(db, 'businesses', businessId as string, 'services')
+                );
+                setServices(servicesSnap.docs.map(d => ({ id: d.id, ...d.data() } as Service)));
 
-                // Fetch Stylists
-                const { data: stylistsData } = await supabase
-                    .from('stylists')
-                    .select('*')
-                    .eq('business_id', businessId)
-                    .eq('is_active', true);
-                if (stylistsData) setStylists(stylistsData);
+                // Fetch Stylists (subcollection)
+                const stylistsSnap = await getDocs(
+                    collection(db, 'businesses', businessId as string, 'stylists')
+                );
+                setStylists(stylistsSnap.docs.map(d => ({ id: d.id, ...d.data() } as Stylist)));
 
-                // Fetch Hours
-                const { data: hoursData } = await supabase
-                    .from('business_hours')
-                    .select('*')
-                    .eq('business_id', businessId);
-                if (hoursData) setHours(hoursData);
+                // Fetch Hours (subcollection)
+                const hoursSnap = await getDocs(
+                    collection(db, 'businesses', businessId as string, 'hours')
+                );
+                setHours(hoursSnap.docs.map(d => ({ id: d.id, ...d.data() } as BusinessHour)));
 
             } catch (error) {
                 console.error(error);
@@ -180,29 +177,29 @@ export default function BookingScreen() {
                 return;
             }
 
-            // 2. Fetch existing bookings for that date
-            // Start of day
+            // 2. Fetch existing bookings for that date from Firestore 'bookings' collection
             const startOfDay = new Date(selectedDate);
             startOfDay.setHours(0, 0, 0, 0);
             const endOfDay = new Date(selectedDate);
             endOfDay.setHours(23, 59, 59, 999);
 
-            let query = supabase
-                .from('bookings')
-                .select('start_time, end_time, stylist_id')
-                .eq('business_id', businessId)
-                .gte('start_time', startOfDay.toISOString())
-                .lte('start_time', endOfDay.toISOString())
-                .neq('status', 'cancelled'); // Don't count cancelled
+            let bookingConstraints: any[] = [
+                where('business_id', '==', businessId),
+                where('start_time', '>=', startOfDay.toISOString()),
+                where('start_time', '<=', endOfDay.toISOString()),
+            ];
 
-            // If a specific stylist is selected, filter by them.
-            // If "Any", we calculate capacity based on TOTAL stylists vs concurrent bookings.
             if (selectedStylist && selectedStylist !== 'any') {
-                query = query.eq('stylist_id', selectedStylist.id);
+                bookingConstraints.push(where('stylist_id', '==', (selectedStylist as Stylist).id));
             }
 
-            const { data: bookings } = await query;
-            const existingBookings = bookings || [];
+            const bookingsSnap = await getDocs(
+                query(collection(db, 'bookings'), ...bookingConstraints)
+            );
+
+            const existingBookings = bookingsSnap.docs
+                .map(d => d.data())
+                .filter(b => b.status !== 'cancelled');
 
             // 3. Generate Time Slots
             const slots: string[] = [];
@@ -276,18 +273,9 @@ export default function BookingScreen() {
         setSubmitting(true);
 
         try {
-            // Get user
-            const { data: { user }, error: authError } = await supabase.auth.getUser();
-            if (authError || !user) {
-                console.log('Auth check failed (unexpected in handleBook)');
-                return;
-            }
+            if (!user) return;
 
-            console.log('User ID:', user.id);
-
-            // Construct timestamps
             const startTimeDate = new Date(selectedDate);
-            // Parse time string '10:30 AM' back to hours/minutes
             const [timePart, modifier] = selectedTime.split(' ');
             let [hours, minutes] = timePart.split(':').map(Number);
             if (modifier === 'PM' && hours < 12) hours += 12;
@@ -295,28 +283,19 @@ export default function BookingScreen() {
             startTimeDate.setHours(hours, minutes, 0, 0);
 
             const endTimeDate = new Date(startTimeDate.getTime() + selectedService.duration_minutes * 60000);
+            const finalStylistId = selectedStylist === 'any' ? null : (selectedStylist as Stylist)?.id;
 
-            let finalStylistId = selectedStylist === 'any' ? null : selectedStylist?.id;
-
-            const payload = {
+            await addDoc(collection(db, 'bookings'), {
                 business_id: businessId,
-                customer_id: user.id,
+                customer_id: user.uid,
                 service_id: selectedService.id,
                 stylist_id: finalStylistId,
                 start_time: startTimeDate.toISOString(),
                 end_time: endTimeDate.toISOString(),
-                status: 'confirmed'
-            };
-            console.log('Booking Payload:', JSON.stringify(payload, null, 2));
+                status: 'confirmed',
+                created_at: new Date().toISOString(),
+            });
 
-            const { data, error } = await supabase.from('bookings').insert(payload).select();
-
-            if (error) {
-                console.error('Supabase Insert Error:', error);
-                throw error;
-            }
-
-            console.log('Booking Success:', data);
             setStep(5);
 
         } catch (error: any) {

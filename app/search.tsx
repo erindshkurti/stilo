@@ -8,7 +8,8 @@ import { DatePicker } from '../components/DatePicker';
 import { Header } from '../components/Header';
 import { StylistCard } from '../components/StylistCard';
 import { fetchLocationSuggestions, fetchServiceSuggestions } from '../lib/search';
-import { supabase } from '../lib/supabase';
+import { db } from '../lib/firebase';
+import { collection, collectionGroup, getDocs, query, where } from 'firebase/firestore';
 
 interface BusinessResult {
     id: string;
@@ -96,67 +97,51 @@ export default function SearchScreen() {
         const searchService = overrideService ?? service;
 
         try {
-            // If service filter is provided, we need to join with services table
+            let businessIds: string[] | null = null;
+
+            // If service filter is provided, find matching business IDs
             if (searchService) {
-                // Query businesses that have services matching the category
-                const { data: serviceData, error: serviceError } = await supabase
-                    .from('services')
-                    .select('business_id')
-                    .ilike('category', `%${searchService}%`);
-
-                if (serviceError) {
-                    console.error('Error fetching services:', serviceError);
-                    setResults([]);
-                    setLoading(false);
-                    return;
-                }
-
-                // Get unique business IDs
-                const businessIds = [...new Set(serviceData?.map(s => s.business_id) || [])];
+                const serviceSnap = await getDocs(
+                    query(
+                        collectionGroup(db, 'services'),
+                        where('category', '>=', searchService),
+                        where('category', '<=', searchService + '\uf8ff')
+                    )
+                );
+                // Firestore subcollection path: businesses/{businessId}/services/{serviceId}
+                businessIds = [...new Set(
+                    serviceSnap.docs.map(d => d.ref.parent.parent!.id)
+                )];
 
                 if (businessIds.length === 0) {
                     setResults([]);
                     setLoading(false);
                     return;
                 }
-
-                // Now query businesses with those IDs
-                let query = supabase
-                    .from('businesses')
-                    .select('id, name, city, rating, review_count, cover_image_url')
-                    .in('id', businessIds);
-
-                // Also filter by location if provided
-                if (searchLocation) {
-                    query = query.ilike('city', `%${searchLocation}%`);
-                }
-
-                const { data, error } = await query;
-
-                if (error) {
-                    console.error('Error fetching search results:', error);
-                } else if (data) {
-                    setResults(data);
-                }
-            } else {
-                // No service filter, just query businesses directly
-                let query = supabase
-                    .from('businesses')
-                    .select('id, name, city, rating, review_count, cover_image_url');
-
-                // Filter by Location (City)
-                if (searchLocation) {
-                    query = query.ilike('city', `%${searchLocation}%`);
-                }
-
-                const { data, error } = await query;
-
-                if (error) {
-                    console.error('Error fetching search results:', error);
-                } else if (data) {
-                    setResults(data);
-                }
             }
+
+            // Query businesses collection
+            let constraints: any[] = [];
+            if (searchLocation) {
+                constraints.push(where('city', '>=', searchLocation));
+                constraints.push(where('city', '<=', searchLocation + '\uf8ff'));
+            }
+
+            const businessesSnap = await getDocs(
+                query(collection(db, 'businesses'), ...constraints)
+            );
+
+            let results: BusinessResult[] = businessesSnap.docs.map(d => ({
+                id: d.id,
+                ...(d.data() as Omit<BusinessResult, 'id'>)
+            }));
+
+            // Filter by businessIds if service was specified
+            if (businessIds !== null) {
+                results = results.filter(b => businessIds!.includes(b.id));
+            }
+
+            setResults(results);
         } catch (err) {
             console.error('Search error:', err);
         } finally {

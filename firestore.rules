@@ -1,0 +1,45 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Profiles ───────────────────────────────────────────────────────────────
+    // Users can only read/write their own profile
+    match /profiles/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // ─── Businesses ─────────────────────────────────────────────────────────────
+    // Public read; only owner can write
+    match /businesses/{businessId} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.resource.data.owner_id == request.auth.uid;
+      allow update, delete: if request.auth != null
+                             && resource.data.owner_id == request.auth.uid;
+
+      // Subcollections: hours, stylists, services, portfolio
+      match /{subcollection}/{docId} {
+        allow read: if true;
+        allow write: if request.auth != null
+                     && get(/databases/$(database)/documents/businesses/$(businessId)).data.owner_id == request.auth.uid;
+      }
+    }
+
+    // ─── Bookings ───────────────────────────────────────────────────────────────
+    match /bookings/{bookingId} {
+      // Public read is required for customers to calculate open availability slots
+      allow read: if true;
+      
+      // Customers can only create bookings for themselves
+      allow create: if request.auth != null 
+                    && request.resource.data.customer_id == request.auth.uid;
+                    
+      // Only the customer or the business owner can edit/cancel the booking
+      allow update, delete: if request.auth != null && (
+        resource.data.customer_id == request.auth.uid || 
+        get(/databases/$(database)/documents/businesses/$(resource.data.business_id)).data.owner_id == request.auth.uid
+      );
+    }
+  }
+}

@@ -1,0 +1,20 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ─── Business Images ─────────────────────────────────────────────────────────
+    // Public reads, authenticated users can only write to their own business folder
+    match /businesses/{businessId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null && firestore.get(/databases/(default)/documents/businesses/$(businessId)).data.owner_id == request.auth.uid;
+    }
+
+    // ─── Avatars ─────────────────────────────────────────────────────────────────
+    // Users can only write their own avatar folder; public reads
+    match /avatars/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}

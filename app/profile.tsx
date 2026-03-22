@@ -5,7 +5,8 @@ import { Image, ScrollView, Text, TouchableOpacity, useWindowDimensions, View } 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../components/Header';
 import { useAuth } from '../lib/auth';
-import { supabase } from '../lib/supabase';
+import { db } from '../lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 // Mock data for bookings
 const MOCK_BOOKINGS = {
@@ -55,29 +56,16 @@ export default function ProfileScreen() {
         async function loadProfile() {
             if (!user) return;
 
-            // Prioritize Google/Auth Provider Metadata
-            if (user.user_metadata?.avatar_url) {
-                setAvatarUrl(user.user_metadata.avatar_url);
-            }
-            if (user.user_metadata?.full_name) {
-                setFullName(user.user_metadata.full_name);
-            }
+            // Prioritize Google/Firebase user photo
+            if (user.photoURL) setAvatarUrl(user.photoURL);
+            if (user.displayName) setFullName(user.displayName);
 
             try {
-                // Fetch from Supabase profile to see if there are overrides or missing data
-                const { data } = await supabase
-                    .from('profiles')
-                    .select('full_name, avatar_url')
-                    .eq('id', user.id)
-                    .single();
-
-                if (data) {
-                    if (data.avatar_url && !user.user_metadata?.avatar_url) {
-                        setAvatarUrl(data.avatar_url);
-                    }
-                    if (data.full_name && !user.user_metadata?.full_name) {
-                        setFullName(data.full_name);
-                    }
+                const profileSnap = await getDoc(doc(db, 'profiles', user.uid));
+                if (profileSnap.exists()) {
+                    const data = profileSnap.data();
+                    if (data.avatar_url && !user.photoURL) setAvatarUrl(data.avatar_url);
+                    if (data.full_name && !user.displayName) setFullName(data.full_name);
                 }
             } catch (error) {
                 console.error('Error loading profile details:', error);

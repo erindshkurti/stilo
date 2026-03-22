@@ -3,7 +3,8 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { Header } from '../../components/Header';
-import { supabase } from '../../lib/supabase';
+import { db } from '../../lib/firebase';
+import { collection, doc, getDoc, getDocs, orderBy, query } from 'firebase/firestore';
 
 interface BusinessDetails {
     id: string;
@@ -59,42 +60,27 @@ export default function BusinessPage() {
         async function fetchData() {
             try {
                 // 1. Fetch Business Details
-                const { data: businessData, error: businessError } = await supabase
-                    .from('businesses')
-                    .select('*')
-                    .eq('id', id)
-                    .single();
+                const businessSnap = await getDoc(doc(db, 'businesses', id as string));
+                if (!businessSnap.exists()) throw new Error('Business not found');
+                setBusiness({ id: businessSnap.id, ...businessSnap.data() } as BusinessDetails);
 
-                if (businessError) throw businessError;
-                setBusiness(businessData);
+                // 2. Fetch Portfolio (subcollection)
+                const portfolioSnap = await getDocs(
+                    query(collection(db, 'businesses', id as string, 'portfolio'), orderBy('display_order'))
+                );
+                setPortfolio(portfolioSnap.docs.map(d => ({ id: d.id, ...d.data() } as PortfolioImage)));
 
-                // 2. Fetch Portfolio
-                const { data: portfolioData } = await supabase
-                    .from('business_portfolio_images')
-                    .select('*')
-                    .eq('business_id', id)
-                    .order('display_order', { ascending: true }); // Assuming display_order exists, else created_at
+                // 3. Fetch Services (subcollection)
+                const servicesSnap = await getDocs(
+                    collection(db, 'businesses', id as string, 'services')
+                );
+                setServices(servicesSnap.docs.map(d => ({ id: d.id, ...d.data() } as Service)));
 
-                if (portfolioData) setPortfolio(portfolioData);
-
-                // 3. Fetch Services
-                const { data: servicesData } = await supabase
-                    .from('services')
-                    .select('*')
-                    .eq('business_id', id)
-                    .eq('is_active', true)
-                    .order('price', { ascending: true }); // Simple default order
-
-                if (servicesData) setServices(servicesData);
-
-                // 4. Fetch Team (Stylists)
-                const { data: teamData } = await supabase
-                    .from('stylists')
-                    .select('*')
-                    .eq('business_id', id)
-                    .eq('is_active', true);
-
-                if (teamData) setTeam(teamData);
+                // 4. Fetch Team/Stylists (subcollection)
+                const teamSnap = await getDocs(
+                    collection(db, 'businesses', id as string, 'stylists')
+                );
+                setTeam(teamSnap.docs.map(d => ({ id: d.id, ...d.data() } as Stylist)));
 
             } catch (error) {
                 console.error('Error fetching business details:', error);

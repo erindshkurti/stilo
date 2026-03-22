@@ -1,5 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from 'react-native';
@@ -7,7 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../components/Button';
 import { GoogleLogo } from '../components/GoogleLogo';
 import { Header } from '../components/Header';
-import { supabase } from '../lib/supabase';
+import { auth, db } from '../lib/firebase';
 
 export default function BusinessSignUpScreen() {
     const router = useRouter();
@@ -80,54 +82,22 @@ export default function BusinessSignUpScreen() {
         try {
             console.log('Attempting signup with:', { email, businessName, passwordLength: password.length });
 
-            const { data, error } = await supabase.auth.signUp({
-                email,
-                password,
-                options: {
-                    data: {
-                        user_type: 'business',
-                        business_name: businessName,
-                    }
-                }
-            });
+            const cred = await createUserWithEmailAndPassword(auth, email, password);
 
-            console.log('Signup response:', {
-                user: data.user?.id,
-                session: !!data.session,
-                error: error?.message,
-                errorDetails: error
+            // Create profile document in Firestore
+            await setDoc(doc(db, 'profiles', cred.user.uid), {
+                user_type: 'business',
+                business_name: businessName,
+                email: cred.user.email,
+                created_at: new Date().toISOString(),
             });
-
-            if (error) throw error;
 
             // Clear saved state on success
             await AsyncStorage.multiRemove(['signup_business_name', 'signup_email']);
+            await AsyncStorage.setItem('pending_business_name', businessName);
 
-            // Check if email confirmation is required
-            if (data.user && !data.session) {
-                // Email confirmation required
-                Alert.alert(
-                    'Confirm Your Email',
-                    `We've sent a confirmation email to ${email}. Please check your inbox and click the confirmation link to continue setting up your business.`,
-                    [
-                        {
-                            text: 'OK',
-                            onPress: () => router.replace('/sign-in')
-                        }
-                    ]
-                );
-                setLoading(false);
-                return;
-            }
-
-            // Successfully signed up with session (no email confirmation needed)
-            if (data.session) {
-                console.log('User signed up successfully with session:', data.user?.id);
-                router.replace('/business/onboarding');
-            } else {
-                // Unexpected state
-                throw new Error('Signup completed but no session was created. Please try signing in.');
-            }
+            // Redirect to onboarding
+            router.replace('/business/onboarding');
         } catch (error: any) {
             console.error('Signup error:', error);
             setFormError(error.message || 'Failed to create account. Please try a different email address.');
@@ -147,37 +117,30 @@ export default function BusinessSignUpScreen() {
 
         try {
             setLoading(true);
-            setGoogleError(null); // Clear any previous errors
+            setGoogleError(null);
 
             // Flag this as a business signup attempt
             await AsyncStorage.setItem('pending_business_signup', 'true');
-            // Store business name to use later if possible, or we'll ask again/fetch it
             await AsyncStorage.setItem('pending_business_name', businessName);
-
-            // Also save current form state just in case
             await AsyncStorage.setItem('signup_business_name', businessName);
 
-            const { data, error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: 'http://localhost:8081',
-                    queryParams: {
-                        access_type: 'offline',
-                        prompt: 'consent',
-                    },
-                    // @ts-ignore
-                    data: {
-                        user_type: 'business',
-                        business_name: businessName,
-                    },
-                }
-            });
+            const provider = new GoogleAuthProvider();
+            provider.addScope('email');
+            provider.addScope('profile');
+            const cred = await signInWithPopup(auth, provider);
 
-            if (error) {
-                setGoogleError(error.message);
-                setLoading(false);
-            }
-            // Note: The page will redirect to Google, so we don't need to handle success here
+            // Create/update profile in Firestore as business
+            await setDoc(doc(db, 'profiles', cred.user.uid), {
+                user_type: 'business',
+                business_name: businessName,
+                email: cred.user.email,
+                avatar_url: cred.user.photoURL ?? null,
+                updated_at: new Date().toISOString(),
+            }, { merge: true });
+
+            await AsyncStorage.removeItem('pending_business_signup');
+            // Redirect to onboarding
+            router.replace('/business/onboarding');
         } catch (error: any) {
             console.error('Google auth error:', error);
             setGoogleError(error.message || 'Failed to sign in with Google');

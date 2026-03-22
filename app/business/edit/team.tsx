@@ -5,7 +5,8 @@ import { ScrollView, Text, TextInput, TouchableOpacity, View, useWindowDimension
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../../../components/Header';
 import { useAuth } from '../../../lib/auth';
-import { supabase } from '../../../lib/supabase';
+import { db } from '../../../lib/firebase';
+import { addDoc, collection, deleteDoc, doc, getDocs, query, where } from 'firebase/firestore';
 
 interface Stylist {
     id?: string;
@@ -31,17 +32,16 @@ export default function EditTeamScreen() {
     }, [user]);
 
     async function loadData() {
+        if (!user) return;
         try {
-            const { data: businessData } = await supabase
-                .from('businesses')
-                .select('*')
-                .eq('owner_id', user?.id)
-                .single();
-
-            if (businessData) {
-                setBusiness(businessData);
-                await loadStylists(businessData.id);
-            }
+            const bizSnap = await getDocs(
+                query(collection(db, 'businesses'), where('owner_id', '==', user.uid))
+            );
+            if (bizSnap.empty) return;
+            const bizDoc = bizSnap.docs[0];
+            const biz = { id: bizDoc.id, ...bizDoc.data() };
+            setBusiness(biz);
+            await loadStylists(bizDoc.id);
         } catch (error) {
             console.error('Error loading data:', error);
         } finally {
@@ -50,32 +50,19 @@ export default function EditTeamScreen() {
     }
 
     async function loadStylists(businessId: string) {
-        const { data: stylistsData } = await supabase
-            .from('stylists')
-            .select('*')
-            .eq('business_id', businessId);
-
-        if (stylistsData) {
-            setStylists(stylistsData);
-        }
+        const snap = await getDocs(collection(db, 'businesses', businessId, 'stylists'));
+        setStylists(snap.docs.map(d => ({ id: d.id, ...d.data() } as Stylist)));
     }
 
     const addStylist = async () => {
         if (!business || !currentStylist.name.trim()) return;
-
         setActionLoading(true);
         try {
-            const { error } = await supabase
-                .from('stylists')
-                .insert({
-                    business_id: business.id,
-                    name: currentStylist.name,
-                    bio: currentStylist.bio,
-                    specialties: [],
-                });
-
-            if (error) throw error;
-
+            await addDoc(collection(db, 'businesses', business.id, 'stylists'), {
+                name: currentStylist.name,
+                bio: currentStylist.bio,
+                specialties: [],
+            });
             setCurrentStylist({ name: '', bio: '' });
             await loadStylists(business.id);
         } catch (error) {
@@ -87,22 +74,13 @@ export default function EditTeamScreen() {
     };
 
     const removeStylist = async (id: string | undefined) => {
-        if (!id) return;
-
-        // Optimistic update
+        if (!id || !business) return;
         const previousStylists = [...stylists];
         setStylists(stylists.filter(s => s.id !== id));
-
         try {
-            const { error } = await supabase
-                .from('stylists')
-                .delete()
-                .eq('id', id);
-
-            if (error) throw error;
+            await deleteDoc(doc(db, 'businesses', business.id, 'stylists', id));
         } catch (error) {
             console.error('Error removing stylist:', error);
-            // Revert on error
             setStylists(previousStylists);
             alert('Failed to remove team member. Please try again.');
         }

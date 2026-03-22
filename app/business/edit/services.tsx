@@ -5,7 +5,8 @@ import { ScrollView, Text, TextInput, TouchableOpacity, View, useWindowDimension
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../../../components/Header';
 import { useAuth } from '../../../lib/auth';
-import { supabase } from '../../../lib/supabase';
+import { db } from '../../../lib/firebase';
+import { addDoc, collection, deleteDoc, doc, getDocs, query, where } from 'firebase/firestore';
 
 interface Service {
     id?: string;
@@ -42,17 +43,15 @@ export default function EditServicesScreen() {
     }, [user]);
 
     async function loadData() {
+        if (!user) return;
         try {
-            const { data: businessData } = await supabase
-                .from('businesses')
-                .select('*')
-                .eq('owner_id', user?.id)
-                .single();
-
-            if (businessData) {
-                setBusiness(businessData);
-                await loadServices(businessData.id);
-            }
+            const bizSnap = await getDocs(
+                query(collection(db, 'businesses'), where('owner_id', '==', user.uid))
+            );
+            if (bizSnap.empty) return;
+            const bizDoc = bizSnap.docs[0];
+            setBusiness({ id: bizDoc.id, ...bizDoc.data() });
+            await loadServices(bizDoc.id);
         } catch (error) {
             console.error('Error loading data:', error);
         } finally {
@@ -61,41 +60,22 @@ export default function EditServicesScreen() {
     }
 
     async function loadServices(businessId: string) {
-        const { data: servicesData } = await supabase
-            .from('services')
-            .select('*')
-            .eq('business_id', businessId);
-
-        if (servicesData) {
-            setServices(servicesData);
-        }
+        const snap = await getDocs(collection(db, 'businesses', businessId, 'services'));
+        setServices(snap.docs.map(d => ({ id: d.id, ...d.data() } as Service)));
     }
 
     const addService = async () => {
         if (!business || !currentService.name.trim() || currentService.price <= 0) return;
-
         setActionLoading(true);
         try {
-            const { error } = await supabase
-                .from('services')
-                .insert({
-                    business_id: business.id,
-                    name: currentService.name,
-                    description: currentService.description,
-                    duration_minutes: currentService.duration_minutes,
-                    price: currentService.price,
-                    category: currentService.category,
-                });
-
-            if (error) throw error;
-
-            setCurrentService({
-                name: '',
-                description: '',
-                duration_minutes: 60,
-                price: 0,
-                category: 'Haircut',
+            await addDoc(collection(db, 'businesses', business.id, 'services'), {
+                name: currentService.name,
+                description: currentService.description,
+                duration_minutes: currentService.duration_minutes,
+                price: currentService.price,
+                category: currentService.category,
             });
+            setCurrentService({ name: '', description: '', duration_minutes: 60, price: 0, category: 'Haircut' });
             await loadServices(business.id);
         } catch (error) {
             console.error('Error adding service:', error);
@@ -106,22 +86,13 @@ export default function EditServicesScreen() {
     };
 
     const removeService = async (id: string | undefined) => {
-        if (!id) return;
-
-        // Optimistic update
+        if (!id || !business) return;
         const previousServices = [...services];
         setServices(services.filter(s => s.id !== id));
-
         try {
-            const { error } = await supabase
-                .from('services')
-                .delete()
-                .eq('id', id);
-
-            if (error) throw error;
+            await deleteDoc(doc(db, 'businesses', business.id, 'services', id));
         } catch (error) {
             console.error('Error removing service:', error);
-            // Revert on error
             setServices(previousServices);
             alert('Failed to remove service. Please try again.');
         }

@@ -7,7 +7,9 @@ import { Image, ScrollView, Text, TouchableOpacity, View, useWindowDimensions } 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../../components/Header';
 import { useAuth } from '../../lib/auth';
-import { supabase } from '../../lib/supabase';
+import { db, storage } from '../../lib/firebase';
+import { addDoc, collection, deleteDoc, doc, getDocs, orderBy, query, updateDoc, where } from 'firebase/firestore';
+import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 
 export default function BusinessDashboard() {
     const { user } = useAuth();
@@ -47,55 +49,36 @@ export default function BusinessDashboard() {
     );
 
     async function loadBusinessData() {
+        if (!user) return;
         try {
-            // Load business
-            const { data: businessData, error: businessError } = await supabase
-                .from('businesses')
-                .select('*')
-                .eq('owner_id', user?.id)
-                .single();
+            // Load business by owner_id
+            const bizSnap = await getDocs(
+                query(collection(db, 'businesses'), where('owner_id', '==', user.uid))
+            );
 
-            if (businessError && businessError.code !== 'PGRST116') {
-                console.error('Error loading business:', businessError);
-            } else if (businessData) {
-                setBusiness(businessData);
-
-                // Load business hours
-                const { data: hoursData } = await supabase
-                    .from('business_hours')
-                    .select('*')
-                    .eq('business_id', businessData.id)
-                    .order('day_of_week');
-
-                if (hoursData) setHours(hoursData);
-
-                // Load stylists
-                const { data: stylistsData } = await supabase
-                    .from('stylists')
-                    .select('*')
-                    .eq('business_id', businessData.id);
-
-                if (stylistsData) setStylists(stylistsData);
-
-                // Load services
-                const { data: servicesData } = await supabase
-                    .from('services')
-                    .select('*')
-                    .eq('business_id', businessData.id);
-
-                if (servicesData) setServices(servicesData);
-
-                // Load portfolio images
-                const { data: portfolioData } = await supabase
-                    .from('business_portfolio_images')
-                    .select('*')
-                    .eq('business_id', businessData.id)
-                    .order('display_order', { ascending: true });
-
-                if (portfolioData) setPortfolioImages(portfolioData);
+            if (bizSnap.empty) {
+                setLoading(false);
+                return;
             }
+
+            const bizDoc = bizSnap.docs[0];
+            const bizData = { id: bizDoc.id, ...bizDoc.data() };
+            setBusiness(bizData);
+
+            // Load subcollections in parallel
+            const [hoursSnap, stylistsSnap, servicesSnap, portfolioSnap] = await Promise.all([
+                getDocs(query(collection(db, 'businesses', bizDoc.id, 'hours'), orderBy('day_of_week'))),
+                getDocs(collection(db, 'businesses', bizDoc.id, 'stylists')),
+                getDocs(collection(db, 'businesses', bizDoc.id, 'services')),
+                getDocs(query(collection(db, 'businesses', bizDoc.id, 'portfolio'), orderBy('display_order'))),
+            ]);
+
+            setHours(hoursSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+            setStylists(stylistsSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+            setServices(servicesSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+            setPortfolioImages(portfolioSnap.docs.map(d => ({ id: d.id, ...d.data() })));
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Error loading business data:', error);
         } finally {
             setLoading(false);
         }
@@ -121,37 +104,20 @@ export default function BusinessDashboard() {
     async function uploadPortfolioImage(uri: string) {
         try {
             setUploadingPortfolio(true);
-
             if (!user || !business?.id) return;
 
             const response = await fetch(uri);
             const blob = await response.blob();
-
             const fileExt = uri.split('.').pop()?.toLowerCase() || 'jpg';
-            const fileName = `${business.id}/${Date.now()}.${fileExt}`;
+            const storageRef = ref(storage, `businesses/${business.id}/portfolio/${Date.now()}.${fileExt}`);
+            await uploadBytes(storageRef, blob, { contentType: `image/${fileExt}` });
+            const publicUrl = await getDownloadURL(storageRef);
 
-            const { error: uploadError } = await supabase.storage
-                .from('stilo.business.portfolio')
-                .upload(fileName, blob, {
-                    contentType: `image/${fileExt}`,
-                    upsert: true,
-                });
-
-            if (uploadError) throw uploadError;
-
-            const { data: { publicUrl } } = supabase.storage
-                .from('stilo.business.portfolio')
-                .getPublicUrl(fileName);
-
-            const { error: insertError } = await supabase
-                .from('business_portfolio_images')
-                .insert({
-                    business_id: business.id,
-                    image_url: publicUrl,
-                    display_order: portfolioImages.length,
-                });
-
-            if (insertError) throw insertError;
+            await addDoc(collection(db, 'businesses', business.id, 'portfolio'), {
+                image_url: publicUrl,
+                storage_path: storageRef.fullPath,
+                display_order: portfolioImages.length,
+            });
 
             await loadBusinessData();
         } catch (error) {
@@ -161,22 +127,13 @@ export default function BusinessDashboard() {
         }
     }
 
-    async function deletePortfolioImage(imageId: string, imageUrl: string) {
+    async function deletePortfolioImage(imageId: string, storagePath?: string) {
         try {
-            const { error } = await supabase
-                .from('business_portfolio_images')
-                .delete()
-                .eq('id', imageId);
-
-            if (error) throw error;
-
-            const urlParts = imageUrl.split('stilo.business.portfolio/');
-            if (urlParts[1]) {
-                await supabase.storage
-                    .from('stilo.business.portfolio')
-                    .remove([urlParts[1]]);
+            if (!business?.id) return;
+            await deleteDoc(doc(db, 'businesses', business.id, 'portfolio', imageId));
+            if (storagePath) {
+                try { await deleteObject(ref(storage, storagePath)); } catch (_) {}
             }
-
             await loadBusinessData();
         } catch (error) {
             console.error('Error deleting image:', error);
@@ -186,19 +143,11 @@ export default function BusinessDashboard() {
     async function setFeaturedImage(imageId: string) {
         try {
             if (!business?.id) return;
-
-            await supabase
-                .from('business_portfolio_images')
-                .update({ is_featured: false })
-                .eq('business_id', business.id);
-
-            const { error } = await supabase
-                .from('business_portfolio_images')
-                .update({ is_featured: true })
-                .eq('id', imageId);
-
-            if (error) throw error;
-
+            const snap = await getDocs(collection(db, 'businesses', business.id, 'portfolio'));
+            for (const d of snap.docs) {
+                await updateDoc(d.ref, { is_featured: false });
+            }
+            await updateDoc(doc(db, 'businesses', business.id, 'portfolio', imageId), { is_featured: true });
             await loadBusinessData();
         } catch (error) {
             console.error('Error setting featured image:', error);
@@ -225,35 +174,16 @@ export default function BusinessDashboard() {
     async function uploadCoverImage(uri: string) {
         try {
             setUploadingCover(true);
-
             if (!user || !business?.id) return;
 
             const response = await fetch(uri);
             const blob = await response.blob();
-
             const fileExt = uri.split('.').pop()?.toLowerCase() || 'jpg';
-            const fileName = `${business.id}/cover.${fileExt}`;
+            const storageRef = ref(storage, `businesses/${business.id}/cover.${fileExt}`);
+            await uploadBytes(storageRef, blob, { contentType: `image/${fileExt}` });
+            const publicUrl = await getDownloadURL(storageRef);
 
-            const { error: uploadError } = await supabase.storage
-                .from('stilo.business.portfolio')
-                .upload(fileName, blob, {
-                    contentType: `image/${fileExt}`,
-                    upsert: true,
-                });
-
-            if (uploadError) throw uploadError;
-
-            const { data: { publicUrl } } = supabase.storage
-                .from('stilo.business.portfolio')
-                .getPublicUrl(fileName);
-
-            const { error: updateError } = await supabase
-                .from('businesses')
-                .update({ cover_image_url: publicUrl })
-                .eq('id', business.id);
-
-            if (updateError) throw updateError;
-
+            await updateDoc(doc(db, 'businesses', business.id), { cover_image_url: publicUrl });
             await loadBusinessData();
         } catch (error) {
             console.error('Error uploading cover image:', error);

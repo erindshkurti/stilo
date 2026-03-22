@@ -12,8 +12,9 @@ import { Header } from '../components/Header';
 import { StylistCard } from '../components/StylistCard';
 
 import { useAuth } from '../lib/auth';
+import { db } from '../lib/firebase';
 import { fetchLocationSuggestions, fetchServiceSuggestions } from '../lib/search';
-import { supabase } from '../lib/supabase';
+import { collection, doc, getDocs, getDoc, limit, query, setDoc, where } from 'firebase/firestore';
 
 
 // Match DB Schema
@@ -62,17 +63,14 @@ export default function LandingPage() {
     useEffect(() => {
         async function fetchFeatured() {
             try {
-                const { data, error } = await supabase
-                    .from('businesses')
-                    .select('id, name, city, rating, review_count, cover_image_url, is_featured')
-                    .eq('is_featured', true)
-                    .limit(4);
-
-                if (error) {
-                    console.error('Error fetching featured businesses:', error);
-                } else if (data) {
-                    setFeaturedBusinesses(data);
-                }
+                const q = query(
+                    collection(db, 'businesses'),
+                    where('is_featured', '==', true),
+                    limit(4)
+                );
+                const snap = await getDocs(q);
+                const data = snap.docs.map(d => ({ id: d.id, ...d.data() } as Business));
+                setFeaturedBusinesses(data);
             } catch (err) {
                 console.error('Unexpected error fetching featured:', err);
             } finally {
@@ -140,11 +138,11 @@ export default function LandingPage() {
             }
 
             // Prevent redundant checks if we are already processing or redirecting
-            if (user && !isChecking && !redirecting && user.id !== lastCheckedUserId) {
-                console.log('[Landing] User detected:', user.id);
+            if (user && !isChecking && !redirecting && user.uid !== lastCheckedUserId) {
+                console.log('[Landing] User detected:', user.uid);
                 setIsChecking(true);
-                setRedirecting(true); // Optimistically show loading immediately
-                setLastCheckedUserId(user.id);
+                setRedirecting(true);
+                setLastCheckedUserId(user.uid);
 
                 try {
                     // Check for pending auth redirect (from Sign In flow)
@@ -156,80 +154,55 @@ export default function LandingPage() {
                         return;
                     }
 
-                    let userType = user.user_metadata?.user_type;
+                    // Read user_type from Firestore profile
+                    let userType: string | null = null;
+                    try {
+                        const profileSnap = await getDoc(doc(db, 'profiles', user.uid));
+                        userType = profileSnap.data()?.user_type ?? null;
+                    } catch (e) {
+                        console.error('[Landing] Error reading profile:', e);
+                    }
                     const pendingBusinessSignup = await AsyncStorage.getItem('pending_business_signup');
 
-                    // 1. Check if this is a pending business signup (User clicked "Continue" on Business Page)
+                    // 1. Check if this is a pending business signup
                     if (pendingBusinessSignup === 'true') {
                         console.log('[Landing] Found pending business signup flag. Checking restrictions...');
 
                         // Preliminary Check: Does this user ALREADY have a business?
-                        // If so, we PREVENT them from trying to create another one or overwriting.
-                        const { count: existingCount } = await supabase
-                            .from('businesses')
-                            .select('*', { count: 'exact', head: true })
-                            .eq('owner_id', user.id);
+                        const bizQ = query(collection(db, 'businesses'), where('owner_id', '==', user.uid));
+                        const bizSnap = await getDocs(bizQ);
 
-                        if (existingCount && existingCount > 0) {
+                        if (!bizSnap.empty) {
                             console.log('[Landing] User already has a business. Preventing duplicate creation.');
-
-                            // Clear flag so we don't loop
                             await AsyncStorage.removeItem('pending_business_signup');
-
-                            // Show Message via banner on dashboard
-                            // Redirect to Dashboard (Treat as Sign In) with warning param
                             router.replace('/business/dashboard?warning=duplicate_business');
                             return;
                         }
 
                         console.log('[Landing] No existing business. Converting user...');
 
-                        // A. Update Auth Metadata
-                        const { error: authError } = await supabase.auth.updateUser({
-                            data: { user_type: 'business' }
-                        });
-
-                        // B. Update Public Profile (Fixes "Client" persistence issue)
-                        const { error: profileError } = await supabase
-                            .from('profiles')
-                            .update({ user_type: 'business' })
-                            .eq('id', user.id);
-
-                        if (!authError && !profileError) {
-                            console.log('[Landing] Conversion success. Redirecting to Onboarding.');
-                            userType = 'business';
-
-                            // Clear the signup flag but keep the name for Onboarding to read
-                            await AsyncStorage.removeItem('pending_business_signup');
-
-                            router.replace('/business/onboarding');
-                            return;
-                        } else {
-                            console.error('[Landing] Conversion failed:', authError || profileError);
-                            // If failed, we might want to let them fall through or retry?
-                            // For now, let's proceed to standard checks.
-                        }
+                        // Update Firestore profile to business type
+                        await setDoc(doc(db, 'profiles', user.uid), { user_type: 'business' }, { merge: true });
+                        userType = 'business';
+                        await AsyncStorage.removeItem('pending_business_signup');
+                        router.replace('/business/onboarding');
+                        return;
                     }
 
-                    // 2. Default User Type Logic if not set (Regular Sign In)
+                    // 2. Default User Type Logic if not set
                     if (!userType) {
                         console.log('[Landing] User type not set. Defaulting to customer.');
-                        await supabase.auth.updateUser({
-                            data: { user_type: 'customer' }
-                        });
+                        await setDoc(doc(db, 'profiles', user.uid), { user_type: 'customer' }, { merge: true });
                         userType = 'customer';
                     }
 
                     // 3. Routing Logic
                     if (userType === 'business') {
-                        // Critical Check: Does the business actually exist?
                         console.log('[Landing] Checking for existing business profile...');
-                        const { count } = await supabase
-                            .from('businesses')
-                            .select('*', { count: 'exact', head: true })
-                            .eq('owner_id', user.id);
+                        const bizQ = query(collection(db, 'businesses'), where('owner_id', '==', user.uid));
+                        const bizSnap = await getDocs(bizQ);
 
-                        if (count && count > 0) {
+                        if (!bizSnap.empty) {
                             console.log('[Landing] Business found. Going to Dashboard.');
                             router.replace('/business/dashboard');
                         } else {

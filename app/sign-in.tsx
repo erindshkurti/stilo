@@ -1,5 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from 'react-native';
@@ -8,7 +10,7 @@ import { Button } from '../components/Button';
 import { GoogleLogo } from '../components/GoogleLogo';
 import { Header } from '../components/Header';
 import { useAuth } from '../lib/auth';
-import { supabase } from '../lib/supabase';
+import { auth, db } from '../lib/firebase';
 
 export default function SignInScreen() {
     const router = useRouter();
@@ -59,18 +61,19 @@ export default function SignInScreen() {
                     return;
                 }
 
-                let userType = user.user_metadata?.user_type;
+                // user_type is stored in Firestore profiles doc
+                let userType: string | null = null;
+                try {
+                    const { getDoc } = await import('firebase/firestore');
+                    const profileSnap = await getDoc(doc(db, 'profiles', user.uid));
+                    userType = profileSnap.data()?.user_type ?? 'customer';
 
-                // If user_type is not set (new Google OAuth user), default to customer
-                if (!userType) {
-                    // Update user metadata to set user_type as customer
-                    const { error } = await supabase.auth.updateUser({
-                        data: { user_type: 'customer' }
-                    });
-
-                    if (error) {
-                        console.error('Error updating user metadata:', error);
+                    // Ensure profile exists
+                    if (!profileSnap.exists()) {
+                        await setDoc(doc(db, 'profiles', user.uid), { user_type: 'customer' }, { merge: true });
                     }
+                } catch (e) {
+                    console.error('Error reading profile:', e);
                     userType = 'customer';
                 }
 
@@ -117,36 +120,32 @@ export default function SignInScreen() {
         }
 
         if (isSignUp) {
-            const { data, error: signUpError } = await supabase.auth.signUp({
-                email,
-                password,
-                options: {
-                    data: {
-                        user_type: 'customer', // Default to customer for now
-                    }
-                }
-            });
-
-            if (signUpError) {
-                setError(signUpError.message);
+            try {
+                const cred = await createUserWithEmailAndPassword(auth, email, password);
+                // Create profile document
+                await setDoc(doc(db, 'profiles', cred.user.uid), {
+                    user_type: 'customer',
+                    email: cred.user.email,
+                    created_at: new Date().toISOString(),
+                });
+                // useEffect handles redirect when user state updates
+            } catch (signUpError: any) {
+                setError(signUpError.message || 'Failed to create account.');
                 setLoading(false);
             }
-            // Logic continues in useEffect when user state updates
         } else {
-            const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-
-            if (signInError) {
-                // Provide user-friendly error messages
-                if (signInError.message.includes('Invalid login credentials')) {
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                // useEffect handles redirect when user state updates
+            } catch (signInError: any) {
+                const msg = signInError.message || '';
+                if (msg.includes('user-not-found') || msg.includes('wrong-password') || msg.includes('invalid-credential')) {
                     setError('Invalid email or password. Please try again.');
-                } else if (signInError.message.includes('Email not confirmed')) {
-                    setError('Please confirm your email address before signing in.');
                 } else {
-                    setError(signInError.message);
+                    setError(msg);
                 }
                 setLoading(false);
             }
-            // Logic continues in useEffect when user state updates
         }
     }
 
@@ -162,22 +161,23 @@ export default function SignInScreen() {
                 await AsyncStorage.removeItem('auth_return_url');
             }
 
-            const { data, error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: 'http://localhost:8081',
-                    queryParams: {
-                        access_type: 'offline',
-                        prompt: 'consent',
-                    },
-                }
-            });
+            const provider = new GoogleAuthProvider();
+            provider.addScope('email');
+            provider.addScope('profile');
+            const cred = await signInWithPopup(auth, provider);
 
-            if (error) {
-                setError(error.message);
-                setLoading(false);
+            // Ensure profile exists in Firestore
+            const { getDoc } = await import('firebase/firestore');
+            const profileSnap = await getDoc(doc(db, 'profiles', cred.user.uid));
+            if (!profileSnap.exists()) {
+                await setDoc(doc(db, 'profiles', cred.user.uid), {
+                    user_type: 'customer',
+                    email: cred.user.email,
+                    avatar_url: cred.user.photoURL ?? null,
+                    created_at: new Date().toISOString(),
+                }, { merge: true });
             }
-            // Note: The page will redirect to Google, so we don't need to handle success here
+            // useEffect handles redirect when user state updates
         } catch (error: any) {
             console.error('Google auth error:', error);
             setError(error.message || 'Failed to sign in with Google');

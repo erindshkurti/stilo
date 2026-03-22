@@ -14,7 +14,9 @@ import { LocationForm } from '../../components/onboarding/LocationForm';
 import { ServicesForm, type Service } from '../../components/onboarding/ServicesForm';
 import { StylistForm, type Stylist } from '../../components/onboarding/StylistForm';
 import { useAuth } from '../../lib/auth';
-import { supabase } from '../../lib/supabase';
+import { db, storage } from '../../lib/firebase';
+import { addDoc, collection, doc, updateDoc } from 'firebase/firestore';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 
 const STEPS = ['Details', 'Location', 'Hours', 'Team', 'Services'];
 
@@ -63,54 +65,33 @@ export default function BusinessOnboardingScreen() {
         category: 'Haircut',
     });
 
-    // Auto-fill business name from user metadata or local storage
-    // ... (existing useEffect) ...
+    // Auto-fill business name from local storage
     useEffect(() => {
         async function initializeBusinessUser() {
-            let currentName = '';
-
-            // 1. Check/Enforce Business User Type if not already set
-            if (user && user.user_metadata?.user_type !== 'business') {
-                console.log('[Onboarding] Enforcing business user type...');
-
-                // A. Update Auth Metadata
-                const { error } = await supabase.auth.updateUser({
-                    data: { user_type: 'business' }
-                });
-
-                // B. Update Public Profile (Fixes persistence issues)
-                const { error: profileError } = await supabase
-                    .from('profiles')
-                    .update({ user_type: 'business' })
-                    .eq('id', user.id);
-
-                if (error || profileError) console.error('[Onboarding] Failed to update user type:', error || profileError);
-                else console.log('[Onboarding] User type enforced to business');
+            // Update Firestore profile to mark as business type
+            if (user) {
+                try {
+                    const { getDoc, setDoc } = await import('firebase/firestore');
+                    const profileRef = doc(db, 'profiles', user.uid);
+                    const profileSnap = await getDoc(profileRef);
+                    if (!profileSnap.exists() || profileSnap.data()?.user_type !== 'business') {
+                        await setDoc(profileRef, { user_type: 'business' }, { merge: true });
+                        console.log('[Onboarding] Set profile user_type to business');
+                    }
+                } catch (e) {
+                    console.error('[Onboarding] Failed to update profile:', e);
+                }
             }
 
-            // 2. Get Business Name from Metadata
-            if (user?.user_metadata?.business_name) {
-                currentName = user.user_metadata.business_name;
-            }
-
-            // 3. Get Business Name from Storage (overrides metadata if present/newer)
+            // Get Business Name from Storage
             try {
                 const savedName = await AsyncStorage.getItem('pending_business_name');
                 if (savedName) {
-                    currentName = savedName;
-                    // Clear it now that we've consumed it
+                    setBusinessData(prev => ({ ...prev, name: savedName }));
                     await AsyncStorage.removeItem('pending_business_name');
                 }
             } catch (e) {
                 console.error('[Onboarding] Error reading storage:', e);
-            }
-
-            // 4. Update State
-            if (currentName) {
-                setBusinessData(prev => ({
-                    ...prev,
-                    name: currentName
-                }));
             }
         }
 
@@ -199,151 +180,100 @@ export default function BusinessOnboardingScreen() {
         }
     }
 
-    async function uploadCoverImageToBusiness(businessId: string, imageUri: string) {
-        try {
-            const response = await fetch(imageUri);
-            const blob = await response.blob();
-
-            const fileExt = imageUri.split('.').pop()?.toLowerCase() || 'jpg';
-            const fileName = `${businessId}/cover.${fileExt}`;
-
-            const { error: uploadError } = await supabase.storage
-                .from('stilo.business.portfolio')
-                .upload(fileName, blob, {
-                    contentType: `image/${fileExt}`,
-                    upsert: true,
-                });
-
-            if (uploadError) throw uploadError;
-
-            const { data: { publicUrl } } = supabase.storage
-                .from('stilo.business.portfolio')
-                .getPublicUrl(fileName);
-
-            // Update business with cover image URL
-            const { error: updateError } = await supabase
-                .from('businesses')
-                .update({ cover_image_url: publicUrl })
-                .eq('id', businessId);
-
-            if (updateError) throw updateError;
-
-            return publicUrl;
-        } catch (error) {
-            console.error('Error uploading cover image:', error);
-            throw error;
-        }
+    async function uploadCoverImageToBusiness(businessId: string, imageUri: string): Promise<string> {
+        const response = await fetch(imageUri);
+        const blob = await response.blob();
+        const fileExt = imageUri.split('.').pop()?.toLowerCase() || 'jpg';
+        const storageRef = ref(storage, `businesses/${businessId}/cover.${fileExt}`);
+        await uploadBytes(storageRef, blob, { contentType: `image/${fileExt}` });
+        const publicUrl = await getDownloadURL(storageRef);
+        await updateDoc(doc(db, 'businesses', businessId), { cover_image_url: publicUrl });
+        return publicUrl;
     }
 
     const handleComplete = async () => {
         setLoading(true);
 
         try {
-            setError(null); // Clear any previous errors
+            setError(null);
 
-            // Check if user is authenticated
             if (!user) {
                 throw new Error('You must be signed in to create a business');
             }
 
-            // Get current session to ensure we're authenticated
-            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+            console.log('Creating business for user:', user.uid);
 
-            if (sessionError || !session) {
-                throw new Error('Session expired. Please sign in again.');
-            }
+            // Step 1: Create business document in Firestore
+            const businessRef = await addDoc(collection(db, 'businesses'), {
+                owner_id: user.uid,
+                name: businessData.name,
+                description: businessData.description,
+                address: businessData.address,
+                city: businessData.city,
+                state: businessData.state,
+                zip_code: businessData.zip_code,
+                phone: businessData.phone,
+                email: businessData.email,
+                is_featured: false,
+                rating: 0,
+                review_count: 0,
+                created_at: new Date().toISOString(),
+            });
 
-            console.log('Creating business for user:', user.id);
+            const businessId = businessRef.id;
+            console.log('Business created:', businessId);
 
-            // Step 1: Create business
-            const { data: business, error: businessError } = await supabase
-                .from('businesses')
-                .insert([
-                    {
-                        owner_id: user.id,
-                        name: businessData.name,
-                        description: businessData.description,
-                        address: businessData.address,
-                        city: businessData.city,
-                        state: businessData.state,
-                        zip_code: businessData.zip_code,
-                        phone: businessData.phone,
-                        email: businessData.email,
-                    }
-                ])
-                .select()
-                .single();
-
-            if (businessError) throw businessError;
-
-            console.log('Business created:', business.id);
-
-            // Upload cover image if one was selected
+            // Upload cover image if selected
             if (businessData.coverImageUrl) {
                 try {
-                    console.log('Attempting to upload cover image from URI:', businessData.coverImageUrl);
-                    await uploadCoverImageToBusiness(business.id, businessData.coverImageUrl);
+                    await uploadCoverImageToBusiness(businessId, businessData.coverImageUrl);
                     console.log('Cover image uploaded successfully');
-                } catch (error) {
-                    console.error('Error uploading cover image:', error);
-                    alert('Business created, but cover image upload failed. You can update it later in your dashboard.');
+                } catch (err) {
+                    console.error('Cover image upload failed:', err);
+                    alert('Business created, but cover image upload failed. You can update it later.');
                 }
             }
 
-            // Step 2: Create business hours (if any)
+            // Step 2: Create business hours subcollection
             if (businessHours.length > 0) {
-                const hoursToInsert = businessHours.map(hour => ({
-                    business_id: business.id,
-                    day_of_week: hour.day_of_week,
-                    open_time: hour.open_time,
-                    close_time: hour.close_time,
-                    is_closed: hour.is_closed,
-                }));
-
-                const { error: hoursError } = await supabase
-                    .from('business_hours')
-                    .insert(hoursToInsert);
-
-                if (hoursError) console.error('Error creating hours:', hoursError);
+                const hoursCol = collection(db, 'businesses', businessId, 'hours');
+                for (const hour of businessHours) {
+                    await addDoc(hoursCol, {
+                        day_of_week: hour.day_of_week,
+                        open_time: hour.open_time,
+                        close_time: hour.close_time,
+                        is_closed: hour.is_closed,
+                    });
+                }
             }
 
-            // Step 3: Create stylists (if any)
+            // Step 3: Create stylists subcollection
             if (stylists.length > 0) {
-                const stylistsToInsert = stylists.map(stylist => ({
-                    business_id: business.id,
-                    name: stylist.name,
-                    bio: stylist.bio,
-                    specialties: stylist.specialties,
-                }));
-
-                const { error: stylistsError } = await supabase
-                    .from('stylists')
-                    .insert(stylistsToInsert);
-
-                if (stylistsError) console.error('Error creating stylists:', stylistsError);
+                const stylistsCol = collection(db, 'businesses', businessId, 'stylists');
+                for (const stylist of stylists) {
+                    await addDoc(stylistsCol, {
+                        name: stylist.name,
+                        bio: stylist.bio,
+                        specialties: stylist.specialties,
+                    });
+                }
             }
 
-            // Step 4: Create services (if any)
+            // Step 4: Create services subcollection
             if (services.length > 0) {
-                const servicesToInsert = services.map(service => ({
-                    business_id: business.id,
-                    name: service.name,
-                    description: service.description,
-                    duration_minutes: service.duration_minutes,
-                    price: service.price,
-                    category: service.category,
-                }));
-
-                const { error: servicesError } = await supabase
-                    .from('services')
-                    .insert(servicesToInsert);
-
-                if (servicesError) console.error('Error creating services:', servicesError);
+                const servicesCol = collection(db, 'businesses', businessId, 'services');
+                for (const service of services) {
+                    await addDoc(servicesCol, {
+                        name: service.name,
+                        description: service.description,
+                        duration_minutes: service.duration_minutes,
+                        price: service.price,
+                        category: service.category,
+                    });
+                }
             }
 
             console.log('Business setup complete!');
-
-            // Redirect to dashboard
             router.replace('/business/dashboard');
         } catch (error: any) {
             console.error('Error creating business:', error);

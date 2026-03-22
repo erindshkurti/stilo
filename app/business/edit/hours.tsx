@@ -5,7 +5,8 @@ import { ScrollView, Switch, Text, TouchableOpacity, View, useWindowDimensions }
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../../../components/Header';
 import { useAuth } from '../../../lib/auth';
-import { supabase } from '../../../lib/supabase';
+import { db } from '../../../lib/firebase';
+import { addDoc, collection, deleteDoc, getDocs, orderBy, query, where } from 'firebase/firestore';
 
 interface BusinessHours {
     id?: string;
@@ -48,37 +49,34 @@ export default function EditHoursScreen() {
     }, [user]);
 
     async function loadData() {
+        if (!user) return;
         try {
-            // Load business
-            const { data: businessData } = await supabase
-                .from('businesses')
-                .select('*')
-                .eq('owner_id', user?.id)
-                .single();
+            // Load business by owner_id
+            const bizSnap = await getDocs(
+                query(collection(db, 'businesses'), where('owner_id', '==', user.uid))
+            );
+            if (bizSnap.empty) return;
+            const bizDoc = bizSnap.docs[0];
+            const biz = { id: bizDoc.id, ...bizDoc.data() };
+            setBusiness(biz);
 
-            if (businessData) {
-                setBusiness(businessData);
+            // Load hours subcollection
+            const hoursSnap = await getDocs(
+                query(collection(db, 'businesses', bizDoc.id, 'hours'), orderBy('day_of_week'))
+            );
 
-                // Load existing hours
-                const { data: hoursData } = await supabase
-                    .from('business_hours')
-                    .select('*')
-                    .eq('business_id', businessData.id)
-                    .order('day_of_week');
-
-                if (hoursData && hoursData.length > 0) {
-                    setHours(hoursData.map(h => ({
-                        ...h,
-                        day_name: DAYS[h.day_of_week].day_name
-                    })));
-                } else {
-                    // Initialize with default hours
-                    setHours(DAYS.map(day => ({
-                        ...day,
-                        is_closed: day.day_of_week === 0,
-                        ...DEFAULT_HOURS,
-                    })));
-                }
+            if (!hoursSnap.empty) {
+                setHours(hoursSnap.docs.map(d => ({
+                    id: d.id,
+                    day_name: DAYS[d.data().day_of_week]?.day_name ?? '',
+                    ...d.data(),
+                } as BusinessHours)));
+            } else {
+                setHours(DAYS.map(day => ({
+                    ...day,
+                    is_closed: day.day_of_week === 0,
+                    ...DEFAULT_HOURS,
+                })));
             }
         } catch (error) {
             console.error('Error loading data:', error);
@@ -95,29 +93,26 @@ export default function EditHoursScreen() {
 
     const handleSave = async () => {
         if (!business) return;
-
         setSaving(true);
         try {
-            // Delete existing hours
-            await supabase
-                .from('business_hours')
-                .delete()
-                .eq('business_id', business.id);
+            // Delete existing hours docs
+            const existingSnap = await getDocs(
+                collection(db, 'businesses', business.id, 'hours')
+            );
+            for (const d of existingSnap.docs) {
+                await deleteDoc(d.ref);
+            }
 
             // Insert new hours
-            const hoursToInsert = hours.map(hour => ({
-                business_id: business.id,
-                day_of_week: hour.day_of_week,
-                open_time: hour.open_time,
-                close_time: hour.close_time,
-                is_closed: hour.is_closed,
-            }));
-
-            const { error } = await supabase
-                .from('business_hours')
-                .insert(hoursToInsert);
-
-            if (error) throw error;
+            const hoursCol = collection(db, 'businesses', business.id, 'hours');
+            for (const hour of hours) {
+                await addDoc(hoursCol, {
+                    day_of_week: hour.day_of_week,
+                    open_time: hour.open_time,
+                    close_time: hour.close_time,
+                    is_closed: hour.is_closed,
+                });
+            }
 
             router.back();
         } catch (error) {

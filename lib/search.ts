@@ -1,53 +1,51 @@
-import { supabase } from './supabase';
+import { collection, collectionGroup, getDocs, limit, query, where } from 'firebase/firestore';
+import { db } from './firebase';
 
 /**
- * Fetch unique service category suggestions based on user input
+ * Fetch unique service category suggestions based on user input (prefix match)
  */
-export async function fetchServiceSuggestions(query: string): Promise<string[]> {
-    if (!query.trim()) return [];
+export async function fetchServiceSuggestions(queryStr: string): Promise<string[]> {
+    if (!queryStr.trim()) return [];
 
     try {
-        const { data, error } = await supabase
-            .from('services')
-            .select('category')
-            .ilike('category', `%${query}%`)
-            .limit(10);
+        // Firestore range query for prefix matching on category
+        const servicesRef = collectionGroup(db, 'services');
+        const q = query(
+            servicesRef,
+            where('category', '>=', queryStr),
+            where('category', '<=', queryStr + '\uf8ff'),
+            limit(20)
+        );
 
-        if (error) {
-            console.error('Error fetching service suggestions:', error);
-            return [];
-        }
-
-        // Return unique categories
-        return [...new Set(data?.map(s => s.category) || [])];
+        const snapshot = await getDocs(q);
+        const categories = snapshot.docs.map(doc => doc.data().category as string);
+        return [...new Set(categories)];
     } catch (error) {
-        console.error('Unexpected error fetching service suggestions:', error);
+        console.error('Error fetching service suggestions:', error);
         return [];
     }
 }
 
 /**
- * Fetch unique city suggestions based on user input
+ * Fetch unique city suggestions based on user input (prefix match)
  */
-export async function fetchLocationSuggestions(query: string): Promise<string[]> {
-    if (!query.trim()) return [];
+export async function fetchLocationSuggestions(queryStr: string): Promise<string[]> {
+    if (!queryStr.trim()) return [];
 
     try {
-        const { data, error } = await supabase
-            .from('businesses')
-            .select('city')
-            .ilike('city', `%${query}%`)
-            .limit(10);
+        const businessesRef = collection(db, 'businesses');
+        const q = query(
+            businessesRef,
+            where('city', '>=', queryStr),
+            where('city', '<=', queryStr + '\uf8ff'),
+            limit(20)
+        );
 
-        if (error) {
-            console.error('Error fetching location suggestions:', error);
-            return [];
-        }
-
-        // Return unique cities
-        return [...new Set(data?.map(b => b.city) || [])];
+        const snapshot = await getDocs(q);
+        const cities = snapshot.docs.map(doc => doc.data().city as string);
+        return [...new Set(cities)];
     } catch (error) {
-        console.error('Unexpected error fetching location suggestions:', error);
+        console.error('Error fetching location suggestions:', error);
         return [];
     }
 }

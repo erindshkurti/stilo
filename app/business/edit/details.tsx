@@ -4,9 +4,12 @@ import { useEffect, useState } from 'react';
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../../../components/Header';
-import { supabase } from '../../../lib/supabase';
+import { useAuth } from '../../../lib/auth';
+import { db } from '../../../lib/firebase';
+import { collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 
 export default function EditBusinessDetailsScreen() {
+    const { user } = useAuth();
     const router = useRouter();
     const { width } = useWindowDimensions();
     const [loading, setLoading] = useState(true);
@@ -31,29 +34,24 @@ export default function EditBusinessDetailsScreen() {
     }, []);
 
     async function loadBusinessDetails() {
+        if (!user) return;
         try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return;
+            const bizSnap = await getDocs(
+                query(collection(db, 'businesses'), where('owner_id', '==', user.uid))
+            );
+            if (bizSnap.empty) throw new Error('Business not found');
+            const bizDoc = bizSnap.docs[0];
+            const business = { id: bizDoc.id, ...bizDoc.data() } as any;
 
-            const { data: business, error } = await supabase
-                .from('businesses')
-                .select('*')
-                .eq('owner_id', user.id)
-                .single();
-
-            if (error) throw error;
-
-            if (business) {
-                setBusinessId(business.id);
-                setBusinessName(business.name || '');
-                setDescription(business.description || '');
-                setAddress(business.address || '');
-                setCity(business.city || '');
-                setState(business.state || '');
-                setZipCode(business.zip_code || '');
-                setPhone(business.phone || '');
-                setEmail(business.email || '');
-            }
+            setBusinessId(business.id);
+            setBusinessName(business.name || '');
+            setDescription(business.description || '');
+            setAddress(business.address || '');
+            setCity(business.city || '');
+            setState(business.state || '');
+            setZipCode(business.zip_code || '');
+            setPhone(business.phone || '');
+            setEmail(business.email || '');
         } catch (error) {
             console.error('Error loading business details:', error);
             Alert.alert('Error', 'Failed to load business details');
@@ -79,22 +77,16 @@ export default function EditBusinessDetailsScreen() {
         setSaving(true);
 
         try {
-            const { error } = await supabase
-                .from('businesses')
-                .update({
-                    name: businessName,
-                    description: description,
-                    address: address,
-                    city: city,
-                    state: state,
-                    zip_code: zipCode,
-                    phone: phone,
-                    email: email,
-                })
-                .eq('id', businessId);
-
-            if (error) throw error;
-
+            await updateDoc(doc(db, 'businesses', businessId), {
+                name: businessName,
+                description: description,
+                address: address,
+                city: city,
+                state: state,
+                zip_code: zipCode,
+                phone: phone,
+                email: email,
+            });
             router.back();
         } catch (error) {
             console.error('Error saving business details:', error);

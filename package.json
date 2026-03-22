@@ -16,7 +16,6 @@
     "@react-navigation/bottom-tabs": "^7.4.0",
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",
-    "@supabase/supabase-js": "^2.89.0",
     "clsx": "^2.1.1",
     "expo": "~54.0.30",
     "expo-constants": "~18.0.12",
@@ -33,6 +32,7 @@
     "expo-symbols": "~1.0.8",
     "expo-system-ui": "~6.0.9",
     "expo-web-browser": "~15.0.10",
+    "firebase": "^12.11.0",
     "lucide-react-native": "^0.562.0",
     "nativewind": "^4.2.1",
     "react": "19.1.0",
@@ -43,7 +43,6 @@
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0",
     "react-native-svg": "15.12.1",
-    "react-native-url-polyfill": "^3.0.0",
     "react-native-web": "~0.21.0",
     "react-native-worklets": "0.5.1",
     "tailwindcss": "^3.4.19"

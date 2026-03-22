@@ -6,7 +6,10 @@ import { Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, useWindowD
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../../components/Header';
 import { useAuth } from '../../lib/auth';
-import { supabase } from '../../lib/supabase';
+import { auth, db, storage } from '../../lib/firebase';
+import { signOut } from 'firebase/auth';
+import { addDoc, collection, deleteDoc, doc, getDocs, getDoc, orderBy, query, updateDoc, where } from 'firebase/firestore';
+import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 
 export default function BusinessSettings() {
     const { user } = useAuth();
@@ -35,29 +38,20 @@ export default function BusinessSettings() {
         try {
             if (!user) return;
 
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('full_name, avatar_url')
-                .eq('id', user.id)
-                .single();
+            if (user.photoURL) setAvatarUrl(user.photoURL);
 
-            if (error) throw error;
-
-            if (data) {
+            const profileSnap = await getDoc(doc(db, 'profiles', user.uid));
+            if (profileSnap.exists()) {
+                const data = profileSnap.data();
                 setFullName(data.full_name || '');
-                setAvatarUrl(data.avatar_url);
+                if (data.avatar_url) setAvatarUrl(data.avatar_url);
             }
 
             // Get business ID
-            const { data: business } = await supabase
-                .from('businesses')
-                .select('id')
-                .eq('owner_id', user.id)
-                .single();
-
-            if (business) {
-                setBusinessId(business.id);
-            }
+            const bizSnap = await getDocs(
+                query(collection(db, 'businesses'), where('owner_id', '==', user.uid))
+            );
+            if (!bizSnap.empty) setBusinessId(bizSnap.docs[0].id);
         } catch (error) {
             console.error('Error loading profile:', error);
         } finally {
@@ -68,24 +62,15 @@ export default function BusinessSettings() {
     async function loadPortfolioImages() {
         try {
             if (!user) return;
-
-            const { data: business } = await supabase
-                .from('businesses')
-                .select('id')
-                .eq('owner_id', user.id)
-                .single();
-
-            if (!business) return;
-
-            const { data: images, error } = await supabase
-                .from('business_portfolio_images')
-                .select('*')
-                .eq('business_id', business.id)
-                .order('display_order', { ascending: true });
-
-            if (error) throw error;
-
-            setPortfolioImages(images || []);
+            const bizSnap = await getDocs(
+                query(collection(db, 'businesses'), where('owner_id', '==', user.uid))
+            );
+            if (bizSnap.empty) return;
+            const bizId = bizSnap.docs[0].id;
+            const imgSnap = await getDocs(
+                query(collection(db, 'businesses', bizId, 'portfolio'), orderBy('display_order'))
+            );
+            setPortfolioImages(imgSnap.docs.map(d => ({ id: d.id, ...d.data() })));
         } catch (error) {
             console.error('Error loading portfolio images:', error);
         }
@@ -94,37 +79,20 @@ export default function BusinessSettings() {
     async function uploadPortfolioImage(uri: string) {
         try {
             setUploadingPortfolio(true);
-
             if (!user || !businessId) return;
 
             const response = await fetch(uri);
             const blob = await response.blob();
-
             const fileExt = uri.split('.').pop()?.toLowerCase() || 'jpg';
-            const fileName = `${businessId}/${Date.now()}.${fileExt}`;
+            const storageRef = ref(storage, `businesses/${businessId}/portfolio/${Date.now()}.${fileExt}`);
+            await uploadBytes(storageRef, blob, { contentType: `image/${fileExt}` });
+            const publicUrl = await getDownloadURL(storageRef);
 
-            const { error: uploadError } = await supabase.storage
-                .from('stilo.business.portfolio')
-                .upload(fileName, blob, {
-                    contentType: `image/${fileExt}`,
-                    upsert: true,
-                });
-
-            if (uploadError) throw uploadError;
-
-            const { data: { publicUrl } } = supabase.storage
-                .from('stilo.business.portfolio')
-                .getPublicUrl(fileName);
-
-            const { error: insertError } = await supabase
-                .from('business_portfolio_images')
-                .insert({
-                    business_id: businessId,
-                    image_url: publicUrl,
-                    display_order: portfolioImages.length,
-                });
-
-            if (insertError) throw insertError;
+            await addDoc(collection(db, 'businesses', businessId, 'portfolio'), {
+                image_url: publicUrl,
+                storage_path: storageRef.fullPath,
+                display_order: portfolioImages.length,
+            });
 
             await loadPortfolioImages();
         } catch (error) {
@@ -153,23 +121,13 @@ export default function BusinessSettings() {
         }
     }
 
-    async function deletePortfolioImage(imageId: string, imageUrl: string) {
+    async function deletePortfolioImage(imageId: string, storagePath?: string) {
         try {
-            const { error } = await supabase
-                .from('business_portfolio_images')
-                .delete()
-                .eq('id', imageId);
-
-            if (error) throw error;
-
-            // Extract file path from URL and delete from storage
-            const urlParts = imageUrl.split('stilo.business.portfolio/');
-            if (urlParts[1]) {
-                await supabase.storage
-                    .from('stilo.business.portfolio')
-                    .remove([urlParts[1]]);
+            if (!businessId) return;
+            await deleteDoc(doc(db, 'businesses', businessId, 'portfolio', imageId));
+            if (storagePath) {
+                try { await deleteObject(ref(storage, storagePath)); } catch (_) {}
             }
-
             await loadPortfolioImages();
         } catch (error) {
             console.error('Error deleting image:', error);
@@ -180,21 +138,12 @@ export default function BusinessSettings() {
     async function setFeaturedImage(imageId: string) {
         try {
             if (!businessId) return;
-
             // Unset all featured images first
-            await supabase
-                .from('business_portfolio_images')
-                .update({ is_featured: false })
-                .eq('business_id', businessId);
-
-            // Set the selected image as featured
-            const { error } = await supabase
-                .from('business_portfolio_images')
-                .update({ is_featured: true })
-                .eq('id', imageId);
-
-            if (error) throw error;
-
+            const snap = await getDocs(collection(db, 'businesses', businessId, 'portfolio'));
+            for (const d of snap.docs) {
+                await updateDoc(d.ref, { is_featured: false });
+            }
+            await updateDoc(doc(db, 'businesses', businessId, 'portfolio', imageId), { is_featured: true });
             await loadPortfolioImages();
         } catch (error) {
             console.error('Error setting featured image:', error);
@@ -223,39 +172,16 @@ export default function BusinessSettings() {
     async function uploadAvatar(uri: string) {
         try {
             setUploading(true);
-
             if (!user) return;
 
-            // Convert URI to blob for web, or use file for native
             const response = await fetch(uri);
             const blob = await response.blob();
-
             const fileExt = uri.split('.').pop()?.toLowerCase() || 'jpg';
-            const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+            const storageRef = ref(storage, `avatars/${user.uid}/${Date.now()}.${fileExt}`);
+            await uploadBytes(storageRef, blob, { contentType: `image/${fileExt}` });
+            const publicUrl = await getDownloadURL(storageRef);
 
-            // Upload to Supabase storage
-            const { error: uploadError } = await supabase.storage
-                .from('stilo.profile.avatars')
-                .upload(fileName, blob, {
-                    contentType: `image/${fileExt}`,
-                    upsert: true,
-                });
-
-            if (uploadError) throw uploadError;
-
-            // Get public URL
-            const { data: { publicUrl } } = supabase.storage
-                .from('stilo.profile.avatars')
-                .getPublicUrl(fileName);
-
-            // Update profile
-            const { error: updateError } = await supabase
-                .from('profiles')
-                .update({ avatar_url: publicUrl })
-                .eq('id', user.id);
-
-            if (updateError) throw updateError;
-
+            await updateDoc(doc(db, 'profiles', user.uid), { avatar_url: publicUrl });
             setAvatarUrl(publicUrl);
         } catch (error) {
             console.error('Error uploading avatar:', error);
@@ -268,16 +194,8 @@ export default function BusinessSettings() {
     async function handleSave() {
         try {
             setSaving(true);
-
             if (!user) return;
-
-            const { error } = await supabase
-                .from('profiles')
-                .update({ full_name: fullName })
-                .eq('id', user.id);
-
-            if (error) throw error;
-
+            await updateDoc(doc(db, 'profiles', user.uid), { full_name: fullName });
             setEditMode(false);
             Alert.alert('Success', 'Profile updated successfully');
         } catch (error) {
@@ -289,7 +207,7 @@ export default function BusinessSettings() {
     }
 
     const handleSignOut = async () => {
-        await supabase.auth.signOut();
+        await signOut(auth);
         router.replace('/');
     };
 
