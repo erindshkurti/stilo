@@ -165,7 +165,7 @@ export default function ProfileScreen() {
 
             <View className="flex-1">
                 <ScrollView className="flex-1">
-                    <View className="px-6 py-8 items-center pt-12">
+                    <View className="px-6 py-4 items-center">
                         <View style={{ maxWidth: containerMaxWidth, width: '100%' }}>
                             <Text className={`font-bold mb-2 ${isLargeScreen ? 'text-4xl' : 'text-3xl'}`}>
                                 Profile

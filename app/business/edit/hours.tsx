@@ -133,7 +133,7 @@ export default function EditHoursScreen() {
 
             <View className="flex-1">
                 <ScrollView className="flex-1">
-                    <View className="px-6 py-8">
+                    <View className="px-6 py-4">
                         <TouchableOpacity 
                             onPress={() => router.back()}
                             className="flex-row items-center mb-6"

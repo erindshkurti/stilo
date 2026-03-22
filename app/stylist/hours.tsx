@@ -191,7 +191,7 @@ export default function StaffHoursScreen() {
             <Header />
             <View className="flex-1">
                 <ScrollView className="flex-1">
-                    <View className="px-6 py-8 items-center">
+                    <View className="px-6 py-4 items-center">
                         <View style={{ maxWidth: 800, width: '100%' }}>
                             <TouchableOpacity 
                                 onPress={() => router.back()}

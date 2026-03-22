@@ -170,7 +170,7 @@ export default function StylistDashboard() {
         <SafeAreaView className="flex-1 bg-white">
             <Header />
             <ScrollView className="flex-1">
-                <View className="px-6 py-8 items-center">
+                <View className="px-6 py-4 items-center">
                     <View style={{ maxWidth: 800, width: '100%' }}>
                         
                         {/* Welcome Header */}
