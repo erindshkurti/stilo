@@ -157,7 +157,7 @@ export default function SearchScreen() {
                 <Header />
 
                 {/* Filter Bar */}
-                <View className="bg-white pt-2 border-b border-neutral-100 pb-2 px-6" style={{ zIndex: 100 }}>
+                <View className="bg-white pt-2 border-b border-neutral-100 pb-2 px-6 md:px-8" style={{ zIndex: 100 }}>
                     <View className="mx-auto w-full" style={{ maxWidth: 1200 }}>
                         {isLargeScreen ? (
                             /* Desktop: Horizontal inputs with Autocomplete */
@@ -243,7 +243,7 @@ export default function SearchScreen() {
 
                 {/* Results Grid */}
                 <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false} style={{ zIndex: 1 }}>
-                    <View className="w-full px-6 py-8">
+                    <View className="w-full px-6 md:px-8 py-8">
                         <View className="mx-auto w-full" style={{ maxWidth: 1200 }}>
                             {loading ? (
                                 <View className="items-center justify-center py-20">
@@ -258,7 +258,7 @@ export default function SearchScreen() {
                                         {results.map((item) => (
                                             <View
                                                 key={item.id}
-                                                className={isLargeScreen ? 'w-1/3 px-3 mb-6' : 'w-full px-0 mb-6'}
+                                                className={isLargeScreen ? 'w-1/3 px-3 mb-6' : 'w-full px-3 mb-6'}
                                             >
                                                 <StylistCard
                                                     name={item.name}
