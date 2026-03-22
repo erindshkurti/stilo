@@ -211,7 +211,11 @@ export default function StaffHoursScreen() {
                             )}
 
                         {hours.map((day, index) => (
-                            <View key={day.day_of_week} className="bg-neutral-50 rounded-2xl p-4 mb-3">
+                            <View 
+                                key={index} 
+                                className="bg-neutral-50 rounded-2xl p-4 mb-3"
+                                style={{ zIndex: hours.length - index, overflow: 'visible' }}
+                            >
                                 <View className="flex-row items-center justify-between mb-3">
                                     <Text className="font-semibold text-base">{day.day_name}</Text>
                                     <View className="flex-row items-center">
