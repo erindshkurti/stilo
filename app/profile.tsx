@@ -26,6 +26,7 @@ export default function ProfileScreen() {
     const [displayName, setDisplayName] = useState('');
     const [phone, setPhone] = useState('');
     const [email, setEmail] = useState('');
+    const [businessName, setBusinessName] = useState<string | null>(null);
 
     const isLargeScreen = width > 768;
     const containerMaxWidth = isLargeScreen ? 600 : width - 48;
@@ -64,6 +65,14 @@ export default function ProfileScreen() {
                         }
                     } else {
                         setAvatarUrl(user.photoURL || null);
+                    }
+
+                    // Fetch business name if associated
+                    if (data.business_id) {
+                        const bizSnap = await getDoc(doc(db, 'businesses', data.business_id));
+                        if (bizSnap.exists()) {
+                            setBusinessName(bizSnap.data().name);
+                        }
                     }
                 } else {
                     setEmail(user.email || '');
@@ -236,6 +245,20 @@ export default function ProfileScreen() {
                                     className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-black text-base"
                                 />
                             </View>
+
+                            {businessName && (
+                                <View>
+                                    <Text className="font-semibold text-neutral-900 mb-2 px-1">Business Association</Text>
+                                    <View className="h-14 bg-neutral-100 rounded-2xl px-4 border border-neutral-200 justify-center">
+                                        <Text className="text-neutral-600 text-base font-medium">
+                                            {businessName}
+                                        </Text>
+                                    </View>
+                                    <Text className="text-neutral-500 text-xs mt-2 px-1">
+                                        Linked as a {user?.uid ? 'Staff Member' : 'Owner'}
+                                    </Text>
+                                </View>
+                            )}
 
                             <View className="mt-4">
                                 <Button
