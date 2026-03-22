@@ -160,7 +160,7 @@ export default function EditServicesScreen() {
                                             placeholder="e.g., Women's Haircut"
                                             value={currentService.name}
                                             onChangeText={(value) => setCurrentService({ ...currentService, name: value })}
-                                            className="h-12 bg-white rounded-xl px-4 border border-neutral-200 text-base"
+                                            className="h-12 bg-white rounded-xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
                                         />
                                     </View>
 
@@ -192,7 +192,7 @@ export default function EditServicesScreen() {
                                                 value={currentService.duration_minutes > 0 ? currentService.duration_minutes.toString() : ''}
                                                 onChangeText={(value) => setCurrentService({ ...currentService, duration_minutes: parseInt(value) || 0 })}
                                                 keyboardType="number-pad"
-                                                className="h-12 bg-white rounded-xl px-4 border border-neutral-200 text-base"
+                                                className="h-12 bg-white rounded-xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
                                             />
                                         </View>
 
@@ -203,7 +203,7 @@ export default function EditServicesScreen() {
                                                 value={currentService.price > 0 ? currentService.price.toString() : ''}
                                                 onChangeText={(value) => setCurrentService({ ...currentService, price: parseFloat(value) || 0 })}
                                                 keyboardType="decimal-pad"
-                                                className="h-12 bg-white rounded-xl px-4 border border-neutral-200 text-base"
+                                                className="h-12 bg-white rounded-xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
                                             />
                                         </View>
                                     </View>

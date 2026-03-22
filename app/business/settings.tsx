@@ -245,7 +245,7 @@ export default function BusinessSettings() {
                                                 <TextInput
                                                     value={user?.email || ''}
                                                     editable={false}
-                                                    className="h-14 bg-neutral-200 rounded-2xl px-4 border border-neutral-200 text-neutral-500"
+                                                    className="h-14 bg-neutral-200 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-neutral-500"
                                                 />
                                                 <Text className="text-xs text-neutral-500 mt-1">Email cannot be changed</Text>
                                             </View>
@@ -256,7 +256,7 @@ export default function BusinessSettings() {
                                                     value={fullName}
                                                     onChangeText={setFullName}
                                                     placeholder="Enter your full name"
-                                                    className="h-14 bg-white rounded-2xl px-4 border border-neutral-200"
+                                                    className="h-14 bg-white rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900"
                                                 />
                                             </View>
 

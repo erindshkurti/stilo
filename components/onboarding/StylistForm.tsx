@@ -77,7 +77,7 @@ export function StylistForm({ data, onChange, currentStylist, onCurrentStylistCh
                         placeholder="e.g., Sarah Johnson"
                         value={currentStylist.name}
                         onChangeText={(value) => onCurrentStylistChange({ ...currentStylist, name: value })}
-                        className="h-12 bg-white rounded-xl px-4 border border-neutral-200 text-base"
+                        className="h-12 bg-white rounded-xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
                     />
                 </View>
 
@@ -90,7 +90,7 @@ export function StylistForm({ data, onChange, currentStylist, onCurrentStylistCh
                         multiline
                         numberOfLines={3}
                         textAlignVertical="top"
-                        className="bg-white rounded-xl p-3 border border-neutral-200 text-base min-h-[80px]"
+                        className="bg-white rounded-xl p-3 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base min-h-[80px]"
                     />
                 </View>
 

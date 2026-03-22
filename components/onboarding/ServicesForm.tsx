@@ -89,7 +89,7 @@ export function ServicesForm({ data, onChange, currentService, onCurrentServiceC
                         placeholder="e.g., Women's Haircut"
                         value={currentService.name}
                         onChangeText={(value) => onCurrentServiceChange({ ...currentService, name: value })}
-                        className="h-12 bg-white rounded-xl px-4 border border-neutral-200 text-base"
+                        className="h-12 bg-white rounded-xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
                     />
                 </View>
 
@@ -121,7 +121,7 @@ export function ServicesForm({ data, onChange, currentService, onCurrentServiceC
                             value={currentService.duration_minutes > 0 ? currentService.duration_minutes.toString() : ''}
                             onChangeText={(value) => onCurrentServiceChange({ ...currentService, duration_minutes: parseInt(value) || 0 })}
                             keyboardType="number-pad"
-                            className="h-12 bg-white rounded-xl px-4 border border-neutral-200 text-base"
+                            className="h-12 bg-white rounded-xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
                         />
                     </View>
 
@@ -132,7 +132,7 @@ export function ServicesForm({ data, onChange, currentService, onCurrentServiceC
                             value={currentService.price > 0 ? currentService.price.toString() : ''}
                             onChangeText={(value) => onCurrentServiceChange({ ...currentService, price: parseFloat(value) || 0 })}
                             keyboardType="decimal-pad"
-                            className="h-12 bg-white rounded-xl px-4 border border-neutral-200 text-base"
+                            className="h-12 bg-white rounded-xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
                         />
                     </View>
                 </View>

@@ -21,6 +21,7 @@ export function AutocompleteInput({
     ...textInputProps
 }: AutocompleteInputProps) {
     const [showSuggestions, setShowSuggestions] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
     const inputRef = useRef<TextInput>(null);
 
     // Show suggestions when there are results and input has value
@@ -39,13 +40,21 @@ export function AutocompleteInput({
 
     return (
         <View style={{ position: 'relative', zIndex: 50 }}>
-            <View className="relative flex-row items-center bg-neutral-50 rounded-2xl px-4 border border-neutral-200">
-                {icon && <Feather name={icon} size={20} color="#737373" />}
+            <View className={`relative flex-row items-center bg-neutral-50 rounded-2xl px-4 border transition-colors ${isFocused ? 'border-neutral-900 bg-white' : 'border-neutral-200'}`}>
+                {icon && <Feather name={icon} size={20} color={isFocused ? "#171717" : "#737373"} />}
                 <TextInput
                     ref={inputRef}
                     value={value}
                     onChangeText={onChangeText}
-                    className="flex-1 h-14 px-3 pr-10 text-base min-w-0"
+                    onFocus={(e) => {
+                        setIsFocused(true);
+                        textInputProps.onFocus?.(e);
+                    }}
+                    onBlur={(e) => {
+                        setIsFocused(false);
+                        textInputProps.onBlur?.(e);
+                    }}
+                    className="flex-1 h-14 px-3 pr-10 text-base min-w-0 text-neutral-900"
                     {...textInputProps}
                 />
                 {/* Clear Button */}

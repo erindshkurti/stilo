@@ -23,7 +23,7 @@ export function LocationForm({ data, onChange }: LocationFormProps) {
                     placeholder="123 Main Street"
                     value={data.address}
                     onChangeText={(value) => onChange('address', value)}
-                    className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 text-base"
+                    className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
                 />
             </View>
 
@@ -36,7 +36,7 @@ export function LocationForm({ data, onChange }: LocationFormProps) {
                         placeholder="New York"
                         value={data.city}
                         onChangeText={(value) => onChange('city', value)}
-                        className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 text-base"
+                        className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
                     />
                 </View>
 
@@ -50,7 +50,7 @@ export function LocationForm({ data, onChange }: LocationFormProps) {
                         onChangeText={(value) => onChange('state', value)}
                         maxLength={2}
                         autoCapitalize="characters"
-                        className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 text-base"
+                        className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
                     />
                 </View>
             </View>
@@ -65,7 +65,7 @@ export function LocationForm({ data, onChange }: LocationFormProps) {
                     onChangeText={(value) => onChange('zip_code', value)}
                     keyboardType="number-pad"
                     maxLength={5}
-                    className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 text-base"
+                    className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
                 />
             </View>
 
@@ -78,7 +78,7 @@ export function LocationForm({ data, onChange }: LocationFormProps) {
                     value={data.phone}
                     onChangeText={(value) => onChange('phone', value)}
                     keyboardType="phone-pad"
-                    className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 text-base"
+                    className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
                 />
             </View>
 
@@ -92,7 +92,7 @@ export function LocationForm({ data, onChange }: LocationFormProps) {
                     onChangeText={(value) => onChange('email', value)}
                     keyboardType="email-address"
                     autoCapitalize="none"
-                    className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 text-base"
+                    className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
                 />
             </View>
         </View>

@@ -23,7 +23,7 @@ export function BusinessDetailsForm({ data, onChange, onCoverImagePick, uploadin
                     placeholder="e.g., Bella Hair Studio"
                     value={data.name}
                     onChangeText={(value) => onChange('name', value)}
-                    className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 text-base"
+                    className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
                 />
             </View>
 
@@ -38,7 +38,7 @@ export function BusinessDetailsForm({ data, onChange, onCoverImagePick, uploadin
                     multiline
                     numberOfLines={4}
                     textAlignVertical="top"
-                    className="bg-neutral-50 rounded-2xl p-4 border border-neutral-200 text-base min-h-[100px]"
+                    className="bg-neutral-50 rounded-2xl p-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base min-h-[100px]"
                 />
                 <Text className="text-xs text-neutral-500 mt-1">
                     This will be shown on your business profile
@@ -68,7 +68,7 @@ export function BusinessDetailsForm({ data, onChange, onCoverImagePick, uploadin
                             />
                         </View>
                     ) : (
-                        <View className="bg-neutral-50 rounded-xl p-8 mb-3 items-center border border-neutral-200" style={{ height: 150, justifyContent: 'center' }}>
+                        <View className="bg-neutral-50 rounded-xl p-8 mb-3 items-center border border-neutral-200 focus:border-neutral-900 focus:bg-white" style={{ height: 150, justifyContent: 'center' }}>
                             <Feather name="image" size={48} color="#d4d4d4" />
                             <Text className="text-neutral-400 mt-2">No cover image</Text>
                         </View>

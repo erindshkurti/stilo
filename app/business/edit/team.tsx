@@ -146,7 +146,7 @@ export default function EditTeamScreen() {
                                             placeholder="e.g., Sarah Johnson"
                                             value={currentStylist.name}
                                             onChangeText={(value) => setCurrentStylist({ ...currentStylist, name: value })}
-                                            className="h-12 bg-white rounded-xl px-4 border border-neutral-200 text-base"
+                                            className="h-12 bg-white rounded-xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
                                         />
                                     </View>
 
@@ -159,7 +159,7 @@ export default function EditTeamScreen() {
                                             multiline
                                             numberOfLines={3}
                                             textAlignVertical="top"
-                                            className="bg-white rounded-xl p-3 border border-neutral-200 text-base min-h-[80px]"
+                                            className="bg-white rounded-xl p-3 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base min-h-[80px]"
                                         />
                                     </View>
 

@@ -130,7 +130,7 @@ export default function EditBusinessDetailsScreen() {
                                         value={businessName}
                                         onChangeText={setBusinessName}
                                         placeholder="Enter business name"
-                                        className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200"
+                                        className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white"
                                     />
                                 </View>
 
@@ -143,7 +143,7 @@ export default function EditBusinessDetailsScreen() {
                                         placeholder="Brief description of your business"
                                         multiline
                                         numberOfLines={3}
-                                        className="bg-neutral-50 rounded-2xl p-4 border border-neutral-200"
+                                        className="bg-neutral-50 rounded-2xl p-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white"
                                         style={{ minHeight: 80, textAlignVertical: 'top' }}
                                     />
                                 </View>
@@ -155,7 +155,7 @@ export default function EditBusinessDetailsScreen() {
                                         value={address}
                                         onChangeText={setAddress}
                                         placeholder="123 Main St"
-                                        className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200"
+                                        className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white"
                                     />
                                 </View>
 
@@ -167,7 +167,7 @@ export default function EditBusinessDetailsScreen() {
                                             value={city}
                                             onChangeText={setCity}
                                             placeholder="City"
-                                            className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200"
+                                            className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white"
                                         />
                                     </View>
                                     <View style={{ width: 100 }}>
@@ -178,7 +178,7 @@ export default function EditBusinessDetailsScreen() {
                                             placeholder="ST"
                                             maxLength={2}
                                             autoCapitalize="characters"
-                                            className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200"
+                                            className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white"
                                         />
                                     </View>
                                     <View style={{ width: 100 }}>
@@ -189,7 +189,7 @@ export default function EditBusinessDetailsScreen() {
                                             placeholder="12345"
                                             keyboardType="numeric"
                                             maxLength={5}
-                                            className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200"
+                                            className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white"
                                         />
                                     </View>
                                 </View>
@@ -202,7 +202,7 @@ export default function EditBusinessDetailsScreen() {
                                         onChangeText={setPhone}
                                         placeholder="(555) 123-4567"
                                         keyboardType="phone-pad"
-                                        className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200"
+                                        className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white"
                                     />
                                 </View>
 
@@ -215,7 +215,7 @@ export default function EditBusinessDetailsScreen() {
                                         placeholder="business@example.com"
                                         keyboardType="email-address"
                                         autoCapitalize="none"
-                                        className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200"
+                                        className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white"
                                     />
                                 </View>
 
