@@ -1,5 +1,6 @@
 import { Feather } from '@expo/vector-icons';
-import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 
 interface StylistFormProps {
     data: Stylist[];
@@ -12,21 +13,37 @@ export interface Stylist {
     name: string;
     bio: string;
     specialties: string[];
+    local_image_uri?: string;
+    image_url?: string;
 }
 
 export function StylistForm({ data, onChange, currentStylist, onCurrentStylistChange }: StylistFormProps) {
-    // We only keep the list state here or let parent handle it too? 
-    // The parent passed `data` (the list) and `onChange`.
-    // The previous implementation had `useState` for `stylists` initialized from `data`.
-    // Ideally, we should just use `data` directly to be a controlled component fully.
-    // The previous implementation was a bit hybrid (props init state).
-    // Let's rely on props.
+    const pickImage = async () => {
+        try {
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ['images'],
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 0.8,
+            });
+
+            if (!result.canceled && result.assets[0]) {
+                onCurrentStylistChange({ ...currentStylist, local_image_uri: result.assets[0].uri });
+            }
+        } catch (error) {
+            console.error('Error picking image:', error);
+        }
+    };
+
+    const removeImage = () => {
+        onCurrentStylistChange({ ...currentStylist, local_image_uri: undefined });
+    };
 
     const addStylist = () => {
         if (currentStylist.name.trim()) {
             const newStylists = [...data, currentStylist];
             onChange(newStylists);
-            onCurrentStylistChange({ name: '', bio: '', specialties: [] });
+            onCurrentStylistChange({ name: '', bio: '', specialties: [], local_image_uri: undefined });
         }
     };
 
@@ -46,13 +63,25 @@ export function StylistForm({ data, onChange, currentStylist, onCurrentStylistCh
                 <View className="space-y-2 mb-4">
                     {data.map((stylist, index) => (
                         <View key={index} className="bg-neutral-50 rounded-2xl p-4 flex-row items-center justify-between">
-                            <View className="flex-1">
-                                <Text className="font-semibold text-base">{stylist.name}</Text>
-                                {stylist.bio && (
-                                    <Text className="text-sm text-neutral-600 mt-1" numberOfLines={1}>
-                                        {stylist.bio}
-                                    </Text>
+                            <View className="flex-row items-center flex-1">
+                                {stylist.local_image_uri ? (
+                                    <Image 
+                                        source={{ uri: stylist.local_image_uri }} 
+                                        className="w-12 h-12 rounded-full bg-neutral-200 mr-3"
+                                    />
+                                ) : (
+                                    <View className="w-12 h-12 rounded-full bg-neutral-200 items-center justify-center mr-3">
+                                        <Feather name="user" size={18} color="#737373" />
+                                    </View>
                                 )}
+                                <View className="flex-1">
+                                    <Text className="font-semibold text-base">{stylist.name}</Text>
+                                    {stylist.bio && (
+                                        <Text className="text-sm text-neutral-600 mt-1" numberOfLines={1}>
+                                            {stylist.bio}
+                                        </Text>
+                                    )}
+                                </View>
                             </View>
                             <TouchableOpacity
                                 onPress={() => removeStylist(index)}
@@ -70,6 +99,34 @@ export function StylistForm({ data, onChange, currentStylist, onCurrentStylistCh
                 <Text className="font-semibold text-base mb-2">
                     {data.length === 0 ? 'Add Your First Team Member' : 'Add Another Team Member'}
                 </Text>
+
+                {/* Image Picker */}
+                <View className="items-center mb-4">
+                    <TouchableOpacity 
+                        onPress={pickImage}
+                        className="items-center justify-center w-24 h-24 rounded-full bg-white overflow-hidden border border-neutral-200"
+                    >
+                        {currentStylist.local_image_uri ? (
+                            <Image 
+                                source={{ uri: currentStylist.local_image_uri }} 
+                                className="w-full h-full"
+                            />
+                        ) : (
+                            <>
+                                <Feather name="camera" size={24} color="#a3a3a3" />
+                                <Text className="text-[10px] text-neutral-400 font-medium mt-1 uppercase text-center px-2">Add Photo</Text>
+                            </>
+                        )}
+                    </TouchableOpacity>
+                    {!!currentStylist.local_image_uri && (
+                        <TouchableOpacity 
+                            onPress={removeImage}
+                            className="mt-2"
+                        >
+                            <Text className="text-xs text-red-600 font-medium">Remove Photo</Text>
+                        </TouchableOpacity>
+                    )}
+                </View>
 
                 <View>
                     <Text className="text-sm font-medium text-neutral-700 mb-2">Name</Text>
@@ -97,7 +154,7 @@ export function StylistForm({ data, onChange, currentStylist, onCurrentStylistCh
                 <TouchableOpacity
                     onPress={addStylist}
                     disabled={!currentStylist.name.trim()}
-                    className={`h-12 rounded-xl items-center justify-center flex-row ${currentStylist.name.trim() ? 'bg-black' : 'bg-neutral-200'
+                    className={`h-12 rounded-xl items-center justify-center flex-row shadow-sm ${currentStylist.name.trim() ? 'bg-black' : 'bg-neutral-200'
                         }`}
                 >
                     <Feather name="plus" size={20} color="white" />

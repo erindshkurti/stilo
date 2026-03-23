@@ -53,6 +53,7 @@ export default function BusinessOnboardingScreen() {
         name: '',
         bio: '',
         specialties: [],
+        local_image_uri: undefined,
     });
 
     // Validated Services Logic (Step 5)
@@ -191,6 +192,15 @@ export default function BusinessOnboardingScreen() {
         return publicUrl;
     }
 
+    async function uploadStylistImage(businessId: string, imageUri: string): Promise<string> {
+        const response = await fetch(imageUri);
+        const blob = await response.blob();
+        const fileExt = imageUri.split('.').pop()?.toLowerCase() || 'jpg';
+        const storageRef = ref(storage, `businesses/${businessId}/stylists/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`);
+        await uploadBytes(storageRef, blob, { contentType: `image/${fileExt}` });
+        return await getDownloadURL(storageRef);
+    }
+
     const handleComplete = async () => {
         setLoading(true);
 
@@ -252,10 +262,20 @@ export default function BusinessOnboardingScreen() {
             if (stylists.length > 0) {
                 const stylistsCol = collection(db, 'businesses', businessId, 'stylists');
                 for (const stylist of stylists) {
+                    let imageUrl = null;
+                    if (stylist.local_image_uri) {
+                        try {
+                            imageUrl = await uploadStylistImage(businessId, stylist.local_image_uri);
+                        } catch (err) {
+                            console.error('Failed to upload stylist image:', err);
+                        }
+                    }
+
                     await addDoc(stylistsCol, {
                         name: stylist.name,
                         bio: stylist.bio,
                         specialties: stylist.specialties,
+                        image_url: imageUrl,
                         is_active: true,
                         created_at: new Date().toISOString(),
                     });
