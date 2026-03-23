@@ -166,13 +166,7 @@ export function Header() {
                         <View className="flex-row items-center gap-6">
                             {user ? (
                                 <>
-                                    {isBusinessOwner && (
-                                        <TouchableOpacity onPress={() => router.push('/business/dashboard')}>
-                                            <Text className="text-neutral-700 font-medium">Dashboard</Text>
-                                        </TouchableOpacity>
-                                    )}
-
-                                    {isStylist && (
+                                    {(isBusinessOwner || isStylist) && (
                                         <View style={{ position: 'relative', zIndex: 9999 }} data-dropdown="business">
                                             <TouchableOpacity
                                                 onPress={() => {
@@ -200,33 +194,59 @@ export function Header() {
                                                     <View className="px-4 py-2 border-b border-neutral-50 mb-1">
                                                         <Text className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Business Tools</Text>
                                                     </View>
-                                                    <Link href="/stylist/dashboard" asChild>
-                                                        <TouchableOpacity
-                                                            onPress={() => setBusinessDropdownOpen(false)}
-                                                            className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
-                                                        >
-                                                            <Feather name="layout" size={18} color="#737373" />
-                                                            <Text className="ml-3 text-neutral-900 font-medium">My Work Bookings</Text>
-                                                        </TouchableOpacity>
-                                                    </Link>
-                                                    <Link href="/stylist/hours" asChild>
-                                                        <TouchableOpacity
-                                                            onPress={() => setBusinessDropdownOpen(false)}
-                                                            className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
-                                                        >
-                                                            <Feather name="clock" size={18} color="#737373" />
-                                                            <Text className="ml-3 text-neutral-900 font-medium">Working Hours</Text>
-                                                        </TouchableOpacity>
-                                                    </Link>
-                                                    <Link href="/stylist/blocks" asChild>
-                                                        <TouchableOpacity
-                                                            onPress={() => setBusinessDropdownOpen(false)}
-                                                            className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
-                                                        >
-                                                            <Feather name="slash" size={18} color="#737373" />
-                                                            <Text className="ml-3 text-neutral-900 font-medium">Blocked Time</Text>
-                                                        </TouchableOpacity>
-                                                    </Link>
+                                                    
+                                                    {isBusinessOwner ? (
+                                                        <>
+                                                            <Link href="/business/dashboard" asChild>
+                                                                <TouchableOpacity
+                                                                    onPress={() => setBusinessDropdownOpen(false)}
+                                                                    className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
+                                                                >
+                                                                    <Feather name="layout" size={18} color="#737373" />
+                                                                    <Text className="ml-3 text-neutral-900 font-medium">Dashboard</Text>
+                                                                </TouchableOpacity>
+                                                            </Link>
+                                                            <Link href="/business/calendar" asChild>
+                                                                <TouchableOpacity
+                                                                    onPress={() => setBusinessDropdownOpen(false)}
+                                                                    className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
+                                                                >
+                                                                    <Feather name="grid" size={18} color="#737373" />
+                                                                    <Text className="ml-3 text-neutral-900 font-medium">Staff Calendar</Text>
+                                                                </TouchableOpacity>
+                                                            </Link>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Link href="/stylist/dashboard" asChild>
+                                                                <TouchableOpacity
+                                                                    onPress={() => setBusinessDropdownOpen(false)}
+                                                                    className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
+                                                                >
+                                                                    <Feather name="layout" size={18} color="#737373" />
+                                                                    <Text className="ml-3 text-neutral-900 font-medium">My Work Bookings</Text>
+                                                                </TouchableOpacity>
+                                                            </Link>
+                                                            <Link href="/stylist/hours" asChild>
+                                                                <TouchableOpacity
+                                                                    onPress={() => setBusinessDropdownOpen(false)}
+                                                                    className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
+                                                                >
+                                                                    <Feather name="clock" size={18} color="#737373" />
+                                                                    <Text className="ml-3 text-neutral-900 font-medium">Working Hours</Text>
+                                                                </TouchableOpacity>
+                                                            </Link>
+                                                            <Link href="/stylist/blocks" asChild>
+                                                                <TouchableOpacity
+                                                                    onPress={() => setBusinessDropdownOpen(false)}
+                                                                    className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
+                                                                >
+                                                                    <Feather name="slash" size={18} color="#737373" />
+                                                                    <Text className="ml-3 text-neutral-900 font-medium">Blocked Time</Text>
+                                                                </TouchableOpacity>
+                                                            </Link>
+                                                        </>
+                                                    )}
                                                 </View>
                                             )}
                                         </View>
@@ -277,15 +297,26 @@ export function Header() {
                                                 </View>
                                                 
                                                 {isBusinessOwner && (
-                                                    <Link href="/business/profile" asChild>
-                                                        <TouchableOpacity
-                                                            onPress={() => setProfileDropdownOpen(false)}
-                                                            className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
-                                                        >
-                                                            <Feather name="user" size={18} color="#737373" />
-                                                            <Text className="ml-3 text-neutral-900">Profile</Text>
-                                                        </TouchableOpacity>
-                                                    </Link>
+                                                    <>
+                                                        <Link href="/bookings" asChild>
+                                                            <TouchableOpacity
+                                                                onPress={() => setProfileDropdownOpen(false)}
+                                                                className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
+                                                            >
+                                                                <Feather name="calendar" size={18} color="#737373" />
+                                                                <Text className="ml-3 text-neutral-900">My Personal Bookings</Text>
+                                                            </TouchableOpacity>
+                                                        </Link>
+                                                        <Link href="/business/profile" asChild>
+                                                            <TouchableOpacity
+                                                                onPress={() => setProfileDropdownOpen(false)}
+                                                                className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
+                                                            >
+                                                                <Feather name="user" size={18} color="#737373" />
+                                                                <Text className="ml-3 text-neutral-900">My Profile</Text>
+                                                            </TouchableOpacity>
+                                                        </Link>
+                                                    </>
                                                 )}
 
                                                 {isStylist && (
@@ -410,56 +441,63 @@ export function Header() {
                             <View>
                                 {isBusinessOwner ? (
                                     <>
-                                        <TouchableOpacity
-                                            onPress={() => {
-                                                setMenuOpen(false);
-                                                router.push('/business/dashboard');
-                                            }}
-                                            className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-3"
-                                        >
-                                            <View className="flex-row items-center">
-                                                <Feather name="layout" size={18} color="#737373" />
-                                                <Text className="ml-3 text-neutral-900 font-medium text-base">Dashboard</Text>
-                                            </View>
-                                        </TouchableOpacity>
-
-                                        <TouchableOpacity
-                                            onPress={() => {
-                                                setMenuOpen(false);
-                                                router.push('/business/calendar');
-                                            }}
-                                            className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-3"
-                                        >
-                                            <View className="flex-row items-center">
-                                                <Feather name="grid" size={18} color="#737373" />
-                                                <Text className="ml-3 text-neutral-900 font-medium text-base">Business Calendar</Text>
-                                            </View>
-                                        </TouchableOpacity>
-
-                                        <Link href="/bookings" asChild>
+                                        <View className="mb-4">
+                                            <Text className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3 px-4">Business Tools</Text>
                                             <TouchableOpacity
-                                                onPress={() => setMenuOpen(false)}
-                                                className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-3"
+                                                onPress={() => {
+                                                    setMenuOpen(false);
+                                                    router.push('/business/dashboard');
+                                                }}
+                                                className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
+                                            >
+                                                <View className="flex-row items-center">
+                                                    <Feather name="layout" size={18} color="#737373" />
+                                                    <Text className="ml-3 text-neutral-900 font-medium text-base">Dashboard</Text>
+                                                </View>
+                                            </TouchableOpacity>
+
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    setMenuOpen(false);
+                                                    router.push('/business/calendar');
+                                                }}
+                                                className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
+                                            >
+                                                <View className="flex-row items-center">
+                                                    <Feather name="grid" size={18} color="#737373" />
+                                                    <Text className="ml-3 text-neutral-900 font-medium text-base">Staff Calendar</Text>
+                                                </View>
+                                            </TouchableOpacity>
+                                        </View>
+
+                                        <View className="mb-4">
+                                            <Text className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3 px-4">Personal Account</Text>
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    setMenuOpen(false);
+                                                    router.push('/bookings');
+                                                }}
+                                                className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
                                             >
                                                 <View className="flex-row items-center">
                                                     <Feather name="calendar" size={18} color="#737373" />
-                                                    <Text className="ml-3 text-neutral-900 font-medium text-base">Personal Bookings</Text>
+                                                    <Text className="ml-3 text-neutral-900 font-medium text-base">My Personal Bookings</Text>
                                                 </View>
                                             </TouchableOpacity>
-                                        </Link>
 
-                                        <TouchableOpacity
-                                            onPress={() => {
-                                                setMenuOpen(false);
-                                                router.push('/business/profile');
-                                            }}
-                                            className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-3"
-                                        >
-                                            <View className="flex-row items-center">
-                                                <Feather name="user" size={18} color="#737373" />
-                                                <Text className="ml-3 text-neutral-900 font-medium text-base">Profile</Text>
-                                            </View>
-                                        </TouchableOpacity>
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    setMenuOpen(false);
+                                                    router.push('/business/profile');
+                                                }}
+                                                className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
+                                            >
+                                                <View className="flex-row items-center">
+                                                    <Feather name="user" size={18} color="#737373" />
+                                                    <Text className="ml-3 text-neutral-900 font-medium text-base">My Profile</Text>
+                                                </View>
+                                            </TouchableOpacity>
+                                        </View>
                                     </>
                                 ) : isStylist ? (
                                     <>
