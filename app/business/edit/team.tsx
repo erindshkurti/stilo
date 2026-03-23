@@ -340,6 +340,16 @@ export default function EditTeamScreen() {
                         </View>
 
                         <View className="mb-5">
+                            <Text className="text-sm font-medium text-neutral-700 mb-2">Stylist Name</Text>
+                            <TextInput
+                                placeholder="e.g., Sarah Johnson"
+                                value={currentStylist.name}
+                                onChangeText={(value) => setCurrentStylist({ ...currentStylist, name: value })}
+                                className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
+                            />
+                        </View>
+
+                        <View className="mb-5">
                             <Text className="text-sm font-medium text-neutral-700 mb-2">Email Address (Optional)</Text>
                             <TextInput
                                 placeholder="stylist@example.com"
@@ -350,16 +360,6 @@ export default function EditTeamScreen() {
                                 className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
                             />
                             <Text className="text-xs text-neutral-500 mt-1">Linking an email allows the stylist to log in and manage their own schedule.</Text>
-                        </View>
-
-                        <View className="mb-5">
-                            <Text className="text-sm font-medium text-neutral-700 mb-2">Stylist Name</Text>
-                            <TextInput
-                                placeholder="e.g., Sarah Johnson"
-                                value={currentStylist.name}
-                                onChangeText={(value) => setCurrentStylist({ ...currentStylist, name: value })}
-                                className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
-                            />
                         </View>
 
                         <View className="mb-8">
