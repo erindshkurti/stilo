@@ -247,13 +247,13 @@ export default function StylistDashboard() {
                                     {scheduleBookings.map((booking) => (
                                         <View key={booking.id} className="bg-white border border-neutral-100 rounded-2xl p-5 flex-row items-center shadow-sm">
                                             <View className="mr-5 items-center">
-                                                <View className="bg-neutral-50 px-2.5 py-1 rounded-lg mb-2">
-                                                    <Text className="text-[10px] font-bold text-neutral-400 uppercase tracking-tighter">
+                                                <View className="items-center justify-center bg-neutral-900 px-3 py-1.5 rounded-xl mb-1.5 min-w-[64px]">
+                                                    <Text className="text-white font-bold text-[10px] uppercase tracking-tighter">
                                                         {formatDate(booking.start_time)}
                                                     </Text>
                                                 </View>
-                                                <View className="items-center justify-center bg-neutral-900 w-16 h-12 rounded-xl">
-                                                    <Text className="text-white font-bold text-sm">
+                                                <View className="bg-neutral-50 px-2.5 py-1 rounded-lg">
+                                                    <Text className="text-neutral-500 font-bold text-sm">
                                                         {new Date(booking.start_time).getHours().toString().padStart(2, '0')}:
                                                         {new Date(booking.start_time).getMinutes().toString().padStart(2, '0')}
                                                     </Text>
