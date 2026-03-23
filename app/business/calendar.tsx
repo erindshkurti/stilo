@@ -181,16 +181,14 @@ export default function BusinessCalendar() {
                                 }}
                                 className="bg-neutral-900 rounded-xl px-3 py-1 shadow-sm border border-black/10"
                             >
-                                <View className="flex-1 justify-center items-center">
-                                    <Text className="text-white font-bold text-sm leading-tight text-center" numberOfLines={1}>
-                                        {b.customerName || 'Client'}
-                                    </Text>
-                                    <View className="flex-row items-center mt-0.5 justify-center">
+                                <View className="flex-1 justify-center items-center px-2">
+                                    <View className="flex-row items-center justify-center">
                                         <View className="mr-1.5 opacity-80">
                                             <Feather name="scissors" size={13} color="#fff" />
                                         </View>
-                                        <Text className="text-neutral-200 text-xs font-medium leading-tight text-center" numberOfLines={1}>
-                                            {b.serviceName}
+                                        <Text className="text-white font-bold text-sm leading-tight text-center" numberOfLines={1}>
+                                            {b.customerName || 'Client'}{' '}
+                                            <Text className="text-neutral-200 font-medium text-xs">• {b.serviceName}</Text>
                                         </Text>
                                     </View>
                                 </View>
