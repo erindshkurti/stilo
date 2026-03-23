@@ -9,7 +9,7 @@ import { Header } from '../components/Header';
 import { StylistCard } from '../components/StylistCard';
 import { fetchLocationSuggestions, fetchServiceSuggestions } from '../lib/search';
 import { db } from '../lib/firebase';
-import { collection, collectionGroup, getDocs, query, where } from 'firebase/firestore';
+import { collection, collectionGroup, getDocs, limit as fLimit, query, where } from 'firebase/firestore';
 
 interface BusinessResult {
     id: string;
@@ -93,68 +93,57 @@ export default function SearchScreen() {
 
     async function fetchResults(overrideLocation?: string, overrideService?: string) {
         setLoading(true);
-        const searchLocation = overrideLocation ?? location;
-        const searchService = overrideService ?? service;
+        const searchLocation = (overrideLocation ?? location).toLowerCase();
+        const searchService = (overrideService ?? service).toLowerCase();
 
         try {
-            let businessIds: string[] | null = null;
+            let businessIdsFromService: string[] | null = null;
 
-            // If service filter is provided, find matching business IDs
+            // 1. If service string is provided, find matching business IDs via substring
             if (searchService) {
-                const formattedService = searchService.charAt(0).toUpperCase() + searchService.slice(1).toLowerCase();
+                // Fetch a large sample of services (in a real app, use Algolia for substring search)
+                const serviceSnap = await getDocs(query(collectionGroup(db, 'services'), fLimit(500)));
+                const matchingBizIds = new Set<string>();
                 
-                // Fetch by Category
-                const qCat = query(
-                    collectionGroup(db, 'services'),
-                    where('category', '>=', formattedService),
-                    where('category', '<=', formattedService + '\uf8ff')
-                );
+                serviceSnap.docs.forEach(d => {
+                    const sData = d.data();
+                    const sName = (sData.name || '').toLowerCase();
+                    const sCat = (sData.category || '').toLowerCase();
+                    
+                    if (sName.includes(searchService) || sCat.includes(searchService)) {
+                        matchingBizIds.add(d.ref.parent.parent!.id);
+                    }
+                });
                 
-                // Fetch by Name
-                const qName = query(
-                    collectionGroup(db, 'services'),
-                    where('name', '>=', formattedService),
-                    where('name', '<=', formattedService + '\uf8ff')
-                );
-
-                const [snapCat, snapName] = await Promise.all([getDocs(qCat), getDocs(qName)]);
-                
-                // Firestore subcollection path: businesses/{businessId}/services/{serviceId}
-                const ids = new Set<string>();
-                snapCat.docs.forEach(d => ids.add(d.ref.parent.parent!.id));
-                snapName.docs.forEach(d => ids.add(d.ref.parent.parent!.id));
-                
-                businessIds = Array.from(ids);
-
-                if (businessIds.length === 0) {
+                businessIdsFromService = Array.from(matchingBizIds);
+                if (businessIdsFromService.length === 0) {
                     setResults([]);
                     setLoading(false);
                     return;
                 }
             }
 
-            // Query businesses collection
-            let constraints: any[] = [];
-            if (searchLocation) {
-                constraints.push(where('city', '>=', searchLocation));
-                constraints.push(where('city', '<=', searchLocation + '\uf8ff'));
-            }
-
-            const businessesSnap = await getDocs(
-                query(collection(db, 'businesses'), ...constraints)
-            );
-
-            let results: BusinessResult[] = businessesSnap.docs.map(d => ({
+            // 2. Fetch businesses and filter by Location (substring) and Business IDs (from service match)
+            // Limit to a reasonable number for client-side filtering
+            const businessesSnap = await getDocs(query(collection(db, 'businesses'), fLimit(200)));
+            let filteredResults = businessesSnap.docs.map(d => ({
                 id: d.id,
                 ...(d.data() as Omit<BusinessResult, 'id'>)
             }));
 
-            // Filter by businessIds if service was specified
-            if (businessIds !== null) {
-                results = results.filter(b => businessIds!.includes(b.id));
+            // Filter by Location Substring (City)
+            if (searchLocation) {
+                filteredResults = filteredResults.filter(b => 
+                    (b.city || '').toLowerCase().includes(searchLocation)
+                );
             }
 
-            setResults(results);
+            // Filter by Business IDs (those offering the selected/searched service)
+            if (businessIdsFromService !== null) {
+                filteredResults = filteredResults.filter(b => businessIdsFromService!.includes(b.id));
+            }
+
+            setResults(filteredResults);
         } catch (err: any) {
             console.error('Search error:', err);
             alert(`Search Failed: ${err.message}`);

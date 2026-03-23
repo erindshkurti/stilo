@@ -1,42 +1,32 @@
-import { collection, collectionGroup, getDocs, limit, query, where } from 'firebase/firestore';
+import { collection, collectionGroup, getDocs, limit as fLimit, query, where } from 'firebase/firestore';
 import { db } from './firebase';
 
 /**
- * Fetch unique service name or category suggestions based on user input (prefix match)
+ * Fetch unique service name or category suggestions based on user input (substring match)
  */
 export async function fetchServiceSuggestions(queryStr: string): Promise<string[]> {
     if (!queryStr.trim()) return [];
 
     try {
-        const formattedQuery = queryStr.charAt(0).toUpperCase() + queryStr.slice(1).toLowerCase();
+        const lowerQuery = queryStr.toLowerCase();
         const servicesRef = collectionGroup(db, 'services');
         
-        // Firestore range query for prefix matching
-        // We do two queries: one for category and one for name (display name)
-        const qCat = query(
-            servicesRef,
-            where('category', '>=', formattedQuery),
-            where('category', '<=', formattedQuery + '\uf8ff'),
-            limit(10)
-        );
-
-        const qName = query(
-            servicesRef,
-            where('name', '>=', formattedQuery),
-            where('name', '<=', formattedQuery + '\uf8ff'),
-            limit(10)
-        );
-
-        const [snapCat, snapName] = await Promise.all([
-            getDocs(qCat),
-            getDocs(qName)
-        ]);
+        // Since Firestore doesn't support 'contains' queries, we fetch a larger set
+        // and filter client-side. For production, a dedicated search index (Algolia/Elastic) is recommended.
+        const q = query(servicesRef, fLimit(200));
+        const snapshot = await getDocs(q);
 
         const suggestions = new Set<string>();
-        snapCat.docs.forEach(doc => suggestions.add(doc.data().category as string));
-        snapName.docs.forEach(doc => suggestions.add(doc.data().name as string));
+        snapshot.docs.forEach(doc => {
+            const data = doc.data();
+            const name = data.name as string;
+            const category = data.category as string;
+            
+            if (name?.toLowerCase().includes(lowerQuery)) suggestions.add(name);
+            if (category?.toLowerCase().includes(lowerQuery)) suggestions.add(category);
+        });
         
-        return Array.from(suggestions).sort();
+        return Array.from(suggestions).sort().slice(0, 10);
     } catch (error) {
         console.error('Error fetching service suggestions:', error);
         return [];
@@ -44,23 +34,28 @@ export async function fetchServiceSuggestions(queryStr: string): Promise<string[
 }
 
 /**
- * Fetch unique city suggestions based on user input (prefix match)
+ * Fetch unique city suggestions based on user input (substring match)
  */
 export async function fetchLocationSuggestions(queryStr: string): Promise<string[]> {
     if (!queryStr.trim()) return [];
 
     try {
+        const lowerQuery = queryStr.toLowerCase();
         const businessesRef = collection(db, 'businesses');
-        const q = query(
-            businessesRef,
-            where('city', '>=', queryStr),
-            where('city', '<=', queryStr + '\uf8ff'),
-            limit(20)
-        );
-
+        
+        // Fetch a broad set of businesses to extract cities
+        const q = query(businessesRef, fLimit(100));
         const snapshot = await getDocs(q);
-        const cities = snapshot.docs.map(doc => doc.data().city as string);
-        return [...new Set(cities)];
+
+        const cities = new Set<string>();
+        snapshot.docs.forEach(doc => {
+            const city = doc.data().city as string;
+            if (city?.toLowerCase().includes(lowerQuery)) {
+                cities.add(city);
+            }
+        });
+        
+        return Array.from(cities).sort().slice(0, 10);
     } catch (error) {
         console.error('Error fetching location suggestions:', error);
         return [];
