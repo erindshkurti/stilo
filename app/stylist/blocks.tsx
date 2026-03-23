@@ -143,9 +143,10 @@ export default function StaffBlocksScreen() {
     return (
         <SafeAreaView className="flex-1 bg-white">
             <Header />
-            <ScrollView className="flex-1">
-                <View className="px-6 py-4 items-center">
-                    <View style={{ maxWidth, width: '100%' }}>
+            <View className="flex-1">
+                <ScrollView className="flex-1">
+                    <View className="px-6 py-4 items-center">
+                        <View style={{ maxWidth, width: '100%' }}>
                         <TouchableOpacity onPress={() => router.back()} className="mb-4">
                             <View className="flex-row items-center">
                                 <Feather name="arrow-left" size={20} color="#000" />
@@ -153,32 +154,13 @@ export default function StaffBlocksScreen() {
                             </View>
                         </TouchableOpacity>
 
-                        <View className="flex-row items-center justify-between mb-8">
-                            <View>
-                                <Text className={`font-bold mb-2 ${isLargeScreen ? 'text-3xl' : 'text-2xl'}`}>
-                                    Time Blocks
-                                </Text>
-                                <Text className="text-neutral-600">
-                                    Mark specific times as unavailable
-                                </Text>
-                            </View>
-                            <TouchableOpacity 
-                                onPress={() => {
-                                    if (showForm) {
-                                        setEditingBlockId(null);
-                                        setNewBlock({
-                                            date: getLocalTodayStr(),
-                                            start_time: '12:00',
-                                            end_time: '13:00',
-                                            reason: 'Lunch Break'
-                                        });
-                                    }
-                                    setShowForm(!showForm);
-                                }}
-                                className={`w-12 h-12 rounded-full items-center justify-center ${showForm ? 'bg-neutral-100' : 'bg-black'}`}
-                            >
-                                <Feather name="plus" size={24} color="white" />
-                            </TouchableOpacity>
+                        <View className="mb-8">
+                            <Text className={`font-bold mb-2 ${isLargeScreen ? 'text-3xl' : 'text-2xl'}`}>
+                                Time Blocks
+                            </Text>
+                            <Text className="text-neutral-600">
+                                Mark specific times as unavailable
+                            </Text>
                         </View>
 
                         {/* Add/Edit Block Modal */}
@@ -290,15 +272,26 @@ export default function StaffBlocksScreen() {
                                     </View>
                                 ))
                             ) : (
-                                <View className="bg-neutral-50 py-12 items-center rounded-3xl border border-dashed border-neutral-200">
-                                    <Feather name="slash" size={40} color="#d4d4d4" />
-                                    <Text className="text-neutral-500 mt-4">No active time blocks</Text>
+                                <View className="bg-neutral-50 py-16 px-8 items-center rounded-3xl border border-dashed border-neutral-200">
+                                    <Feather name="slash" size={32} color="#d4d4d4" />
+                                    <Text className="text-neutral-500 mt-4 text-center">No active time blocks</Text>
                                 </View>
                             )}
                         </View>
                     </View>
                 </View>
             </ScrollView>
-        </SafeAreaView>
-    );
+
+            <View className="p-6 border-t border-neutral-100 bg-white">
+                <TouchableOpacity 
+                    onPress={() => setShowForm(true)}
+                    className="bg-black py-4 rounded-2xl items-center shadow-lg"
+                    activeOpacity={0.8}
+                >
+                    <Text className="text-white font-bold text-lg">Add Time Block</Text>
+                </TouchableOpacity>
+            </View>
+        </View>
+    </SafeAreaView>
+);
 }
