@@ -206,7 +206,7 @@ export function Header() {
                                                             className="px-4 py-3 flex-row items-center hover:bg-neutral-50"
                                                         >
                                                             <Feather name="layout" size={18} color="#737373" />
-                                                            <Text className="ml-3 text-neutral-900 font-medium">Staff Dashboard</Text>
+                                                            <Text className="ml-3 text-neutral-900 font-medium">My Work Bookings</Text>
                                                         </TouchableOpacity>
                                                     </Link>
                                                     <Link href="/stylist/hours" asChild>
@@ -474,7 +474,7 @@ export function Header() {
                                             >
                                                 <View className="flex-row items-center">
                                                     <Feather name="layout" size={18} color="#737373" />
-                                                    <Text className="ml-3 text-neutral-900 font-medium text-base">Staff Dashboard</Text>
+                                                    <Text className="ml-3 text-neutral-900 font-medium text-base">My Work Bookings</Text>
                                                 </View>
                                             </TouchableOpacity>
 
@@ -516,7 +516,7 @@ export function Header() {
                                             >
                                                 <View className="flex-row items-center">
                                                     <Feather name="calendar" size={18} color="#737373" />
-                                                    <Text className="ml-3 text-neutral-900 font-medium text-base">My Bookings</Text>
+                                                    <Text className="ml-3 text-neutral-900 font-medium text-base">My Personal Bookings</Text>
                                                 </View>
                                             </TouchableOpacity>
 
