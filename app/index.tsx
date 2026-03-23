@@ -301,6 +301,7 @@ export default function LandingPage() {
                                                 }}
                                                 icon="map-pin"
                                                 loading={loadingLocationSuggestions}
+                                                suggestionLabel="City in results"
                                             />
                                         </View>
 
@@ -329,6 +330,7 @@ export default function LandingPage() {
                                                 }}
                                                 icon="scissors"
                                                 loading={loadingServiceSuggestions}
+                                                suggestionLabel="Found in services"
                                             />
                                         </Animated.View>
 

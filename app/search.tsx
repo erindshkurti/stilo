@@ -190,6 +190,7 @@ export default function SearchScreen() {
                                         loading={loadingLocationSuggestions}
                                         onSubmitEditing={() => fetchResults()}
                                         returnKeyType="search"
+                                        suggestionLabel="City in results"
                                     />
                                 </View>
                                 <View className="flex-1 max-w-[280px]" style={{ zIndex: 20 }}>
@@ -208,6 +209,7 @@ export default function SearchScreen() {
                                         loading={loadingServiceSuggestions}
                                         onSubmitEditing={() => fetchResults()}
                                         returnKeyType="search"
+                                        suggestionLabel="Found in services"
                                     />
                                 </View>
                                 <View className="flex-1 max-w-[200px]" style={{ zIndex: 10 }}>
@@ -332,6 +334,7 @@ export default function SearchScreen() {
                                         icon="map-pin"
                                         loading={loadingLocationSuggestions}
                                         returnKeyType="next"
+                                        suggestionLabel="City in results"
                                     />
                                 </View>
 
@@ -351,6 +354,7 @@ export default function SearchScreen() {
                                         icon="scissors"
                                         loading={loadingServiceSuggestions}
                                         returnKeyType="next"
+                                        suggestionLabel="Found in services"
                                     />
                                 </View>
 

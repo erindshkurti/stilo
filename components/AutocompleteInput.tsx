@@ -9,6 +9,7 @@ interface AutocompleteInputProps extends Omit<TextInputProps, 'onChangeText'> {
     onSuggestionSelect: (suggestion: string) => void;
     icon?: keyof typeof Feather.glyphMap;
     loading?: boolean;
+    suggestionLabel?: string;
 }
 
 export function AutocompleteInput({
@@ -18,6 +19,7 @@ export function AutocompleteInput({
     onSuggestionSelect,
     icon,
     loading = false,
+    suggestionLabel = "Suggestion",
     ...textInputProps
 }: AutocompleteInputProps) {
     const [showSuggestions, setShowSuggestions] = useState(false);
@@ -106,7 +108,7 @@ export function AutocompleteInput({
                                     </View>
                                     {index !== 0 && (
                                         <Text className="text-[11px] text-neutral-400 mt-0.5">
-                                            Found in services
+                                            {suggestionLabel}
                                         </Text>
                                     )}
                                 </View>
