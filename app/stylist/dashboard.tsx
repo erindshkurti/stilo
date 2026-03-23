@@ -19,6 +19,9 @@ interface Booking {
     end_time: string;
     status: string;
     customerName?: string;
+    customerEmail?: string;
+    customerPhone?: string;
+    customerAvatar?: string;
     serviceName?: string;
 }
 
@@ -95,6 +98,9 @@ export default function StylistDashboard() {
                 fetchedBookings.push({
                     ...b,
                     customerName: custData ? (custData.full_name || custData.display_name || custData.email?.split('@')[0] || 'Customer') : 'Customer',
+                    customerEmail: custData?.email,
+                    customerPhone: custData?.phone,
+                    customerAvatar: custData?.avatar_url,
                     serviceName: srvSnap.exists() ? srvSnap.data().name : 'Service'
                 });
             }

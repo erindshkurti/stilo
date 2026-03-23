@@ -25,6 +25,9 @@ interface Booking {
     end_time: string;
     status: string;
     customerName?: string;
+    customerEmail?: string;
+    customerPhone?: string;
+    customerAvatar?: string;
     serviceName?: string;
 }
 
@@ -101,7 +104,7 @@ export default function BusinessCalendar() {
             );
 
             const fetchedBookings: Booking[] = [];
-            const profileCache: Record<string, string> = {};
+            const profileCache: Record<string, any> = {};
             const serviceCache: Record<string, string> = {};
 
             for (const d of bookingsSnap.docs) {
@@ -112,7 +115,11 @@ export default function BusinessCalendar() {
                 // Enrich
                 if (!profileCache[b.customer_id]) {
                     const cSnap = await getDoc(doc(db, 'profiles', b.customer_id));
-                    profileCache[b.customer_id] = cSnap.exists() ? cSnap.data().full_name : 'Customer';
+                    if (cSnap.exists()) {
+                        profileCache[b.customer_id] = cSnap.data();
+                    } else {
+                        profileCache[b.customer_id] = { full_name: 'Customer' };
+                    }
                 }
                 if (!serviceCache[b.service_id]) {
                     const sSnap = await getDoc(doc(db, 'businesses', bizDoc.id, 'services', b.service_id));
@@ -121,7 +128,10 @@ export default function BusinessCalendar() {
 
                 fetchedBookings.push({
                     ...b,
-                    customerName: profileCache[b.customer_id],
+                    customerName: profileCache[b.customer_id].full_name || 'Customer',
+                    customerEmail: profileCache[b.customer_id].email,
+                    customerPhone: profileCache[b.customer_id].phone,
+                    customerAvatar: profileCache[b.customer_id].avatar_url,
                     serviceName: serviceCache[b.service_id]
                 });
             }

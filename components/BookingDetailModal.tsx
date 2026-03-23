@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, ScrollView, Alert, Image, Linking } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { db } from '@/lib/firebase';
 import { parseLocalBookingDate } from '@/lib/utils';
@@ -18,6 +18,9 @@ interface Booking {
     end_time: string;
     status: string;
     customerName?: string;
+    customerEmail?: string;
+    customerPhone?: string;
+    customerAvatar?: string;
     serviceName?: string;
 }
 
@@ -182,11 +185,54 @@ export function BookingDetailModal({ visible, onClose, booking, onUpdate, isStyl
                         {/* Customer Info */}
                         <View className="mb-6">
                             <Text className="text-neutral-500 text-xs font-bold uppercase mb-2 tracking-wider">Customer</Text>
-                            <View className="flex-row items-center">
-                                <View className="w-12 h-12 rounded-full bg-neutral-100 items-center justify-center mr-4">
-                                    <Feather name="user" size={24} color="#737373" />
+                            <View className="bg-neutral-50 p-4 rounded-2xl border border-neutral-100">
+                                <View className="flex-row items-center mb-4">
+                                    <View className="w-14 h-14 rounded-full overflow-hidden bg-neutral-200 mr-4 border-2 border-white shadow-sm">
+                                        {booking.customerAvatar ? (
+                                            <Image source={{ uri: booking.customerAvatar }} className="w-full h-full" />
+                                        ) : (
+                                            <View className="w-full h-full items-center justify-center">
+                                                <Feather name="user" size={28} color="#737373" />
+                                            </View>
+                                        )}
+                                    </View>
+                                    <View className="flex-1">
+                                        <Text className="text-xl font-extrabold text-neutral-900 leading-tight">
+                                            {booking.customerName || 'Client'}
+                                        </Text>
+                                        {booking.customerEmail && (
+                                            <TouchableOpacity 
+                                                onPress={() => Linking.openURL(`mailto:${booking.customerEmail}`)}
+                                                className="flex-row items-center mt-1"
+                                            >
+                                                <Feather name="mail" size={12} color="#737373" />
+                                                <Text className="text-neutral-500 ml-1.5 text-xs font-medium">{booking.customerEmail}</Text>
+                                            </TouchableOpacity>
+                                        )}
+                                    </View>
                                 </View>
-                                <Text className="text-xl font-bold text-neutral-900">{booking.customerName}</Text>
+
+                                {booking.customerPhone && (
+                                    <View className="flex-row gap-2 mt-2">
+                                        <TouchableOpacity 
+                                            onPress={() => Linking.openURL(`tel:${booking.customerPhone}`)}
+                                            className="flex-1 flex-row items-center justify-center bg-white border border-neutral-200 py-3 rounded-xl active:bg-neutral-50"
+                                        >
+                                            <Feather name="phone" size={16} color="#000" />
+                                            <Text className="ml-2 font-bold text-neutral-900">Call</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity 
+                                            onPress={() => Linking.openURL(`sms:${booking.customerPhone}`)}
+                                            className="flex-1 flex-row items-center justify-center bg-white border border-neutral-200 py-3 rounded-xl active:bg-neutral-50"
+                                        >
+                                            <Feather name="message-square" size={16} color="#000" />
+                                            <Text className="ml-2 font-bold text-neutral-900">Text</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
+                                {!booking.customerPhone && !booking.customerEmail && (
+                                    <Text className="text-neutral-400 text-xs italic italic mt-2">No contact information available</Text>
+                                )}
                             </View>
                         </View>
 
