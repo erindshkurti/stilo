@@ -246,21 +246,23 @@ export default function BusinessPage() {
                         {/* Services */}
                         <View className="mt-8 px-6">
                             <Text className="text-lg font-bold text-neutral-900 mb-4">Services</Text>
-                            <View className="space-y-3">
+                            <View className={isLargeScreen ? "flex-row flex-wrap -mx-2" : "space-y-3"}>
                                 {services.map((service) => (
-                                    <View key={service.id} className="flex-row justify-between items-center p-4 bg-neutral-50 rounded-xl border border-neutral-100">
-                                        <View className="flex-1 mr-4">
-                                            <Text className="font-semibold text-neutral-900 text-base">{service.name}</Text>
-                                            <Text className="text-neutral-500 text-sm mt-0.5">{service.duration_minutes} min</Text>
-                                        </View>
-                                        <View className="items-end">
-                                            <Text className="font-bold text-neutral-900 text-base">${service.price}</Text>
-                                            <TouchableOpacity
-                                                onPress={() => router.push(`/booking/${id}?serviceId=${service.id}`)}
-                                                className="mt-2 bg-black px-3 py-1.5 rounded-lg"
-                                            >
-                                                <Text className="text-white text-xs font-bold">Book</Text>
-                                            </TouchableOpacity>
+                                    <View key={service.id} className={isLargeScreen ? "w-1/2 p-2" : ""}>
+                                        <View className="flex-row justify-between items-center p-4 bg-neutral-50 rounded-xl border border-neutral-100 h-full">
+                                            <View className="flex-1 mr-4">
+                                                <Text className="font-semibold text-neutral-900 text-base">{service.name}</Text>
+                                                <Text className="text-neutral-500 text-sm mt-0.5">{service.duration_minutes} min</Text>
+                                            </View>
+                                            <View className="items-end">
+                                                <Text className="font-bold text-neutral-900 text-base">${service.price}</Text>
+                                                <TouchableOpacity
+                                                    onPress={() => router.push(`/booking/${id}?serviceId=${service.id}`)}
+                                                    className="mt-2 bg-black px-3 py-1.5 rounded-lg"
+                                                >
+                                                    <Text className="text-white text-xs font-bold">Book</Text>
+                                                </TouchableOpacity>
+                                            </View>
                                         </View>
                                     </View>
                                 ))}
