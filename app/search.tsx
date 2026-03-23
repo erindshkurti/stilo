@@ -202,17 +202,14 @@ export default function SearchScreen() {
                                     />
                                 </View>
                                 <View className="flex-1 max-w-[200px]" style={{ zIndex: 10 }}>
-                                    <View className="flex-row items-center bg-neutral-50 rounded-2xl px-4 border border-neutral-200">
-                                        <Feather name="calendar" size={20} color="#737373" />
-                                        <DatePicker
-                                            placeholder="Date"
-                                            value={date}
-                                            onChange={setDate}
-                                            onSubmitEditing={() => fetchResults()}
-                                            returnKeyType="search"
-                                            className="flex-1 h-14 px-3 text-base"
-                                        />
-                                    </View>
+                                    <DatePicker
+                                        placeholder="Date"
+                                        value={date}
+                                        onChange={setDate}
+                                        onSubmitEditing={() => fetchResults()}
+                                        returnKeyType="search"
+                                        icon="calendar"
+                                    />
                                 </View>
                                 <TouchableOpacity
                                     onPress={() => fetchResults()}
@@ -350,16 +347,13 @@ export default function SearchScreen() {
                                 {/* Date */}
                                 <View style={{ zIndex: 10 }}>
                                     <Text className="font-semibold text-lg mb-3">When?</Text>
-                                    <View className="flex-row items-center bg-neutral-50 border border-neutral-200 rounded-2xl px-4">
-                                        <Feather name="calendar" size={20} color="#737373" />
-                                        <DatePicker
-                                            placeholder="Add dates"
-                                            value={date}
-                                            onChange={setDate}
-                                            returnKeyType="done"
-                                            className="ml-3 flex-1 h-14 text-base text-neutral-900"
-                                        />
-                                    </View>
+                                    <DatePicker
+                                        placeholder="Add dates"
+                                        value={date}
+                                        onChange={setDate}
+                                        returnKeyType="done"
+                                        icon="calendar"
+                                    />
                                 </View>
                             </View>
                         </ScrollView>

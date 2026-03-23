@@ -336,15 +336,12 @@ export default function LandingPage() {
 
                                         {/* Date Input */}
                                         <View className={isLargeScreen ? 'flex-1' : 'w-full'} style={{ zIndex: 10 }}>
-                                            <View className="flex-row items-center bg-neutral-50 rounded-2xl px-4 border border-neutral-200">
-                                                <Feather name="calendar" size={20} color="#737373" />
-                                                <DatePicker
-                                                    placeholder="Date"
-                                                    value={date}
-                                                    onChange={setDate}
-                                                    className="flex-1 h-14 px-3 text-base"
-                                                />
-                                            </View>
+                                            <DatePicker
+                                                placeholder="Date"
+                                                value={date}
+                                                onChange={setDate}
+                                                icon="calendar"
+                                            />
                                         </View>
 
                                         {/* Search Button */}

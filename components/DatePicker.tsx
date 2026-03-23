@@ -9,10 +9,11 @@ interface DatePickerProps {
     placeholder?: string;
     className?: string;
     isInline?: boolean;
+    icon?: keyof typeof Feather.glyphMap;
     [key: string]: any;
 }
 
-export function DatePicker({ value, onChange, placeholder, className, isInline, ...props }: DatePickerProps) {
+export function DatePicker({ value, onChange, placeholder, className, isInline, icon, ...props }: DatePickerProps) {
     const [isOpen, setIsOpen] = useState(false);
     // Parse value to viewDate (month/year)
     const initialDate = value ? parseLocalYYYYMMDD(value) : new Date();
@@ -87,14 +88,14 @@ export function DatePicker({ value, onChange, placeholder, className, isInline, 
     return (
         <View className={`${isInline ? '' : 'relative flex-1'} ${className}`} style={{ zIndex: isOpen ? 1000 : 1 }}>
             {/* Main Input Display */}
-            {/* We render a Text element to look like an input, but purely controlled by the picker */}
             <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => setIsOpen(!isOpen)}
-                className={`w-full ${isInline ? 'h-12 bg-neutral-50 rounded-xl px-4 border border-neutral-200' : 'h-full'} justify-center`}
+                className={`w-full flex-row items-center border bg-neutral-50 ${isInline ? 'h-12 rounded-xl px-4 border-neutral-200' : 'h-14 rounded-2xl px-4 border-neutral-200'} ${isOpen ? 'border-neutral-900 bg-white' : 'border-neutral-200'}`}
             >
+                {icon && <Feather name={icon} size={20} color="#737373" style={{ marginRight: 12 }} />}
                 <Text
-                    className={`text-base ${value ? 'text-neutral-900' : 'text-neutral-400'}`}
+                    className={`text-base flex-1 ${value ? 'text-neutral-900' : 'text-neutral-400'}`}
                     numberOfLines={1}
                 >
                     {value || placeholder || "Select Date"}
@@ -104,8 +105,7 @@ export function DatePicker({ value, onChange, placeholder, className, isInline, 
             {/* Dropdown Calendar */}
             {isOpen && (
                 <>
-                    {/* Transparent Backdrop to close on outside click */}
-                    {/* On Web, this acts as a fixed overlay. On Native, absolute fill. */}
+                    {/* Transparent Backdrop */}
                     {!isInline && (
                         <TouchableOpacity
                             activeOpacity={1}
@@ -115,41 +115,46 @@ export function DatePicker({ value, onChange, placeholder, className, isInline, 
                         />
                     )}
 
-                    <View className={`${isInline ? 'mt-2 w-full' : 'absolute top-full left-0 mt-2 w-72'} bg-white rounded-xl shadow-xl border border-neutral-200 p-4 z-50`}>
-                        {/* Header */}
-                        <View className="flex-row justify-between items-center mb-4">
-                            <TouchableOpacity onPress={() => changeMonth(-1)} className="p-2 rounded-full active:bg-neutral-100">
-                                <Feather name="chevron-left" size={20} color="#333" />
-                            </TouchableOpacity>
-                            <Text className="font-semibold text-neutral-900 text-base">
-                                {monthNames[currentMonth]} {currentYear}
-                            </Text>
-                            <TouchableOpacity onPress={() => changeMonth(1)} className="p-2 rounded-full active:bg-neutral-100">
-                                <Feather name="chevron-right" size={20} color="#333" />
-                            </TouchableOpacity>
-                        </View>
-
-                        {/* Weekday Labels */}
-                        <View className="flex-row mb-2 border-b border-neutral-100 pb-2">
-                            {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => (
-                                <Text key={d} className="w-[14.28%] text-center text-xs text-neutral-400 font-medium">
-                                    {d}
+                    <View 
+                        className={`${isInline ? 'mt-2 w-full' : 'absolute top-full left-0 right-0 items-center mt-2'} z-50`}
+                        style={Platform.OS === 'web' ? { zIndex: 1000 } : {}}
+                    >
+                        <View className="bg-white rounded-xl shadow-xl border border-neutral-200 p-4 w-72">
+                            {/* Header */}
+                            <View className="flex-row justify-between items-center mb-4">
+                                <TouchableOpacity onPress={() => changeMonth(-1)} className="p-2 rounded-full active:bg-neutral-100">
+                                    <Feather name="chevron-left" size={20} color="#333" />
+                                </TouchableOpacity>
+                                <Text className="font-semibold text-neutral-900 text-base">
+                                    {monthNames[currentMonth]} {currentYear}
                                 </Text>
-                            ))}
-                        </View>
+                                <TouchableOpacity onPress={() => changeMonth(1)} className="p-2 rounded-full active:bg-neutral-100">
+                                    <Feather name="chevron-right" size={20} color="#333" />
+                                </TouchableOpacity>
+                            </View>
 
-                        {/* Days Grid */}
-                        <View className="flex-row flex-wrap">
-                            {renderCalendar()}
-                        </View>
+                            {/* Weekday Labels */}
+                            <View className="flex-row mb-2 border-b border-neutral-100 pb-2">
+                                {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => (
+                                    <Text key={d} className="w-[14.28%] text-center text-xs text-neutral-400 font-medium">
+                                        {d}
+                                    </Text>
+                                ))}
+                            </View>
 
-                        {/* Clear Button */}
-                        <TouchableOpacity
-                            onPress={() => { onChange(''); setIsOpen(false); }}
-                            className="mt-4 py-2 bg-neutral-100 rounded-lg items-center"
-                        >
-                            <Text className="text-xs font-semibold text-neutral-600">Clear Date</Text>
-                        </TouchableOpacity>
+                            {/* Days Grid */}
+                            <View className="flex-row flex-wrap">
+                                {renderCalendar()}
+                            </View>
+
+                            {/* Clear Button */}
+                            <TouchableOpacity
+                                onPress={() => { onChange(''); setIsOpen(false); }}
+                                className="mt-4 py-2 bg-neutral-100 rounded-lg items-center"
+                            >
+                                <Text className="text-xs font-semibold text-neutral-600">Clear Date</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </>
             )}
