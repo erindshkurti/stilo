@@ -43,6 +43,13 @@ export default function BusinessCalendar() {
     const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedStylistId, setSelectedStylistId] = useState<string | null>(null);
+    const [stripStartDate, setStripStartDate] = useState(() => {
+        const d = new Date();
+        d.setHours(0, 0, 0, 0);
+        // Start 3 days ago on mobile to center today
+        if (width < 1024) d.setDate(d.getDate() - 3);
+        return d;
+    });
 
     // Initial selected stylist
     useEffect(() => {
@@ -53,10 +60,8 @@ export default function BusinessCalendar() {
 
     // Generate dates for horizontal strip (Show 14 days on desktop, 7 on mobile)
     const dateStrip = Array.from({ length: isLargeScreen ? 14 : 7 }, (_, i) => {
-        const d = new Date(selectedDate);
-        // On mobile we center today, on desktop we start from today if possible or just show a wider range
-        const offset = isLargeScreen ? 0 : -3;
-        d.setDate(d.getDate() + offset + i);
+        const d = new Date(stripStartDate);
+        d.setDate(d.getDate() + i);
         return d;
     });
 
@@ -214,7 +219,7 @@ export default function BusinessCalendar() {
         <SafeAreaView className="flex-1 bg-white">
             <Header />
             <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-                <View className={`py-8 ${isLargeScreen ? 'max-w-7xl mx-auto w-full px-12' : 'px-6'}`}>
+                <View className={`py-8 ${isLargeScreen ? 'max-w-[1200px] mx-auto w-full px-6' : 'px-6'}`}>
                     {/* Header */}
                     <View className="flex-row items-center justify-between mb-2">
                         <View>
@@ -222,7 +227,14 @@ export default function BusinessCalendar() {
                             <Text className="text-neutral-500 mt-1">{business?.name}</Text>
                         </View>
                         <TouchableOpacity 
-                            onPress={() => setSelectedDate(new Date())}
+                            onPress={() => {
+                                const today = new Date();
+                                setSelectedDate(today);
+                                const start = new Date(today);
+                                start.setHours(0, 0, 0, 0);
+                                if (!isLargeScreen) start.setDate(start.getDate() - 3);
+                                setStripStartDate(start);
+                            }}
                             className="bg-neutral-100 px-4 py-2 rounded-full active:bg-neutral-200"
                         >
                             <Text className="text-neutral-900 font-bold text-xs">Today</Text>
@@ -236,6 +248,17 @@ export default function BusinessCalendar() {
                     {/* Horizontal Date Strip */}
                     <View className="mb-8">
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
+                            <TouchableOpacity
+                                onPress={() => {
+                                    const prev = new Date(stripStartDate);
+                                    prev.setDate(prev.getDate() - 7);
+                                    setStripStartDate(prev);
+                                }}
+                                className="items-center justify-center w-14 h-20 rounded-2xl bg-neutral-50 border border-neutral-100 active:bg-neutral-100 mr-3"
+                            >
+                                <Feather name="chevron-left" size={20} color="#737373" />
+                            </TouchableOpacity>
+
                             {dateStrip.map((date, idx) => {
                                 const isSelected = date.toDateString() === selectedDate.toDateString();
                                 return (
@@ -255,9 +278,9 @@ export default function BusinessCalendar() {
                             })}
                             <TouchableOpacity
                                 onPress={() => {
-                                    const next = new Date(selectedDate);
+                                    const next = new Date(stripStartDate);
                                     next.setDate(next.getDate() + 7);
-                                    setSelectedDate(next);
+                                    setStripStartDate(next);
                                 }}
                                 className="items-center justify-center w-14 h-20 rounded-2xl bg-neutral-50 border border-neutral-100 active:bg-neutral-100"
                             >
