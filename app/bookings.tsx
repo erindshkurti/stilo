@@ -216,19 +216,19 @@ export default function BookingsScreen() {
                                                 />
                                                 <View className="flex-1">
                                                     <View className="flex-row justify-between items-center mb-0.5">
-                                                        <Text className="font-bold text-lg text-neutral-900 pr-2 flex-1" numberOfLines={1}>
+                                                        <Text className="font-bold text-xl text-neutral-900 pr-2 flex-1" numberOfLines={1}>
                                                             {booking.businessName}
                                                         </Text>
                                                         <View className="flex-row items-center">
-                                                            <View className={`w-1.5 h-1.5 rounded-full mr-1.5 ${booking.status === 'confirmed' ? 'bg-green-500' : 'bg-neutral-300'}`} />
-                                                            <Text className={`text-[10px] font-bold uppercase tracking-widest ${booking.status === 'confirmed' ? 'text-green-600' : 'text-neutral-400'}`}>
+                                                            <View className={`w-2 h-2 rounded-full mr-2 ${booking.status === 'confirmed' ? 'bg-green-500' : 'bg-neutral-300'}`} />
+                                                            <Text className={`text-[11px] font-bold uppercase tracking-widest ${booking.status === 'confirmed' ? 'text-green-600' : 'text-neutral-400'}`}>
                                                                 {booking.status}
                                                             </Text>
                                                         </View>
                                                     </View>
                                                     <View className="flex-row items-center">
-                                                        <Feather name="scissors" size={12} color="#737373" />
-                                                        <Text className="text-neutral-600 font-medium text-sm ml-1.5">{booking.service}</Text>
+                                                        <Feather name="scissors" size={13} color="#737373" />
+                                                        <Text className="text-neutral-600 font-medium text-base ml-1.5">{booking.service}</Text>
                                                     </View>
                                                 </View>
                                             </View>
