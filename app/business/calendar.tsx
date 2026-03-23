@@ -51,12 +51,12 @@ export default function BusinessCalendar() {
         }
     }, [stylists]);
 
-    // Generate dates for horizontal strip (3 days before and 3 after)
-    const dateStrip = Array.from({ length: 7 }, (_, i) => {
+    // Generate dates for horizontal strip (Show 14 days on desktop, 7 on mobile)
+    const dateStrip = Array.from({ length: isLargeScreen ? 14 : 7 }, (_, i) => {
         const d = new Date(selectedDate);
-        // We want today (or selectedDate) to be roughly central if possible, 
-        // but for simplicity let's just do a 7 day range around selectedDate
-        d.setDate(d.getDate() - 3 + i);
+        // On mobile we center today, on desktop we start from today if possible or just show a wider range
+        const offset = isLargeScreen ? 0 : -3;
+        d.setDate(d.getDate() + offset + i);
         return d;
     });
 
@@ -213,8 +213,8 @@ export default function BusinessCalendar() {
     return (
         <SafeAreaView className="flex-1 bg-white">
             <Header />
-            <ScrollView className="flex-1">
-                <View className="px-6 py-8">
+            <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+                <View className={`py-8 ${isLargeScreen ? 'max-w-7xl mx-auto w-full px-12' : 'px-6'}`}>
                     {/* Header */}
                     <View className="flex-row items-center justify-between mb-2">
                         <View>
@@ -266,30 +266,32 @@ export default function BusinessCalendar() {
                         </ScrollView>
                     </View>
 
-                    {/* Stylist Avatar Switcher (Sticky-like for mobile) */}
-                    <View className="mb-8">
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
-                            {stylists.map((stylist) => {
-                                const isSelected = selectedStylistId === stylist.id;
-                                return (
-                                    <TouchableOpacity
-                                        key={stylist.id}
-                                        onPress={() => setSelectedStylistId(stylist.id)}
-                                        className={`flex-row items-center px-4 py-2 rounded-full mr-3 border ${isSelected ? 'bg-black border-black shadow-lg shadow-black/20' : 'bg-white border-neutral-200'}`}
-                                    >
-                                        {stylist.image_url ? (
-                                            <Image source={{ uri: stylist.image_url }} className="w-6 h-6 rounded-full mr-2" />
-                                        ) : (
-                                            <View className={`w-6 h-6 rounded-full items-center justify-center mr-2 ${isSelected ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
-                                                <Feather name="user" size={12} color={isSelected ? '#fff' : '#737373'} />
-                                            </View>
-                                        )}
-                                        <Text className={`font-medium text-sm ${isSelected ? 'text-white' : 'text-neutral-900'}`}>{stylist.name}</Text>
-                                    </TouchableOpacity>
-                                );
-                            })}
-                        </ScrollView>
-                    </View>
+                    {/* Stylist Avatar Switcher (Only for mobile) */}
+                    {!isLargeScreen && (
+                        <View className="mb-8">
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
+                                {stylists.map((stylist) => {
+                                    const isSelected = selectedStylistId === stylist.id;
+                                    return (
+                                        <TouchableOpacity
+                                            key={stylist.id}
+                                            onPress={() => setSelectedStylistId(stylist.id)}
+                                            className={`flex-row items-center px-4 py-2 rounded-full mr-3 border ${isSelected ? 'bg-black border-black shadow-lg shadow-black/20' : 'bg-white border-neutral-200'}`}
+                                        >
+                                            {stylist.image_url ? (
+                                                <Image source={{ uri: stylist.image_url }} className="w-6 h-6 rounded-full mr-2" />
+                                            ) : (
+                                                <View className={`w-6 h-6 rounded-full items-center justify-center mr-2 ${isSelected ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
+                                                    <Feather name="user" size={12} color={isSelected ? '#fff' : '#737373'} />
+                                                </View>
+                                            )}
+                                            <Text className={`font-medium text-sm ${isSelected ? 'text-white' : 'text-neutral-900'}`}>{stylist.name}</Text>
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </ScrollView>
+                        </View>
+                    )}
 
                     {/* Master Grid */}
                     <View className="flex-row" style={{ minHeight: 600 }}>
