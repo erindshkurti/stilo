@@ -272,9 +272,14 @@ export default function StaffBlocksScreen() {
                                     </View>
                                 ))
                             ) : (
-                                <View className="bg-neutral-50 py-16 px-8 items-center rounded-3xl border border-dashed border-neutral-200">
-                                    <Feather name="slash" size={32} color="#d4d4d4" />
-                                    <Text className="text-neutral-500 mt-4 text-center">No active time blocks</Text>
+                                <View className="py-20 px-8 items-center justify-center">
+                                    <View className="w-24 h-24 bg-neutral-50 rounded-full items-center justify-center mb-8">
+                                        <Feather name="calendar" size={40} color="#d4d4d4" />
+                                    </View>
+                                    <Text className="text-2xl font-bold text-neutral-900 mb-3 text-center">No active time blocks</Text>
+                                    <Text className="text-neutral-500 text-center text-lg leading-6">
+                                        You haven't set any unavailable times yet.
+                                    </Text>
                                 </View>
                             )}
                         </View>
