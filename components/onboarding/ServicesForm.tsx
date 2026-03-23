@@ -84,16 +84,6 @@ export function ServicesForm({ data, onChange, currentService, onCurrentServiceC
                 </Text>
 
                 <View>
-                    <Text className="text-sm font-medium text-neutral-700 mb-2">Service Name</Text>
-                    <TextInput
-                        placeholder="e.g., Women's Haircut"
-                        value={currentService.name}
-                        onChangeText={(value) => onCurrentServiceChange({ ...currentService, name: value })}
-                        className="h-12 bg-white rounded-xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
-                    />
-                </View>
-
-                <View>
                     <Text className="text-sm font-medium text-neutral-700 mb-2">Category</Text>
                     <View className="flex-row flex-wrap gap-2">
                         {CATEGORIES.map((cat) => (
@@ -111,6 +101,16 @@ export function ServicesForm({ data, onChange, currentService, onCurrentServiceC
                             </TouchableOpacity>
                         ))}
                     </View>
+                </View>
+
+                <View>
+                    <Text className="text-sm font-medium text-neutral-700 mb-2">Service Name</Text>
+                    <TextInput
+                        placeholder="e.g., Women's Haircut"
+                        value={currentService.name}
+                        onChangeText={(value) => onCurrentServiceChange({ ...currentService, name: value })}
+                        className="h-12 bg-white rounded-xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
+                    />
                 </View>
 
                 <View className="flex-row gap-3">
