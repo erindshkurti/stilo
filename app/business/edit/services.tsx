@@ -17,7 +17,7 @@ interface Service {
     category: string;
 }
 
-const CATEGORIES = ['Haircut', 'Color', 'Styling', 'Treatment', 'Other'];
+const CATEGORIES = ['Haircut', 'Color', 'Balayage', 'Blowout', 'Extensions', 'Styling', 'Treatment'];
 
 export default function EditServicesScreen() {
     const router = useRouter();
@@ -155,16 +155,6 @@ export default function EditServicesScreen() {
                                     </Text>
 
                                     <View className="mb-3">
-                                        <Text className="text-sm font-medium text-neutral-700 mb-2">Service Name</Text>
-                                        <TextInput
-                                            placeholder="e.g., Women's Haircut"
-                                            value={currentService.name}
-                                            onChangeText={(value) => setCurrentService({ ...currentService, name: value })}
-                                            className="h-12 bg-white rounded-xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
-                                        />
-                                    </View>
-
-                                    <View className="mb-3">
                                         <Text className="text-sm font-medium text-neutral-700 mb-2">Category</Text>
                                         <View className="flex-row flex-wrap gap-2">
                                             {CATEGORIES.map((cat) => (
@@ -182,6 +172,16 @@ export default function EditServicesScreen() {
                                                 </TouchableOpacity>
                                             ))}
                                         </View>
+                                    </View>
+
+                                    <View className="mb-3">
+                                        <Text className="text-sm font-medium text-neutral-700 mb-2">Service Name</Text>
+                                        <TextInput
+                                            placeholder="e.g., Women's Haircut"
+                                            value={currentService.name}
+                                            onChangeText={(value) => setCurrentService({ ...currentService, name: value })}
+                                            className="h-12 bg-white rounded-xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
+                                        />
                                     </View>
 
                                     <View className="flex-row gap-3 mb-3">
