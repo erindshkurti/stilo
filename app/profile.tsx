@@ -249,13 +249,15 @@ export default function ProfileScreen() {
                     </View>
                 </ScrollView>
 
-                <View className="p-6 border-t border-neutral-100 bg-white">
-                    <Button
-                        label={saving ? "Saving..." : "Save Profile"}
-                        onPress={handleSave}
-                        variant="primary"
-                        disabled={saving}
-                    />
+                <View className="p-6 border-t border-neutral-100 bg-white items-center">
+                    <View style={{ width: '100%', maxWidth: containerMaxWidth }}>
+                        <Button
+                            label={saving ? "Saving..." : "Save Profile"}
+                            onPress={handleSave}
+                            variant="primary"
+                            disabled={saving}
+                        />
+                    </View>
                 </View>
             </View>
 
