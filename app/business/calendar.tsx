@@ -134,7 +134,10 @@ export default function BusinessCalendar() {
         const stylistBookings = bookings.filter(b => b.stylist_id === stylist.id);
         
         return (
-            <View key={stylist.id} className={`${isLargeScreen ? 'w-64' : 'flex-1'} border-l border-neutral-100 px-2`}>
+            <View 
+                key={stylist.id} 
+                className={`border-l border-neutral-100 px-2 ${isLargeScreen ? 'flex-1 min-w-[280px] max-w-[450px]' : 'flex-1'}`}
+            >
                 {isLargeScreen && (
                     <View className="items-center mb-6">
                         {stylist.image_url ? (
@@ -176,10 +179,19 @@ export default function BusinessCalendar() {
                                     left: 4,
                                     right: 4,
                                 }}
-                                className="bg-neutral-900 rounded-xl p-3 shadow-sm border border-black/10"
+                                className="bg-neutral-900 rounded-xl px-3 py-2 shadow-sm border border-black/10 justify-center"
                             >
-                                <Text className="text-white font-bold text-xs" numberOfLines={1}>{b.customerName}</Text>
-                                <Text className="text-neutral-400 text-[10px] mt-0.5" numberOfLines={1}>{b.serviceName}</Text>
+                                <Text className="text-white font-bold text-sm" numberOfLines={1}>
+                                    {b.customerName || 'Client'}
+                                </Text>
+                                <View className="flex-row items-center mt-1">
+                                    <View className="mr-1.5 opacity-80">
+                                        <Feather name="scissors" size={13} color="#fff" />
+                                    </View>
+                                    <Text className="text-neutral-200 text-xs font-medium" numberOfLines={1}>
+                                        {b.serviceName}
+                                    </Text>
+                                </View>
                             </TouchableOpacity>
                         );
                     })}
@@ -279,12 +291,14 @@ export default function BusinessCalendar() {
 
                     {/* Master Grid */}
                     <View className="flex-row" style={{ minHeight: 600 }}>
-                        {/* Time labels column - pinned-like on the left */}
-                        <View className="w-16 pt-12 border-r border-neutral-100">
+                        {/* Time labels column */}
+                        <View className={`w-16 border-r border-neutral-100 ${isLargeScreen ? 'pt-[104px]' : 'pt-0'}`}>
                             {[9, 10, 11, 12, 13, 14, 15, 16, 17, 18].map(h => (
-                                <View key={h} className="h-20 justify-start">
-                                    <View className="bg-white pr-2 py-1">
-                                        <Text className="text-neutral-400 text-[10px] font-bold uppercase">{h}:00</Text>
+                                <View key={h} className="h-20 relative">
+                                    <View className="absolute -top-[10px] right-3 bg-white px-1 z-10">
+                                        <Text className="text-neutral-500 text-sm font-bold uppercase tracking-tight">
+                                            {h}:00
+                                        </Text>
                                     </View>
                                 </View>
                             ))}
