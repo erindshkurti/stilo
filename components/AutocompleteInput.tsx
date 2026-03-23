@@ -79,17 +79,40 @@ export function AutocompleteInput({
                     style={{ zIndex: 9999, elevation: 10 }}
                 >
                     <FlatList
-                        data={suggestions}
+                        data={[value, ...suggestions.filter(s => s.toLowerCase() !== value.toLowerCase())]}
                         keyExtractor={(item, index) => `${item}-${index}`}
-                        renderItem={({ item }) => (
+                        renderItem={({ item, index }) => (
                             <TouchableOpacity
                                 onPress={() => handleSelect(item)}
-                                className="px-4 py-3 border-b border-neutral-100 active:bg-neutral-50"
+                                className={`px-5 py-4 flex-row items-center border-b border-neutral-50 active:bg-neutral-50 ${index === 0 ? 'bg-neutral-50/50' : ''}`}
                             >
-                                <Text className="text-base text-neutral-800">{item}</Text>
+                                <View className="mr-3 w-8 items-center">
+                                    <Feather 
+                                        name={index === 0 ? "corner-down-right" : "search"} 
+                                        size={16} 
+                                        color={index === 0 ? "#a3a3a3" : "#d4d4d4"} 
+                                    />
+                                </View>
+                                <View className="flex-1">
+                                    <View className="flex-row items-baseline">
+                                        <Text className={`text-[15px] ${index === 0 ? 'text-black font-semibold' : 'text-neutral-700'}`}>
+                                            {item}
+                                        </Text>
+                                        {index === 0 && (
+                                            <Text className="ml-2 text-[10px] uppercase font-bold text-neutral-400 tracking-wider">
+                                                Search for
+                                            </Text>
+                                        )}
+                                    </View>
+                                    {index !== 0 && (
+                                        <Text className="text-[11px] text-neutral-400 mt-0.5">
+                                            Found in services
+                                        </Text>
+                                    )}
+                                </View>
                             </TouchableOpacity>
                         )}
-                        style={{ maxHeight: 200 }}
+                        style={{ maxHeight: 280 }}
                         keyboardShouldPersistTaps="handled"
                     />
                 </View>
