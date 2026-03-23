@@ -333,7 +333,7 @@ export default function LandingPage() {
                                         </Animated.View>
 
                                         {/* Date Input */}
-                                        <View className={isLargeScreen ? 'flex-1' : 'w-full'} style={{ zIndex: 50 }}>
+                                        <View className={isLargeScreen ? 'flex-1' : 'w-full'} style={{ zIndex: 10 }}>
                                             <View className="flex-row items-center bg-neutral-50 rounded-2xl px-4 border border-neutral-200">
                                                 <Feather name="calendar" size={20} color="#737373" />
                                                 <DatePicker

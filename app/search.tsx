@@ -102,17 +102,29 @@ export default function SearchScreen() {
             // If service filter is provided, find matching business IDs
             if (searchService) {
                 const formattedService = searchService.charAt(0).toUpperCase() + searchService.slice(1).toLowerCase();
-                const serviceSnap = await getDocs(
-                    query(
-                        collectionGroup(db, 'services'),
-                        where('category', '>=', formattedService),
-                        where('category', '<=', formattedService + '\uf8ff')
-                    )
+                
+                // Fetch by Category
+                const qCat = query(
+                    collectionGroup(db, 'services'),
+                    where('category', '>=', formattedService),
+                    where('category', '<=', formattedService + '\uf8ff')
                 );
+                
+                // Fetch by Name
+                const qName = query(
+                    collectionGroup(db, 'services'),
+                    where('name', '>=', formattedService),
+                    where('name', '<=', formattedService + '\uf8ff')
+                );
+
+                const [snapCat, snapName] = await Promise.all([getDocs(qCat), getDocs(qName)]);
+                
                 // Firestore subcollection path: businesses/{businessId}/services/{serviceId}
-                businessIds = [...new Set(
-                    serviceSnap.docs.map(d => d.ref.parent.parent!.id)
-                )];
+                const ids = new Set<string>();
+                snapCat.docs.forEach(d => ids.add(d.ref.parent.parent!.id));
+                snapName.docs.forEach(d => ids.add(d.ref.parent.parent!.id));
+                
+                businessIds = Array.from(ids);
 
                 if (businessIds.length === 0) {
                     setResults([]);
