@@ -209,7 +209,7 @@ export default function BookingsScreen() {
                                             key={booking.id}
                                             className="bg-white rounded-2xl p-5 border border-neutral-100 shadow-sm"
                                         >
-                                            <View className="flex-row items-center mb-5">
+                                            <View className="flex-row items-center mb-4">
                                                 <Image
                                                     source={{ uri: booking.imageUrl }}
                                                     className="w-16 h-16 rounded-2xl bg-neutral-100 mr-4"
@@ -227,20 +227,20 @@ export default function BookingsScreen() {
                                                         </View>
                                                     </View>
                                                     <View className="flex-row items-center">
-                                                        <Feather name="scissors" size={12} color="#a3a3a3" />
-                                                        <Text className="text-neutral-400 font-medium text-sm ml-1.5">{booking.service}</Text>
+                                                        <Feather name="scissors" size={12} color="#737373" />
+                                                        <Text className="text-neutral-600 font-medium text-sm ml-1.5">{booking.service}</Text>
                                                     </View>
                                                 </View>
                                             </View>
 
-                                            <View className="flex-row items-center justify-between mb-6 px-1">
+                                            <View className="flex-row items-center justify-between mb-5 bg-neutral-50/50 py-3 px-4 rounded-2xl border border-neutral-100/50">
                                                 <View className="flex-row items-center">
                                                     <Feather name="calendar" size={14} color="#000" />
-                                                    <Text className="ml-2 text-neutral-900 font-semibold text-xs">{booking.date}</Text>
+                                                    <Text className="ml-2 text-neutral-900 font-bold text-[15px]">{booking.date}</Text>
                                                 </View>
                                                 <View className="flex-row items-center">
-                                                    <Feather name="map-pin" size={12} color="#a3a3a3" />
-                                                    <Text className="ml-1.5 text-neutral-400 font-medium text-xs">{booking.location.split(',')[0]}</Text>
+                                                    <Feather name="map-pin" size={12} color="#737373" />
+                                                    <Text className="ml-1.5 text-neutral-500 font-medium text-[13px]">{booking.location.split(',')[0]}</Text>
                                                 </View>
                                             </View>
 
