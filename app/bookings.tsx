@@ -263,9 +263,9 @@ export default function BookingsScreen() {
                                                 ) : (
                                                     <TouchableOpacity 
                                                         onPress={() => router.push(`/booking/${booking.businessId}?serviceId=${booking.serviceId}`)}
-                                                        className="w-full bg-neutral-100 py-4 rounded-2xl items-center"
+                                                        className="w-full bg-black py-4 rounded-2xl items-center"
                                                     >
-                                                        <Text className="text-black font-bold text-[15px]">Rebook Service</Text>
+                                                        <Text className="text-white font-bold text-[15px]">Rebook Service</Text>
                                                     </TouchableOpacity>
                                                 )}
                                             </View>
