@@ -249,23 +249,23 @@ export default function BookingsScreen() {
                                                     <>
                                                         <TouchableOpacity 
                                                             onPress={() => router.push(`/booking/${booking.businessId}?serviceId=${booking.serviceId}&rescheduleId=${booking.id}`)}
-                                                            className="flex-1 bg-black py-3.5 rounded-2xl items-center"
+                                                            className="flex-1 bg-black py-4 rounded-2xl items-center"
                                                         >
-                                                            <Text className="text-white font-bold text-xs tracking-tight">Reschedule</Text>
+                                                            <Text className="text-white font-bold text-[15px]">Reschedule</Text>
                                                         </TouchableOpacity>
                                                         <TouchableOpacity 
                                                             onPress={() => handleCancel(booking.id)}
-                                                            className="px-6 py-3.5 rounded-2xl items-center bg-red-50"
+                                                            className="px-6 py-4 rounded-2xl items-center bg-red-50"
                                                         >
-                                                            <Text className="text-red-500 font-bold text-xs tracking-tight">Cancel</Text>
+                                                            <Text className="text-red-500 font-bold text-[15px]">Cancel</Text>
                                                         </TouchableOpacity>
                                                     </>
                                                 ) : (
                                                     <TouchableOpacity 
                                                         onPress={() => router.push(`/booking/${booking.businessId}?serviceId=${booking.serviceId}`)}
-                                                        className="w-full bg-neutral-100 py-3.5 rounded-2xl items-center"
+                                                        className="w-full bg-neutral-100 py-4 rounded-2xl items-center"
                                                     >
-                                                        <Text className="text-black font-bold text-xs tracking-tight">Rebook Service</Text>
+                                                        <Text className="text-black font-bold text-[15px]">Rebook Service</Text>
                                                     </TouchableOpacity>
                                                 )}
                                             </View>
