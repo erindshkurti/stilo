@@ -167,111 +167,102 @@ export default function BookingsScreen() {
                 >
                     <View className="max-w-4xl mx-auto w-full px-6 py-8 flex-1">
 
-                        {/* Profile Header */}
-                        <View className="items-center mb-10">
-                            <View className="w-24 h-24 rounded-full overflow-hidden bg-neutral-100 mb-4 border-2 border-neutral-100">
-                                {avatarUrl ? (
-                                    <Image
-                                        source={{ uri: avatarUrl }}
-                                        className="w-full h-full"
-                                        resizeMode="cover"
-                                    />
-                                ) : (
-                                    <View className="w-full h-full items-center justify-center">
-                                        <Feather name="user" size={40} color="#9ca3af" />
-                                    </View>
-                                )}
-                            </View>
-                            <Text className="text-2xl font-bold text-neutral-900">
-                                {fullName || user.email?.split('@')[0] || 'User'}
-                            </Text>
-                            <Text className="text-neutral-500 mt-1">{user.email}</Text>
+                        {/* Header Section */}
+                        <View className="mb-8">
+                            <Text className="text-3xl font-bold text-neutral-900">Bookings</Text>
+                            <Text className="text-neutral-500 mt-1">Manage your personal appointments</Text>
                         </View>
 
-                        {/* Tabs */}
-                        <View className="flex-row border-b border-neutral-200 mb-8">
+                        {/* Modern Tabs */}
+                        <View className="flex-row bg-neutral-100 p-1.5 rounded-2xl mb-8 w-full">
                             <TouchableOpacity
                                 onPress={() => setActiveTab('upcoming')}
-                                className={`pb-4 px-4 mr-6 ${activeTab === 'upcoming'
-                                        ? 'border-b-2 border-black'
-                                        : 'opacity-50'
-                                    }`}
+                                className={`flex-1 py-3 px-2 rounded-xl flex-row justify-center items-center ${activeTab === 'upcoming' ? 'bg-white shadow-sm' : ''}`}
                             >
-                                <Text className={`font-medium text-base ${activeTab === 'upcoming' ? 'text-black' : 'text-neutral-500'
-                                    }`}>
-                                    Upcoming Bookings
+                                <Feather name="clock" size={16} color={activeTab === 'upcoming' ? '#000' : '#737373'} />
+                                <Text className={`ml-2 font-semibold text-sm ${activeTab === 'upcoming' ? 'text-black' : 'text-neutral-500'}`}>
+                                    Upcoming
                                 </Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 onPress={() => setActiveTab('recent')}
-                                className={`pb-4 px-4 ${activeTab === 'recent'
-                                        ? 'border-b-2 border-black'
-                                        : 'opacity-50'
-                                    }`}
+                                className={`flex-1 py-3 px-2 rounded-xl flex-row justify-center items-center ${activeTab === 'recent' ? 'bg-white shadow-sm' : ''}`}
                             >
-                                <Text className={`font-medium text-base ${activeTab === 'recent' ? 'text-black' : 'text-neutral-500'
-                                    }`}>
-                                    Past Bookings
+                                <Feather name="check-circle" size={16} color={activeTab === 'recent' ? '#000' : '#737373'} />
+                                <Text className={`ml-2 font-semibold text-sm ${activeTab === 'recent' ? 'text-black' : 'text-neutral-500'}`}>
+                                    Past
                                 </Text>
                             </TouchableOpacity>
                         </View>
 
                         {/* Booking Lists */}
-                        <View className="flex-1 justify-center py-6">
+                        <View className="flex-1 mt-4">
                             {loadingBookings ? (
                                 <View className="items-center justify-center py-20">
-                                    <Text className="text-neutral-500">Loading bookings...</Text>
+                                    <View className="w-10 h-10 border-4 border-neutral-100 border-t-black rounded-full animate-spin mb-4" />
+                                    <Text className="text-neutral-500 font-medium">Loading your agenda...</Text>
                                 </View>
                             ) : (activeTab === 'upcoming' ? upcomingBookings : recentBookings).length > 0 ? (
-                                <View className="space-y-4">
+                                <View className="gap-6">
                                     {(activeTab === 'upcoming' ? upcomingBookings : recentBookings).map((booking) => (
                                         <View
                                             key={booking.id}
-                                            className="bg-white border border-neutral-100 rounded-xl p-4 flex-row items-center shadow-sm"
+                                            className="bg-white rounded-3xl p-6 border border-neutral-100 shadow-sm shadow-neutral-100"
                                         >
-                                            <Image
-                                                source={{ uri: booking.imageUrl }}
-                                                className="w-20 h-20 rounded-lg bg-neutral-100 mr-4"
-                                            />
-                                            <View className="flex-1">
-                                                <Text className="font-bold text-lg text-neutral-900 mb-1">{booking.businessName}</Text>
-                                                <View className="flex-row items-center mb-1">
-                                                    <Feather name="scissors" size={14} color="#525252" />
-                                                    <Text className="text-neutral-600 font-medium ml-1.5">{booking.service}</Text>
-                                                </View>
-                                                <View className="flex-row items-center text-neutral-500 mb-1">
-                                                    <Feather name="calendar" size={14} color="#737373" />
-                                                    <Text className="text-neutral-500 text-sm ml-1.5">{booking.date}</Text>
-                                                </View>
-                                                {activeTab !== 'upcoming' && (
-                                                    <View className="flex-row items-center text-neutral-500">
-                                                        <Feather name="map-pin" size={14} color="#737373" />
-                                                        <Text className="text-neutral-500 text-sm ml-1.5 truncate" numberOfLines={1}>{booking.location}</Text>
+                                            <View className="flex-row items-center mb-5">
+                                                <Image
+                                                    source={{ uri: booking.imageUrl }}
+                                                    className="w-16 h-16 rounded-2xl bg-neutral-100 mr-4"
+                                                />
+                                                <View className="flex-1">
+                                                    <View className="flex-row justify-between items-start mb-0.5">
+                                                        <Text className="font-bold text-lg text-neutral-900 pr-2 flex-1" numberOfLines={1}>
+                                                            {booking.businessName}
+                                                        </Text>
+                                                        <View className="flex-row items-center pt-1">
+                                                            <View className={`w-1.5 h-1.5 rounded-full mr-1.5 ${booking.status === 'confirmed' ? 'bg-green-500' : 'bg-neutral-300'}`} />
+                                                            <Text className={`text-[10px] font-bold uppercase tracking-widest ${booking.status === 'confirmed' ? 'text-green-600' : 'text-neutral-400'}`}>
+                                                                {booking.status}
+                                                            </Text>
+                                                        </View>
                                                     </View>
-                                                )}
+                                                    <Text className="text-neutral-400 font-medium text-sm">{booking.service}</Text>
+                                                </View>
                                             </View>
-                                            <View className="ml-2 gap-2">
+
+                                            <View className="flex-row items-center justify-between mb-6 px-1">
+                                                <View className="flex-row items-center">
+                                                    <Feather name="calendar" size={14} color="#000" />
+                                                    <Text className="ml-2 text-neutral-900 font-semibold text-xs">{booking.date}</Text>
+                                                </View>
+                                                <View className="flex-row items-center">
+                                                    <Feather name="map-pin" size={12} color="#a3a3a3" />
+                                                    <Text className="ml-1.5 text-neutral-400 font-medium text-xs">{booking.location.split(',')[0]}</Text>
+                                                </View>
+                                            </View>
+
+                                            <View className="flex-row gap-3">
                                                 {activeTab === 'upcoming' ? (
                                                     <>
                                                         <TouchableOpacity 
                                                             onPress={() => router.push(`/booking/${booking.businessId}?serviceId=${booking.serviceId}&rescheduleId=${booking.id}`)}
-                                                            className="bg-black px-4 py-2 rounded-lg items-center"
+                                                            className="flex-1 bg-black py-3.5 rounded-2xl items-center"
                                                         >
-                                                            <Text className="text-white font-medium text-sm">Reschedule</Text>
+                                                            <Text className="text-white font-bold text-xs tracking-tight">Reschedule</Text>
                                                         </TouchableOpacity>
                                                         <TouchableOpacity 
                                                             onPress={() => handleCancel(booking.id)}
-                                                            className="bg-red-50 px-4 py-2 rounded-lg items-center border border-red-100"
+                                                            className="px-6 py-3.5 rounded-2xl items-center bg-neutral-50"
                                                         >
-                                                            <Text className="text-red-600 font-medium text-sm">Cancel</Text>
+                                                            <Text className="text-neutral-400 font-bold text-xs tracking-tight">Cancel</Text>
                                                         </TouchableOpacity>
                                                     </>
                                                 ) : (
                                                     <TouchableOpacity 
                                                         onPress={() => router.push(`/booking/${booking.businessId}?serviceId=${booking.serviceId}`)}
-                                                        className="bg-neutral-100 px-4 py-2 rounded-lg items-center"
+                                                        className="w-full bg-neutral-100 py-3.5 rounded-2xl items-center"
                                                     >
-                                                        <Text className="text-neutral-900 font-medium text-sm">Rebook</Text>
+                                                        <Text className="text-black font-bold text-xs tracking-tight">Rebook Service</Text>
                                                     </TouchableOpacity>
                                                 )}
                                             </View>

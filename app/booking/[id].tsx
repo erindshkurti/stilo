@@ -5,7 +5,7 @@ import { ActivityIndicator, Alert, Image, ScrollView, Text, TouchableOpacity, Vi
 import { useAuth } from '../../lib/auth';
 import { db } from '../../lib/firebase';
 import { parseLocalBookingDate } from '@/lib/utils';
-import { addDoc, updateDoc, doc, collection, getDocs, query, where } from 'firebase/firestore';
+import { addDoc, updateDoc, doc, getDoc, collection, getDocs, query, where } from 'firebase/firestore';
 
 // Types
 type Step = 1 | 2 | 3 | 4 | 5;
@@ -23,6 +23,7 @@ interface Stylist {
     name: string;
     image_url: string | null;
     specialties: string[] | null;
+    userId?: string;
 }
 
 interface BusinessHour {
@@ -67,7 +68,6 @@ export default function BookingScreen() {
         async function fetchData() {
             try {
                 // Fetch Business Name directly by doc ID
-                const { getDoc, doc } = await import('firebase/firestore');
                 const bizDoc = await getDoc(doc(db, 'businesses', businessId as string));
                 if (bizDoc.exists()) setBusinessName(bizDoc.data().name);
 
@@ -81,7 +81,8 @@ export default function BookingScreen() {
                 const stylistsSnap = await getDocs(
                     collection(db, 'businesses', businessId as string, 'stylists')
                 );
-                setStylists(stylistsSnap.docs.map(d => ({ id: d.id, ...d.data() } as Stylist)));
+                const fetchedStylists = stylistsSnap.docs.map(d => ({ id: d.id, ...d.data() } as Stylist));
+                setStylists(fetchedStylists.filter(s => s.userId !== user?.uid));
 
                 // Fetch Hours (subcollection)
                 const hoursSnap = await getDocs(
@@ -89,15 +90,16 @@ export default function BookingScreen() {
                 );
                 setHours(hoursSnap.docs.map(d => ({ id: d.id, ...d.data() } as BusinessHour)));
 
-            } catch (error) {
-                console.error(error);
-                Alert.alert('Error', 'Failed to load booking data');
+            } catch (error: any) {
+                console.error('fetchData error:', error);
+                const msg = error?.message || 'Unknown error';
+                Alert.alert('Error', `Failed to load booking data: ${msg}`);
             } finally {
                 setLoading(false);
             }
         }
         fetchData();
-    }, [businessId]);
+    }, [businessId, user]);
 
     // Restore state from URL params (e.g. after return from sign-in)
     // We decode params manually if needed, but expo-router does most of it
@@ -529,7 +531,7 @@ export default function BookingScreen() {
             </View>
 
             <TouchableOpacity
-                onPress={() => router.push('/profile')}
+                onPress={() => router.push('/bookings')}
                 className="w-full bg-black py-4 rounded-xl items-center mb-4"
             >
                 <Text className="text-white font-bold text-lg">View My Appointments</Text>
