@@ -1,10 +1,11 @@
-import { Feather } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Image, Modal, ScrollView, Text, TouchableOpacity, View, useWindowDimensions, Alert } from 'react-native';
 import { Header } from '../../components/Header';
+import { useAuth } from '../../lib/auth';
 import { db } from '../../lib/firebase';
-import { collection, doc, getDoc, getDocs, orderBy, query } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, orderBy, query, runTransaction, increment } from 'firebase/firestore';
 
 interface BusinessDetails {
     id: string;
@@ -54,6 +55,11 @@ export default function BusinessPage() {
     const [services, setServices] = useState<Service[]>([]);
     const [team, setTeam] = useState<Stylist[]>([]);
     const [loading, setLoading] = useState(true);
+    const [ratingModalVisible, setRatingModalVisible] = useState(false);
+    const [selectedRating, setSelectedRating] = useState(0);
+    const [userRating, setUserRating] = useState<number | null>(null);
+    const [ratingLoading, setRatingLoading] = useState(false);
+    const { user } = useAuth();
 
     useEffect(() => {
         if (!id) return;
@@ -92,6 +98,25 @@ export default function BusinessPage() {
 
         fetchData();
     }, [id]);
+
+    // Fetch User Rating
+    useEffect(() => {
+        if (!user || !id) return;
+        async function fetchUserRating() {
+            if (!user) return;
+            try {
+                const ratingSnap = await getDoc(doc(db, 'ratings', `${user.uid}_${id}`));
+                if (ratingSnap.exists()) {
+                    const r = ratingSnap.data().rating;
+                    setUserRating(r);
+                    setSelectedRating(r);
+                }
+            } catch (e) {
+                console.error('Fetch user rating error:', e);
+            }
+        }
+        fetchUserRating();
+    }, [user, id]);
 
     if (loading) {
         return (
@@ -158,8 +183,21 @@ export default function BusinessPage() {
                                         <TouchableOpacity className="w-10 h-10 bg-white/90 rounded-full items-center justify-center shadow-sm backdrop-blur-md">
                                             <Feather name="share" size={20} color="#000" />
                                         </TouchableOpacity>
-                                        <TouchableOpacity className="w-10 h-10 bg-white/90 rounded-full items-center justify-center shadow-sm backdrop-blur-md">
-                                            <Feather name="heart" size={20} color="#000" />
+
+                                        <TouchableOpacity 
+                                            onPress={() => {
+                                                if (!user) {
+                                                    Alert.alert('Sign In Required', 'Please sign in to rate this business.', [
+                                                        { text: 'Cancel', style: 'cancel' },
+                                                        { text: 'Sign In', onPress: () => router.push('/sign-in') }
+                                                    ]);
+                                                    return;
+                                                }
+                                                setRatingModalVisible(true);
+                                            }}
+                                            className="w-10 h-10 bg-white/90 rounded-full items-center justify-center shadow-sm backdrop-blur-md"
+                                        >
+                                            <Feather name="star" size={20} color="#000" />
                                         </TouchableOpacity>
                                     </View>
                                 </View>
@@ -322,6 +360,110 @@ export default function BusinessPage() {
                     </View>
                 </View>
             )}
+            {/* Rating Modal */}
+            <Modal
+                visible={ratingModalVisible}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setRatingModalVisible(false)}
+            >
+                <View className="flex-1 bg-black/60 items-center justify-center px-6">
+                    <View className="bg-white w-full max-w-sm rounded-3xl p-8 items-center">
+                        <Text className="text-2xl font-bold text-neutral-900 mb-2">Rate {business.name}</Text>
+                        <Text className="text-neutral-500 text-center mb-8">How was your experience with this business?</Text>
+                        
+                        <View className="flex-row gap-3 mb-10">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                                <TouchableOpacity 
+                                    key={star} 
+                                    onPress={() => setSelectedRating(star)}
+                                    className="p-1"
+                                >
+                                    <Ionicons 
+                                        name={star <= selectedRating ? "star" : "star-outline"} 
+                                        size={40} 
+                                        color={star <= selectedRating ? "#F59E0B" : "#D4D4D4"}
+                                    />
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+
+                        <View className="w-full space-y-3">
+                            <TouchableOpacity 
+                                onPress={async () => {
+                                    if (selectedRating === 0) return;
+                                    setRatingLoading(true);
+                                    try {
+                                        await runTransaction(db, async (transaction) => {
+                                            const bizRef = doc(db, 'businesses', id as string);
+                                            const ratingRef = doc(db, 'ratings', `${user?.uid}_${id}`);
+                                            
+                                            const bizDoc = await transaction.get(bizRef);
+                                            const ratingDoc = await transaction.get(ratingRef);
+
+                                            if (!bizDoc.exists()) throw new Error('Business not found');
+
+                                            const bizData = bizDoc.data();
+                                            const oldAvg = bizData.rating || 0;
+                                            const oldCount = bizData.review_count || 0;
+                                            const newRatingValue = selectedRating;
+
+                                            let newAvg;
+                                            let newCount;
+
+                                            if (ratingDoc.exists()) {
+                                                const oldRatingValue = ratingDoc.data().rating;
+                                                newCount = oldCount;
+                                                newAvg = (oldAvg * oldCount - oldRatingValue + newRatingValue) / oldCount;
+                                            } else {
+                                                newCount = oldCount + 1;
+                                                newAvg = (oldAvg * oldCount + newRatingValue) / newCount;
+                                            }
+
+                                            transaction.set(ratingRef, {
+                                                user_id: user?.uid,
+                                                business_id: id,
+                                                rating: newRatingValue,
+                                                updated_at: new Date().toISOString()
+                                            });
+
+                                            transaction.update(bizRef, {
+                                                rating: newAvg,
+                                                review_count: newCount
+                                            });
+                                            
+                                            // Update local state
+                                            setBusiness(prev => prev ? { ...prev, rating: newAvg, review_count: newCount } : null);
+                                            setUserRating(newRatingValue);
+                                        });
+
+                                        setRatingModalVisible(false);
+                                        setSelectedRating(0);
+                                    } catch (e) {
+                                        console.error('Rating error:', e);
+                                        Alert.alert('Error', 'Failed to save rating. Please try again.');
+                                    } finally {
+                                        setRatingLoading(false);
+                                    }
+                                }}
+                                disabled={selectedRating === 0 || ratingLoading}
+                                className={`w-full py-4 rounded-xl items-center ${selectedRating === 0 ? 'bg-neutral-200' : 'bg-black'}`}
+                            >
+                                <Text className="text-white font-bold text-lg">
+                                    {ratingLoading ? 'Submitting...' : (userRating ? 'Update Rating' : 'Submit Rating')}
+                                </Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity 
+                                onPress={() => setRatingModalVisible(false)}
+                                className="w-full py-4 items-center"
+                            >
+                                <Text className="text-neutral-500 font-bold">Cancel</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 }

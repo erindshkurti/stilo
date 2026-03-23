@@ -20,12 +20,16 @@ service cloud.firestore {
     }
 
     // ─── Businesses ─────────────────────────────────────────────────────────────
-    // Public read; only owner can write
+    // Public read; owner can write EVERYTHING, users can only update business rating
     match /businesses/{businessId} {
       allow read: if true;
       allow create: if request.auth != null
                     && request.resource.data.owner_id == request.auth.uid;
-      allow update, delete: if request.auth != null
+      allow update: if request.auth != null && (
+                      resource.data.owner_id == request.auth.uid ||
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rating', 'review_count'])
+                    );
+      allow delete: if request.auth != null
                              && resource.data.owner_id == request.auth.uid;
 
       // Specific rules for stylists to allow self-linking during invitation
@@ -62,6 +66,13 @@ service cloud.firestore {
       match /hours/{docId} { allow read: if true; allow write: if request.auth != null && get(/databases/$(database)/documents/businesses/$(businessId)).data.owner_id == request.auth.uid; }
       match /services/{docId} { allow read: if true; allow write: if request.auth != null && get(/databases/$(database)/documents/businesses/$(businessId)).data.owner_id == request.auth.uid; }
       match /portfolio/{docId} { allow read: if true; allow write: if request.auth != null && get(/databases/$(database)/documents/businesses/$(businessId)).data.owner_id == request.auth.uid; }
+    }
+
+    // ─── Ratings ────────────────────────────────────────────────────────────────
+    match /ratings/{ratingId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.resource.data.user_id == request.auth.uid;
+      allow update: if request.auth != null && resource.data.user_id == request.auth.uid;
     }
 
     // ─── Bookings ───────────────────────────────────────────────────────────────
