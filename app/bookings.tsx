@@ -215,18 +215,21 @@ export default function BookingsScreen() {
                                                     className="w-16 h-16 rounded-2xl bg-neutral-100 mr-4"
                                                 />
                                                 <View className="flex-1">
-                                                    <View className="flex-row justify-between items-start mb-0.5">
+                                                    <View className="flex-row justify-between items-center mb-0.5">
                                                         <Text className="font-bold text-lg text-neutral-900 pr-2 flex-1" numberOfLines={1}>
                                                             {booking.businessName}
                                                         </Text>
-                                                        <View className="flex-row items-center pt-1">
+                                                        <View className="flex-row items-center">
                                                             <View className={`w-1.5 h-1.5 rounded-full mr-1.5 ${booking.status === 'confirmed' ? 'bg-green-500' : 'bg-neutral-300'}`} />
                                                             <Text className={`text-[10px] font-bold uppercase tracking-widest ${booking.status === 'confirmed' ? 'text-green-600' : 'text-neutral-400'}`}>
                                                                 {booking.status}
                                                             </Text>
                                                         </View>
                                                     </View>
-                                                    <Text className="text-neutral-400 font-medium text-sm">{booking.service}</Text>
+                                                    <View className="flex-row items-center">
+                                                        <Feather name="scissors" size={12} color="#a3a3a3" />
+                                                        <Text className="text-neutral-400 font-medium text-sm ml-1.5">{booking.service}</Text>
+                                                    </View>
                                                 </View>
                                             </View>
 
