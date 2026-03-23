@@ -100,7 +100,9 @@ export default function BusinessCalendar() {
             const serviceCache: Record<string, string> = {};
 
             for (const d of bookingsSnap.docs) {
-                const b = { id: d.id, ...d.data() } as Booking;
+                const bData = d.data();
+                if (bData.status === 'cancelled') continue;
+                const b = { id: d.id, ...bData } as Booking;
                 
                 // Enrich
                 if (!profileCache[b.customer_id]) {
