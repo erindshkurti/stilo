@@ -207,7 +207,7 @@ export default function BookingsScreen() {
                                     {(activeTab === 'upcoming' ? upcomingBookings : recentBookings).map((booking) => (
                                         <View
                                             key={booking.id}
-                                            className="bg-white rounded-3xl p-6 border border-neutral-100 shadow-sm shadow-neutral-100"
+                                            className="bg-white rounded-2xl p-5 border border-neutral-100 shadow-sm"
                                         >
                                             <View className="flex-row items-center mb-5">
                                                 <Image
@@ -252,9 +252,9 @@ export default function BookingsScreen() {
                                                         </TouchableOpacity>
                                                         <TouchableOpacity 
                                                             onPress={() => handleCancel(booking.id)}
-                                                            className="px-6 py-3.5 rounded-2xl items-center bg-neutral-50"
+                                                            className="px-6 py-3.5 rounded-2xl items-center bg-red-50"
                                                         >
-                                                            <Text className="text-neutral-400 font-bold text-xs tracking-tight">Cancel</Text>
+                                                            <Text className="text-red-500 font-bold text-xs tracking-tight">Cancel</Text>
                                                         </TouchableOpacity>
                                                     </>
                                                 ) : (
