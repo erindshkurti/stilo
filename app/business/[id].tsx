@@ -1,7 +1,8 @@
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import * as Linking from 'expo-linking';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, Modal, ScrollView, Text, TouchableOpacity, View, useWindowDimensions, Alert } from 'react-native';
+import { ActivityIndicator, Image, Modal, ScrollView, Share, Text, TouchableOpacity, View, useWindowDimensions, Alert } from 'react-native';
 import { Header } from '../../components/Header';
 import { useAuth } from '../../lib/auth';
 import { db } from '../../lib/firebase';
@@ -118,6 +119,19 @@ export default function BusinessPage() {
         fetchUserRating();
     }, [user, id]);
 
+    const handleShare = async () => {
+        if (!business) return;
+        try {
+            const url = Linking.createURL(`business/${id}`);
+            await Share.share({
+                message: `Check out ${business.name} on Stilo! Book your appointment now: ${url}`,
+                title: business.name
+            });
+        } catch (e) {
+            console.error('Share error:', e);
+        }
+    };
+
     if (loading) {
         return (
             <View className="flex-1 items-center justify-center bg-white">
@@ -180,7 +194,10 @@ export default function BusinessPage() {
                                     </TouchableOpacity>
 
                                     <View className="flex-row gap-3">
-                                        <TouchableOpacity className="w-10 h-10 bg-white/90 rounded-full items-center justify-center shadow-sm backdrop-blur-md">
+                                        <TouchableOpacity 
+                                            onPress={handleShare}
+                                            className="w-10 h-10 bg-white/90 rounded-full items-center justify-center shadow-sm backdrop-blur-md"
+                                        >
                                             <Feather name="share" size={20} color="#000" />
                                         </TouchableOpacity>
 
