@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { findNodeHandle, Platform, ScrollView, Text, TouchableOpacity, useWindowDimensions, View, Animated } from 'react-native';
+import { Platform, ScrollView, Text, TouchableOpacity, useWindowDimensions, View, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AutocompleteInput } from '../components/AutocompleteInput';
 import { Button } from '../components/Button';
@@ -387,16 +387,13 @@ export default function LandingPage() {
                                                             searchCardRef.current.measureInWindow((x, y, width, height) => {
                                                                 // If top edge is scrolled off top (y < determined offset, e.g. 10)
                                                                 if (y < 10) {
-                                                                    const scrollNode = findNodeHandle(scrollViewRef.current);
-                                                                    if (scrollNode) {
-                                                                        searchCardRef.current?.measureLayout(
-                                                                            scrollNode,
-                                                                            (lx, ly) => {
-                                                                                scrollViewRef.current?.scrollTo({ y: Math.max(0, ly - 10), animated: true });
-                                                                            },
-                                                                            () => { }
-                                                                        );
-                                                                    }
+                                                                    searchCardRef.current?.measureLayout(
+                                                                        scrollViewRef.current as any,
+                                                                        (lx, ly) => {
+                                                                            scrollViewRef.current?.scrollTo({ y: Math.max(0, ly - 10), animated: true });
+                                                                        },
+                                                                        () => { }
+                                                                    );
                                                                 }
                                                             });
                                                         }
