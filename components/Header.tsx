@@ -159,7 +159,7 @@ export function Header() {
                     {/* Logo */}
                     <Link href="/" asChild>
                         <TouchableOpacity onPress={() => setMenuOpen(false)}>
-                            <Text className="text-2xl font-bold">Stilo</Text>
+                            <Text className="text-2xl font-bold text-neutral-900">Stilo</Text>
                         </TouchableOpacity>
                     </Link>
 

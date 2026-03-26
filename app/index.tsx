@@ -421,11 +421,12 @@ export default function LandingPage() {
                                 </View>
 
                                 {/* Stylist Grid */}
-                                <View className={`${isLargeScreen ? 'flex-row flex-wrap -mx-3' : 'space-y-4'} `}>
+                                <View className={isLargeScreen ? 'flex-row flex-wrap -mx-3' : ''}>
                                     {displayStylists.map((stylist) => (
-                                        <View
-                                            key={stylist.id}
-                                            className={isLargeScreen ? 'w-1/2 lg:w-1/4 px-3 mb-6' : 'w-full'}
+                                        <View 
+                                            key={stylist.id} 
+                                            style={isLargeScreen ? undefined : { width: '100%', marginBottom: 24 }}
+                                            className={isLargeScreen ? 'w-1/2 lg:w-1/4 px-3 mb-6' : ''}
                                         >
                                             <StylistCard
                                                 name={stylist.name}
