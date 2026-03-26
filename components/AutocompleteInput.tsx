@@ -57,6 +57,7 @@ export function AutocompleteInput({
                         textInputProps.onBlur?.(e);
                     }}
                     className="flex-1 h-10 px-3 pr-10 min-w-0 text-neutral-900"
+                    placeholderTextColor="#a3a3a3"
                     style={{ 
                         fontSize: 16,
                         lineHeight: 20,
