@@ -1,4 +1,14 @@
-{
+import fs from 'fs';
+
+let buildNumber = 1;
+try {
+    const data = JSON.parse(fs.readFileSync('./build-number.json', 'utf8'));
+    buildNumber = data.buildNumber;
+} catch (e) {
+    console.warn("Could not read build-number.json, defaulting to 1");
+}
+
+export default {
   "expo": {
     "name": "stilo",
     "slug": "stilo",
@@ -9,9 +19,16 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.erindshkurti.stilo",
+      "buildNumber": buildNumber.toString(),
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
+      "package": "com.erindshkurti.stilo",
+      "versionCode": buildNumber,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -44,6 +61,11 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "994c4774-33b6-4268-989a-64c6e8c454ba"
+      }
     }
   }
 }

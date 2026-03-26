@@ -5,10 +5,13 @@
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "eas-build-pre-install": "node scripts/bump-version.js",
+    "build:eas:android": "node scripts/bump-version.js && eas build --platform android --profile production --local --output=./android/app/build/outputs/bundle/release/app-release.aab",
+    "build:eas:ios": "node scripts/bump-version.js && eas build --platform ios --profile production --local --output=./ios/build/stilo.ipa"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
