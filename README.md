@@ -111,10 +111,39 @@ This will start the Expo development server. You can then:
 npx expo start --web
 ```
 
-### iOS (macOS only)
+### iOS Simulator (macOS only)
+
+The project supports both the standard Expo flow and a custom Development Client build.
+
+**1. Standard Expo Start**
 ```bash
 npx expo start --ios
 ```
+
+**2. Native Development Build (Recommended for Native Features)**
+This command builds and launches the native app directly on the simulator:
+```bash
+npx expo run:ios
+```
+*Note: If you have multiple simulators, you can specify a device ID:*
+`npx expo run:ios -d <DEVICE_ID>`
+
+#### 🛠 Troubleshooting iOS Sync Issues
+If the simulator is not reflecting your code changes (stale bundle):
+
+1.  **Kill any zombie Metro processes**:
+    Find the process ID (PID) from the "Port 8081 is running" error and kill it:
+    ```bash
+    kill <PID>
+    ```
+2.  **Restart with a clear cache**:
+    ```bash
+    npx expo start --clear
+    ```
+3.  **Force Build**: If all else fails, force a fresh native build:
+    ```bash
+    CI=1 npx expo run:ios
+    ```
 
 ### Android
 ```bash
