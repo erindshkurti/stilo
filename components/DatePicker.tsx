@@ -91,7 +91,7 @@ export function DatePicker({ value, onChange, placeholder, className, isInline, 
             <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => setIsOpen(!isOpen)}
-                className={`w-full flex-row items-center border bg-neutral-50 ${isInline ? 'h-12 rounded-xl px-4 border-neutral-200' : 'h-14 rounded-2xl px-4 border-neutral-200'} ${isOpen ? 'border-neutral-900 bg-white' : 'border-neutral-200'}`}
+                className={`w-full flex-row items-center justify-center border bg-neutral-50 ${isInline ? 'h-12 rounded-xl px-4 border-neutral-200' : 'h-14 rounded-2xl px-4 border-neutral-200'} ${isOpen ? 'border-neutral-900 bg-white' : 'border-neutral-200'}`}
             >
                 {icon && <Feather name={icon} size={20} color="#737373" style={{ marginRight: 12 }} />}
                 <Text

@@ -1,6 +1,6 @@
 import { clsx } from 'clsx';
 import { forwardRef } from 'react';
-import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Platform, Text, TouchableOpacity, View } from 'react-native';
 
 interface ButtonProps extends React.ComponentProps<typeof TouchableOpacity> {
     variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'google';
@@ -59,9 +59,12 @@ export const Button = forwardRef<React.ElementRef<typeof TouchableOpacity>, Butt
                 {loading ? (
                     <ActivityIndicator color={variant === 'primary' ? 'white' : 'black'} />
                 ) : (
-                    <View className="flex-row items-center gap-3">
+                    <View className="flex-row items-center justify-center gap-3">
                         {icon && <View>{icon}</View>}
-                        <Text className={clsx(textColors[variant], textSizes[size])}>
+                        <Text 
+                            className={clsx(textColors[variant], textSizes[size])}
+                            style={{ verticalAlign: 'middle' }}
+                        >
                             {label}
                         </Text>
                     </View>

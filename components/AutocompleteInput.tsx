@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
-import { FlatList, Text, TextInput, TextInputProps, TouchableOpacity, View } from 'react-native';
+import { Platform, ScrollView, Text, TextInput, TextInputProps, TouchableOpacity, View } from 'react-native';
 
 interface AutocompleteInputProps extends Omit<TextInputProps, 'onChangeText'> {
     value: string;
@@ -42,7 +42,7 @@ export function AutocompleteInput({
 
     return (
         <View style={{ position: 'relative', zIndex: 50 }}>
-            <View className={`relative flex-row items-center bg-neutral-50 rounded-2xl px-4 border transition-colors ${isFocused ? 'border-neutral-900 bg-white' : 'border-neutral-200'}`}>
+            <View className={`relative flex-row items-center h-14 bg-neutral-50 rounded-2xl px-4 border transition-colors ${isFocused ? 'border-neutral-900 bg-white' : 'border-neutral-200'}`}>
                 {icon && <Feather name={icon} size={20} color={isFocused ? "#171717" : "#737373"} />}
                 <TextInput
                     ref={inputRef}
@@ -56,7 +56,13 @@ export function AutocompleteInput({
                         setIsFocused(false);
                         textInputProps.onBlur?.(e);
                     }}
-                    className="flex-1 h-14 px-3 pr-10 text-base min-w-0 text-neutral-900"
+                    className="flex-1 h-10 px-3 pr-10 min-w-0 text-neutral-900"
+                    style={{ 
+                        fontSize: 16,
+                        lineHeight: 20,
+                        paddingVertical: 0,
+                        textAlignVertical: 'center'
+                    }}
                     {...textInputProps}
                 />
                 {/* Clear Button */}
@@ -80,11 +86,13 @@ export function AutocompleteInput({
                     className="absolute top-full left-0 right-0 mt-1 bg-white rounded-2xl border border-neutral-200 shadow-lg overflow-hidden"
                     style={{ zIndex: 9999, elevation: 10 }}
                 >
-                    <FlatList
-                        data={[value, ...suggestions.filter(s => s.toLowerCase() !== value.toLowerCase())]}
-                        keyExtractor={(item, index) => `${item}-${index}`}
-                        renderItem={({ item, index }) => (
+                    <ScrollView
+                        style={{ maxHeight: 280 }}
+                        keyboardShouldPersistTaps="handled"
+                    >
+                        {[value, ...suggestions.filter(s => s.toLowerCase() !== value.toLowerCase())].map((item, index) => (
                             <TouchableOpacity
+                                key={`${item}-${index}`}
                                 onPress={() => handleSelect(item)}
                                 className={`px-5 py-4 flex-row items-center border-b border-neutral-50 active:bg-neutral-50 ${index === 0 ? 'bg-neutral-50/50' : ''}`}
                             >
@@ -113,10 +121,8 @@ export function AutocompleteInput({
                                     )}
                                 </View>
                             </TouchableOpacity>
-                        )}
-                        style={{ maxHeight: 280 }}
-                        keyboardShouldPersistTaps="handled"
-                    />
+                        ))}
+                    </ScrollView>
                 </View>
             )}
         </View>
