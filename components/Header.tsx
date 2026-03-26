@@ -579,7 +579,7 @@ export function Header() {
                                         <Link href="/bookings" asChild>
                                             <TouchableOpacity
                                                 onPress={() => setMenuOpen(false)}
-                                                className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-3"
+                                                className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100"
                                             >
                                                 <View className="flex-row items-center">
                                                     <Feather name="calendar" size={18} color="#737373" />
@@ -591,7 +591,7 @@ export function Header() {
                                         <Link href="/profile" asChild>
                                             <TouchableOpacity
                                                 onPress={() => setMenuOpen(false)}
-                                                className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-3"
+                                                className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100"
                                             >
                                                 <View className="flex-row items-center">
                                                     <Feather name="user" size={18} color="#737373" />
@@ -616,16 +616,16 @@ export function Header() {
                                 </TouchableOpacity>
                             </View>
                         ) : (
-                            <View className="space-y-6">
+                            <View className="gap-8">
                                 {/* For Customers Section */}
                                 <View>
-                                    <Text className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-3 px-4">
+                                    <Text className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2 px-4">
                                         For Current Customers And Businesses
                                     </Text>
                                     <Link href="/sign-in" asChild>
                                         <TouchableOpacity
                                             onPress={() => setMenuOpen(false)}
-                                            className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100"
+                                            className="py-4 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100"
                                         >
                                             <Text className="text-neutral-900 font-medium text-base">Sign In</Text>
                                         </TouchableOpacity>
@@ -634,13 +634,13 @@ export function Header() {
 
                                 {/* For Businesses Section */}
                                 <View>
-                                    <Text className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-3 px-4">
+                                    <Text className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2 px-4">
                                         For New Businesses
                                     </Text>
                                     <Link href="/business-signup" asChild>
                                         <TouchableOpacity
                                             onPress={() => setMenuOpen(false)}
-                                            className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100"
+                                            className="py-4 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100"
                                         >
                                             <Text className="text-neutral-900 font-medium text-base">List Your Business</Text>
                                         </TouchableOpacity>
