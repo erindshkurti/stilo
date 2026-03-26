@@ -284,7 +284,7 @@ export default function LandingPage() {
                                     className="bg-white rounded-3xl shadow-sm border border-neutral-100 p-6"
                                     style={{ overflow: 'visible', zIndex: 100 }}
                                 >
-                                    <View className={isLargeScreen ? 'flex-row gap-3' : 'space-y-3'} style={{ overflow: 'visible' }}>
+                                    <View className={isLargeScreen ? 'flex-row gap-3' : 'gap-4'} style={{ overflow: 'visible' }}>
                                         {/* Location Input */}
                                         <View
                                             className={isLargeScreen ? 'flex-1' : 'w-full'}
@@ -346,7 +346,7 @@ export default function LandingPage() {
                                         </View>
 
                                         {/* Search Button */}
-                                        <View className={isLargeScreen ? '' : 'w-full mt-1'}>
+                                        <View className={isLargeScreen ? '' : 'w-full'}>
                                             <Button
                                                 label="Search"
                                                 variant="primary"
