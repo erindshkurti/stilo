@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { Link, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Image, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { Animated, Image, Text, TouchableOpacity, useWindowDimensions, View, Platform } from 'react-native';
 import { useAuth } from '../lib/auth';
 import { auth, db } from '../lib/firebase';
 import { signOut } from 'firebase/auth';
@@ -116,7 +116,7 @@ export function Header() {
 
     // Close dropdowns when clicking outside
     useEffect(() => {
-        if (typeof window !== 'undefined') {
+        if (Platform.OS === 'web' && typeof document !== 'undefined') {
             const handleClickOutside = (event: MouseEvent) => {
                 const target = event.target as HTMLElement;
                 
@@ -141,10 +141,12 @@ export function Header() {
 
             // Add a small delay to prevent immediate closing
             setTimeout(() => {
+                // @ts-ignore - web only
                 document.addEventListener('click', handleClickOutside);
             }, 100);
 
             return () => {
+                // @ts-ignore - web only
                 document.removeEventListener('click', handleClickOutside);
             };
         }

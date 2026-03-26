@@ -231,8 +231,8 @@ export default function LandingPage() {
     // Show loading screen while checking auth or redirecting
     if (isLoading || redirecting) {
         return (
-            <View className="flex-1 items-center justify-center bg-white">
-                <Text className="text-lg">Loading...</Text>
+            <View style={{ flex: 1, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 18 }}>Loading...</Text>
             </View>
         );
     }
@@ -248,15 +248,16 @@ export default function LandingPage() {
     }));
 
     return (
-        <View className="flex-1">
+        <View className="flex-1" style={{ flex: 1, backgroundColor: 'white' }}>
             <LinearGradient
                 colors={['#ffffff', '#f3f4f6', '#ffffff']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 locations={[0, 0.5, 1]}
                 className="flex-1"
+                style={{ flex: 1 }}
             >
-                <SafeAreaView className="flex-1">
+                <SafeAreaView className="flex-1" style={{ flex: 1 }}>
                     <Header />
 
                     <ScrollView
