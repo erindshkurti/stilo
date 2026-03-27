@@ -160,7 +160,7 @@ export default function ProfileScreen() {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-white">
+        <View className="flex-1 bg-white">
             <Header />
 
             <View className="flex-1">
@@ -267,6 +267,6 @@ export default function ProfileScreen() {
                 type={toast.type} 
                 onHide={() => setToast(prev => ({ ...prev, visible: false }))} 
             />
-        </SafeAreaView>
+        </View>
     );
 }

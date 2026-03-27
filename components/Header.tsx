@@ -6,6 +6,7 @@ import { useAuth } from '../lib/auth';
 import { auth, db } from '../lib/firebase';
 import { signOut } from 'firebase/auth';
 import { doc, getDoc, getDocs, collection, query, where } from 'firebase/firestore';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function Header() {
     const { user } = useAuth();
@@ -17,6 +18,7 @@ export function Header() {
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const [displayName, setDisplayName] = useState<string | null>(null);
     const isMobile = width < 768;
+    const insets = useSafeAreaInsets();
 
     // Check user roles
     const [isBusinessOwner, setIsBusinessOwner] = useState(false);
@@ -153,7 +155,7 @@ export function Header() {
     }, [profileDropdownOpen, businessDropdownOpen]);
 
     return (
-        <View className="bg-white border-b border-neutral-100" style={{ overflow: 'visible', zIndex: 50 }}>
+        <View className="bg-white border-b border-neutral-100" style={{ overflow: 'visible', zIndex: 50, paddingTop: Platform.OS === 'ios' ? insets.top : 0 }}>
             <View className="px-6 py-4" style={{ overflow: 'visible' }}>
                 <View className="flex-row items-center justify-between mx-auto w-full" style={{ overflow: 'visible', maxWidth: 1200 }}>
                     {/* Logo */}

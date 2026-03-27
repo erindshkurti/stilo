@@ -154,7 +154,7 @@ export default function SearchScreen() {
 
     return (
         <View className="flex-1 bg-white">
-            <SafeAreaView className="flex-1" edges={['top']}>
+            <View className="flex-1">
                 <Header />
 
                 {/* Filter Bar */}
@@ -373,7 +373,7 @@ export default function SearchScreen() {
                         </View>
                     </SafeAreaView>
                 </Modal>
-            </SafeAreaView>
+            </View>
         </View>
     );
 }

@@ -2,7 +2,8 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import * as Linking from 'expo-linking';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, Modal, ScrollView, Share, Text, TouchableOpacity, View, useWindowDimensions, Alert } from 'react-native';
+import { ActivityIndicator, Image, Modal, ScrollView, Share, Text, TouchableOpacity, View, useWindowDimensions, Alert, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Header } from '../../components/Header';
 import { useAuth } from '../../lib/auth';
 import { db } from '../../lib/firebase';
@@ -50,6 +51,7 @@ export default function BusinessPage() {
     const router = useRouter();
     const { width } = useWindowDimensions();
     const isLargeScreen = width > 1024;
+    const insets = useSafeAreaInsets();
 
     const [business, setBusiness] = useState<BusinessDetails | null>(null);
     const [portfolio, setPortfolio] = useState<PortfolioImage[]>([]);
@@ -184,6 +186,7 @@ export default function BusinessPage() {
                                 Since Header is present, maybe we keep these overlays as quick actions? 
                                 User asked to "keep the header", implying they want the main nav. 
                                 We'll keep these overlay buttons as they are contextually useful for the Business Profile specifically. */}
+                            {/* Back Button Overlay */}
                             <View className="absolute top-0 left-0 right-0 z-10">
                                 <View className="px-4 py-4 flex-row justify-between items-center">
                                     <TouchableOpacity
@@ -304,7 +307,7 @@ export default function BusinessPage() {
                             <View className={isLargeScreen ? "flex-row flex-wrap -mx-2" : "space-y-3"}>
                                 {services.map((service) => (
                                     <View key={service.id} className={isLargeScreen ? "w-1/2 p-2" : ""}>
-                                        <View className="flex-row justify-between items-center p-4 bg-neutral-50 rounded-xl border border-neutral-100 h-full">
+                                        <View className="flex-row justify-between items-center p-4 bg-neutral-50 rounded-xl border border-neutral-100">
                                             <View className="flex-1 mr-4">
                                                 <Text className="font-semibold text-neutral-900 text-base">{service.name}</Text>
                                                 <Text className="text-neutral-500 text-sm mt-0.5">{service.duration_minutes} min</Text>

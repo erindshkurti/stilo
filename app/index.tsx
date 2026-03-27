@@ -257,7 +257,7 @@ export default function LandingPage() {
                 className="flex-1"
                 style={{ flex: 1 }}
             >
-                <SafeAreaView className="flex-1" style={{ flex: 1 }}>
+                <View className="flex-1" style={{ flex: 1 }}>
                     <Header />
 
                     <ScrollView
@@ -442,7 +442,7 @@ export default function LandingPage() {
                             </View>
                         </View>
                     </ScrollView>
-                </SafeAreaView>
+                </View>
             </LinearGradient>
         </View>
     );
