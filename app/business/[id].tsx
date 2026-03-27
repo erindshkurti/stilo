@@ -304,7 +304,7 @@ export default function BusinessPage() {
                         {/* Services */}
                         <View className="mt-8 px-6">
                             <Text className="text-lg font-bold text-neutral-900 mb-4">Services</Text>
-                            <View className={isLargeScreen ? "flex-row flex-wrap -mx-2" : "space-y-3"}>
+                            <View className={isLargeScreen ? "flex-row flex-wrap -mx-2" : "gap-y-4"}>
                                 {services.map((service) => (
                                     <View key={service.id} className={isLargeScreen ? "w-1/2 p-2" : ""}>
                                         <View className="flex-row justify-between items-center p-4 bg-neutral-50 rounded-xl border border-neutral-100">
