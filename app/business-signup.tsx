@@ -1,11 +1,12 @@
 import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { Alert, ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { GoogleAuthProvider, signInWithCredential, signInWithPopup, createUserWithEmailAndPassword } from 'firebase/auth';
 import { Button } from '../components/Button';
 import { GoogleLogo } from '../components/GoogleLogo';
 import { Header } from '../components/Header';
@@ -107,9 +108,6 @@ export default function BusinessSignUpScreen() {
     }
 
     async function handleGoogleAuth() {
-        // Clear other errors
-        setFormError(null);
-
         if (!businessName.trim()) {
             setGoogleError('Please enter your business name first');
             return;
@@ -124,10 +122,21 @@ export default function BusinessSignUpScreen() {
             await AsyncStorage.setItem('pending_business_name', businessName);
             await AsyncStorage.setItem('signup_business_name', businessName);
 
-            const provider = new GoogleAuthProvider();
-            provider.addScope('email');
-            provider.addScope('profile');
-            const cred = await signInWithPopup(auth, provider);
+            let cred;
+            if (Platform.OS === 'web') {
+                const provider = new GoogleAuthProvider();
+                provider.addScope('email');
+                provider.addScope('profile');
+                cred = await signInWithPopup(auth, provider);
+            } else {
+                // Native flow
+                await GoogleSignin.hasPlayServices();
+                const userInfo = await GoogleSignin.signIn();
+                const idToken = userInfo.data?.idToken;
+                if (!idToken) throw new Error('No ID token found');
+                const googleCredential = GoogleAuthProvider.credential(idToken);
+                cred = await signInWithCredential(auth, googleCredential);
+            }
 
             // Create/update profile in Firestore as business
             await setDoc(doc(db, 'profiles', cred.user.uid), {

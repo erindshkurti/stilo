@@ -22,6 +22,7 @@ export default {
       "supportsTablet": true,
       "bundleIdentifier": "com.erindshkurti.stilo",
       "buildNumber": buildNumber.toString(),
+      "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -44,6 +45,12 @@ export default {
     },
     "plugins": [
       "expo-router",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": process.env.EXPO_PUBLIC_GOOGLE_REVERSED_CLIENT_ID
+        }
+      ],
       [
         "expo-splash-screen",
         {

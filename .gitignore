@@ -11,6 +11,8 @@ expo-env.d.ts
 
 # Firebase
 .firebase/
+google-services.json
+GoogleService-Info.plist
 
 # Native
 .kotlin/

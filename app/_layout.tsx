@@ -8,6 +8,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Platform } from 'react-native';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { useEffect } from 'react';
 import { AuthProvider, useAuth } from '../lib/auth';
 
@@ -38,6 +40,13 @@ function RootLayoutContent({ colorScheme }: { colorScheme: 'light' | 'dark' | nu
   useEffect(() => {
     if (!isLoading) {
       SplashScreen.hideAsync().catch(() => {});
+    }
+
+    if (Platform.OS !== 'web') {
+      GoogleSignin.configure({
+        webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+        iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+      });
     }
   }, [isLoading]);
 
