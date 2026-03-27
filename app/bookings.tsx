@@ -173,23 +173,23 @@ export default function BookingsScreen() {
                             <Text className="text-neutral-500 mt-1">Manage your personal appointments</Text>
                         </View>
 
-                        {/* Modern Tabs */}
+                        {/* Modern Tabs - Stable Version */}
                         <View className="flex-row bg-neutral-100 p-1.5 rounded-2xl mb-8 w-full">
                             <TouchableOpacity
                                 onPress={() => setActiveTab('upcoming')}
-                                className={`flex-1 py-3 px-2 rounded-xl flex-row justify-center items-center ${activeTab === 'upcoming' ? 'bg-white shadow-sm' : ''}`}
+                                style={{ flex: 1, paddingVertical: 12, paddingHorizontal: 8, borderRadius: 12, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', backgroundColor: activeTab === 'upcoming' ? 'white' : 'transparent', shadowColor: activeTab === 'upcoming' ? '#000' : 'transparent', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: activeTab === 'upcoming' ? 2 : 0 }}
                             >
                                 <Feather name="clock" size={16} color={activeTab === 'upcoming' ? '#000' : '#737373'} />
-                                <Text className={`ml-2 font-semibold text-sm ${activeTab === 'upcoming' ? 'text-black' : 'text-neutral-500'}`}>
+                                <Text style={{ marginLeft: 8, fontWeight: '600', fontSize: 14, color: activeTab === 'upcoming' ? '#000' : '#737373' }}>
                                     Upcoming
                                 </Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 onPress={() => setActiveTab('recent')}
-                                className={`flex-1 py-3 px-2 rounded-xl flex-row justify-center items-center ${activeTab === 'recent' ? 'bg-white shadow-sm' : ''}`}
+                                style={{ flex: 1, paddingVertical: 12, paddingHorizontal: 8, borderRadius: 12, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', backgroundColor: activeTab === 'recent' ? 'white' : 'transparent', shadowColor: activeTab === 'recent' ? '#000' : 'transparent', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: activeTab === 'recent' ? 2 : 0 }}
                             >
                                 <Feather name="check-circle" size={16} color={activeTab === 'recent' ? '#000' : '#737373'} />
-                                <Text className={`ml-2 font-semibold text-sm ${activeTab === 'recent' ? 'text-black' : 'text-neutral-500'}`}>
+                                <Text style={{ marginLeft: 8, fontWeight: '600', fontSize: 14, color: activeTab === 'recent' ? '#000' : '#737373' }}>
                                     Past
                                 </Text>
                             </TouchableOpacity>
@@ -219,9 +219,10 @@ export default function BookingsScreen() {
                                                         <Text className="font-bold text-xl text-neutral-900 pr-2 flex-1" numberOfLines={1}>
                                                             {booking.businessName}
                                                         </Text>
-                                                        <View className="flex-row items-center">
-                                                            <View className={`w-2 h-2 rounded-full mr-2 ${booking.status === 'confirmed' ? 'bg-green-500' : 'bg-neutral-300'}`} />
-                                                            <Text className={`text-[11px] font-bold uppercase tracking-widest ${booking.status === 'confirmed' ? 'text-green-600' : 'text-neutral-400'}`}>
+                                                        {/* Status Badge - Stable Version */}
+                                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                            <View style={{ width: 8, height: 8, borderRadius: 4, marginRight: 8, backgroundColor: booking.status === 'confirmed' ? '#22C55E' : '#D4D4D4' }} />
+                                                            <Text style={{ fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, color: booking.status === 'confirmed' ? '#16A34A' : '#737373' }}>
                                                                 {booking.status}
                                                             </Text>
                                                         </View>
