@@ -42,7 +42,7 @@ export function AutocompleteInput({
 
     return (
         <View style={{ position: 'relative', zIndex: 50 }}>
-            <View className={`relative flex-row items-center h-14 bg-neutral-50 rounded-2xl px-4 border transition-colors ${isFocused ? 'border-neutral-900 bg-white' : 'border-neutral-200'}`}>
+            <View className={`relative flex-row items-center h-14 bg-neutral-50 rounded-2xl px-4 border ${isFocused ? 'border-neutral-900 bg-white' : 'border-neutral-200'}`}>
                 {icon && <Feather name={icon} size={20} color={isFocused ? "#171717" : "#737373"} />}
                 <TextInput
                     ref={inputRef}
