@@ -224,7 +224,7 @@ export default function SignInScreen() {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-white">
+        <View className="flex-1 bg-white">
             <Header />
 
             <ScrollView
@@ -327,6 +327,6 @@ export default function SignInScreen() {
                     </View>
                 </View>
             </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 }

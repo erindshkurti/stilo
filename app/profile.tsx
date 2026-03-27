@@ -150,12 +150,12 @@ export default function ProfileScreen() {
 
     if (authLoading || loading) {
         return (
-            <SafeAreaView className="flex-1 bg-white">
+            <View className="flex-1 bg-white">
                 <Header />
                 <View className="flex-1 items-center justify-center">
                     <Text className="text-neutral-500">Loading profile...</Text>
                 </View>
-            </SafeAreaView>
+            </View>
         );
     }
 

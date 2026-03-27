@@ -149,7 +149,7 @@ export default function BusinessSignUpScreen() {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-white">
+        <View className="flex-1 bg-white">
             <Header />
 
             <ScrollView
@@ -273,6 +273,6 @@ export default function BusinessSignUpScreen() {
                     </View>
                 </View>
             </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 }

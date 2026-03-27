@@ -157,7 +157,7 @@ export default function BookingsScreen() {
 
     return (
         <View className="flex-1 bg-white">
-            <SafeAreaView className="flex-1" edges={['top']}>
+            <View className="flex-1">
                 <Header />
 
                 <ScrollView 
@@ -300,7 +300,7 @@ export default function BookingsScreen() {
 
                     </View>
                 </ScrollView>
-            </SafeAreaView>
+            </View>
 
             {/* Cancel Confirmation Modal */}
             <Modal visible={showCancelModal} transparent animationType="fade">
