@@ -1,7 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Image, ScrollView, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Alert, Image, ScrollView, Text, TouchableOpacity, View, useWindowDimensions, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../lib/auth';
 import { db } from '../../lib/firebase';
 import { parseLocalBookingDate } from '@/lib/utils';
@@ -41,6 +42,7 @@ export default function BookingScreen() {
     const { width } = useWindowDimensions();
     const isLargeScreen = width > 1024;
     const { user } = useAuth();
+    const insets = useSafeAreaInsets();
 
     // State
     const [step, setStep] = useState<Step>(1);
@@ -507,7 +509,7 @@ export default function BookingScreen() {
     );
 
     const renderStep5_Success = () => (
-        <View className="flex-1 px-6 items-center justify-center -mt-20">
+        <View className="flex-1 px-6 items-center justify-center" style={{ paddingTop: Platform.OS === 'ios' ? insets.top : 0, marginTop: -80 }}>
             <View className="w-24 h-24 bg-green-100 rounded-full items-center justify-center mb-6">
                 <Feather name="check" size={48} color="#16a34a" />
             </View>
@@ -555,7 +557,10 @@ export default function BookingScreen() {
             <View style={{ width: '100%', maxWidth: 1200 }} className="flex-1 w-full">
                 {/* Custom Header - Hide on Success Step */}
                 {step !== 5 && (
-                    <View className="flex-row items-center justify-between px-6 py-4 border-b border-neutral-100 bg-white">
+                    <View 
+                        className="flex-row items-center justify-between px-6 py-4 border-b border-neutral-100 bg-white"
+                        style={{ paddingTop: Platform.OS === 'ios' ? insets.top : 16 }}
+                    >
                         <View className="w-10" />
                         <Text className="text-lg font-bold text-neutral-900">{rescheduleId ? 'Reschedule Appointment' : 'Book Appointment'}</Text>
                         <TouchableOpacity onPress={() => router.replace(`/business/${businessId}`)} className="w-10 h-10 items-center justify-center rounded-full active:bg-neutral-100">
@@ -579,7 +584,7 @@ export default function BookingScreen() {
 
                 {/* Footer Buttons - Hide on Success Step */}
                 {step !== 5 && (
-                    <View className="p-6 border-t border-neutral-100">
+                    <View className="px-6 pt-4 border-t border-neutral-100 bg-white" style={{ paddingBottom: Platform.OS === 'ios' ? insets.bottom + 12 : 24 }}>
                         <View className="flex-row gap-4">
                             {step > 1 && (
                                 <TouchableOpacity
