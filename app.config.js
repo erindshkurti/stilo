@@ -45,12 +45,12 @@ export default {
     },
     "plugins": [
       "expo-router",
-      [
+      process.env.EXPO_PUBLIC_GOOGLE_REVERSED_CLIENT_ID ? [
         "@react-native-google-signin/google-signin",
         {
           "iosUrlScheme": process.env.EXPO_PUBLIC_GOOGLE_REVERSED_CLIENT_ID
         }
-      ],
+      ] : null,
       [
         "expo-splash-screen",
         {
@@ -64,7 +64,7 @@ export default {
         }
       ],
       "expo-secure-store"
-    ],
+    ].filter(Boolean),
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
