@@ -463,11 +463,6 @@ const styles = StyleSheet.create({
     stylistPillSelected: {
         backgroundColor: 'black',
         borderColor: 'black',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 10,
-        elevation: 5,
     },
     pillAvatar: {
         width: 24,
