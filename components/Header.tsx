@@ -622,7 +622,7 @@ export function Header() {
                                 {/* For Customers Section */}
                                 <View>
                                     <Text className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2 px-4">
-                                        For Current Customers And Businesses
+                                        For Users and Businesses
                                     </Text>
                                     <Link href="/sign-in" asChild>
                                         <TouchableOpacity
