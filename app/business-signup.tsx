@@ -151,9 +151,8 @@ export default function BusinessSignUpScreen() {
             await AsyncStorage.removeItem('pending_business_signup');
             // Redirect to onboarding
             router.replace('/business/onboarding');
-        } catch (error: any) {
-            console.error('Google auth error:', error);
-            setGoogleError(error.message || 'Failed to sign in with Google');
+        } catch (err: any) {
+            setGoogleError('Failed to sign in with Google. Please try again.');
             setLoading(false);
         }
     }

@@ -169,10 +169,16 @@ export default function SignInScreen() {
                 // useEffect handles redirect when user state updates
             } catch (signInError: any) {
                 const msg = signInError.message || '';
-                if (msg.includes('user-not-found') || msg.includes('wrong-password') || msg.includes('invalid-credential')) {
-                    setError('Invalid email or password. Please try again.');
+                if (
+                    msg.includes('user-not-found') || 
+                    msg.includes('wrong-password') || 
+                    msg.includes('invalid-credential') ||
+                    msg.includes('invalid-email') ||
+                    msg.includes('user-disabled')
+                ) {
+                    setError('Invalid email or password combination. Please try again.');
                 } else {
-                    setError(msg);
+                    setError('Invalid email or password combination. Please try again.');
                 }
                 setLoading(false);
             }
