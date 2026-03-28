@@ -167,7 +167,7 @@ export default function BusinessSignUpScreen() {
             >
                 <View style={{ maxWidth: containerMaxWidth, width: '100%' }}>
                     {/* Header */}
-                    <View className="items-center mb-10">
+                    <View className="items-center mb-12">
                         <View className="w-16 h-16 bg-black rounded-2xl items-center justify-center mb-4">
                             <Feather name="briefcase" size={32} color="white" />
                         </View>
@@ -197,8 +197,8 @@ export default function BusinessSignUpScreen() {
                         </View>
                     </View>
 
-                    <View className="space-y-4">
-                        <View className="mb-2">
+                    <View>
+                        <View className="mb-6">
                             <Text className="font-semibold text-base mb-2 px-1">Enter your business name</Text>
                             <TextInput
                                 placeholder="Business Name"
@@ -228,20 +228,20 @@ export default function BusinessSignUpScreen() {
                                 onPress={handleGoogleAuth}
                             />
 
-                            <View className="flex-row items-center my-4">
+                            <View className="flex-row items-center my-6">
                                 <View className="flex-1 h-[1px] bg-neutral-100" />
                                 <Text className="mx-4 text-neutral-400 text-sm">Or sign up with email</Text>
                                 <View className="flex-1 h-[1px] bg-neutral-100" />
                             </View>
 
-                            <View className="space-y-3">
+                            <View>
                                 <TextInput
                                     placeholder="Email"
                                     value={email}
                                     onChangeText={updateEmail}
                                     autoCapitalize="none"
                                     keyboardType="email-address"
-                                    className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-100 focus:border-neutral-300 text-base"
+                                    className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-100 focus:border-neutral-300 text-base mb-4"
                                 />
                                 <TextInput
                                     placeholder="Password"
@@ -267,7 +267,7 @@ export default function BusinessSignUpScreen() {
                             label="Create Business Account"
                             loading={loading}
                             onPress={handleSignUp}
-                            className="mt-2"
+                            className="mt-6"
                         />
 
                         <TouchableOpacity

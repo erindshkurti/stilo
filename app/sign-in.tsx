@@ -244,7 +244,7 @@ export default function SignInScreen() {
                 showsVerticalScrollIndicator={false}
             >
                 <View style={{ maxWidth: containerMaxWidth, width: '100%' }}>
-                    <View className="items-center mb-10">
+                    <View className="items-center mb-12">
                         <Text className={`font-bold mb-2 ${isLargeScreen ? 'text-4xl' : 'text-3xl'}`}>
                             {isSignUp ? 'Create Account' : 'Welcome Back'}
                         </Text>
@@ -253,7 +253,7 @@ export default function SignInScreen() {
                         </Text>
                     </View>
 
-                    <View className="space-y-4">
+                    <View>
                         <Button
                             label="Continue with Google"
                             variant="google"
@@ -261,19 +261,19 @@ export default function SignInScreen() {
                             onPress={handleGoogleAuth}
                         />
 
-                        <View className="flex-row items-center my-4">
+                        <View className="flex-row items-center my-6">
                             <View className="flex-1 h-[1px] bg-neutral-100" />
                             <Text className="mx-4 text-neutral-400 text-sm">Or continue with email</Text>
                             <View className="flex-1 h-[1px] bg-neutral-100" />
                         </View>
 
-                        <View className="space-y-3">
+                        <View>
                             {isSignUp && (
                                 <TextInput
                                     placeholder="Full Name"
                                     value={fullName}
                                     onChangeText={setFullName}
-                                    className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-100 focus:border-neutral-300 text-base"
+                                    className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-100 focus:border-neutral-300 text-base mb-4"
                                 />
                             )}
                             <TextInput
@@ -282,7 +282,7 @@ export default function SignInScreen() {
                                 onChangeText={setEmail}
                                 autoCapitalize="none"
                                 keyboardType="email-address"
-                                className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-100 focus:border-neutral-300 text-base"
+                                className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-100 focus:border-neutral-300 text-base mb-4"
                             />
                             <TextInput
                                 placeholder="Password"
@@ -307,7 +307,7 @@ export default function SignInScreen() {
                             label={isSignUp ? "Create account" : "Sign in"}
                             loading={loading}
                             onPress={handleEmailAuth}
-                            className="mt-2"
+                            className="mt-6"
                         />
 
                         <TouchableOpacity
