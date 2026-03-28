@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, View, Text, TouchableOpacity, ScrollView, Alert, Image, Linking } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, ScrollView, Alert, Image, Linking, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { db } from '@/lib/firebase';
 import { parseLocalBookingDate } from '@/lib/utils';
@@ -84,7 +84,7 @@ export function BookingDetailModal({ visible, onClose, booking, onUpdate, isStyl
             await updateDoc(doc(db, 'bookings', booking.id), {
                 start_time: start.toISOString(),
                 end_time: end.toISOString(),
-                status: 'confirmed' // Reset to confirmed if it was in-progress
+                status: 'confirmed'
             });
 
             onUpdate();
@@ -97,15 +97,17 @@ export function BookingDetailModal({ visible, onClose, booking, onUpdate, isStyl
         }
     };
 
-    const getStatusColor = (status: string) => {
+    const getStatusStyle = (status: string) => {
         switch (status) {
-            case 'confirmed': return 'bg-blue-100 text-blue-700';
-            case 'in-progress': return 'bg-yellow-100 text-yellow-700';
-            case 'completed': return 'bg-green-100 text-green-700';
-            case 'cancelled': return 'bg-red-100 text-red-700';
-            default: return 'bg-neutral-100 text-neutral-700';
+            case 'confirmed': return { bg: '#dbeafe', text: '#1d4ed8' };
+            case 'in-progress': return { bg: '#fef9c3', text: '#a16207' };
+            case 'completed': return { bg: '#dcfce7', text: '#15803d' };
+            case 'cancelled': return { bg: '#fee2e2', text: '#b91c1c' };
+            default: return { bg: '#f5f5f5', text: '#404040' };
         }
     };
+
+    const statusStyle = getStatusStyle(booking.status);
 
     return (
         <Modal
@@ -114,190 +116,178 @@ export function BookingDetailModal({ visible, onClose, booking, onUpdate, isStyl
             animationType={isStylistView ? "slide" : "fade"}
             onRequestClose={onClose}
         >
-            <View className={`flex-1 ${isStylistView ? 'bg-white' : 'bg-black/60 items-center justify-center px-6'}`}>
-                <View className={`${isStylistView ? 'flex-1' : 'bg-white w-full max-w-md rounded-3xl'} overflow-hidden`}>
-                    {isStylistView && <View className="w-12 h-1.5 bg-neutral-200 rounded-full self-center mt-3 mb-1" />}
-                    
-                    {/* Header */}
-                    <View className="px-6 py-6 border-b border-neutral-100 flex-row items-center justify-between">
-                        <Text className="text-xl font-bold text-neutral-900">Appointment Details</Text>
-                        <TouchableOpacity onPress={onClose} className="w-10 h-10 items-center justify-center rounded-full active:bg-neutral-100">
+            <View style={[s.overlay, isStylistView ? s.overlayStyleStylist : s.overlayStyleModal]}>
+                <View style={[isStylistView ? s.containerStylist : s.containerModal]}>
+                    {isStylistView ? <View style={s.handle} /> : null}
+
+                    <View style={s.header}>
+                        <Text style={s.headerTitle}>Appointment Details</Text>
+                        <TouchableOpacity onPress={onClose} style={s.closeButton}>
                             <Feather name="x" size={24} color="#000" />
                         </TouchableOpacity>
                     </View>
 
-                    <ScrollView className="p-6">
+                    <ScrollView style={s.scrollContent}>
                         {isRescheduling ? (
                             <View>
-                                <View className="mb-6" style={!isStylistView ? { zIndex: 100 } : undefined}>
-                                    <Text className="text-neutral-500 text-xs font-bold uppercase mb-2 tracking-wider">New Date</Text>
-                                    <View className={!isStylistView ? 'h-12 bg-neutral-50 rounded-xl px-4 border border-neutral-200 justify-center' : ''}>
-                                        <DatePicker 
+                                <View style={[s.fieldGroup, !isStylistView ? { zIndex: 100 } : undefined]}>
+                                    <Text style={s.label}>New Date</Text>
+                                    <View style={!isStylistView ? s.inputWrapper : undefined}>
+                                        <DatePicker
                                             value={resDate}
                                             onChange={setResDate}
                                             isInline={isStylistView}
                                         />
                                     </View>
                                 </View>
-
-                                <View className="mb-10" style={!isStylistView ? { zIndex: 90 } : undefined}>
-                                    <Text className="text-neutral-500 text-xs font-bold uppercase mb-2 tracking-wider">New Time</Text>
-                                    <View className={!isStylistView ? 'h-12 bg-neutral-50 rounded-xl px-4 border border-neutral-200 justify-center' : ''}>
-                                        <TimePicker 
+                                <View style={[s.fieldGroupLarge, !isStylistView ? { zIndex: 90 } : undefined]}>
+                                    <Text style={s.label}>New Time</Text>
+                                    <View style={!isStylistView ? s.inputWrapper : undefined}>
+                                        <TimePicker
                                             value={resTime}
                                             onChange={setResTime}
                                             isInline={isStylistView}
                                         />
                                     </View>
                                 </View>
-
-                                <View className="space-y-3 pt-4">
+                                <View style={s.actionsGroup}>
                                     <TouchableOpacity
                                         onPress={handleSaveReschedule}
                                         disabled={saving}
-                                        className="w-full bg-neutral-900 py-4 rounded-xl items-center"
+                                        style={s.primaryButton}
                                     >
-                                        <Text className="text-white font-bold text-base">
+                                        <Text style={s.primaryButtonText}>
                                             {saving ? 'Updating...' : 'Update Appointment'}
                                         </Text>
                                     </TouchableOpacity>
-
                                     <TouchableOpacity
                                         onPress={() => setIsRescheduling(false)}
-                                        className="w-full py-2 items-center"
+                                        style={s.cancelTextButton}
                                     >
-                                        <Text className="text-neutral-500 font-bold">Cancel</Text>
+                                        <Text style={s.cancelText}>Cancel</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
                         ) : (
                             <>
-                        {/* Status Badge */}
-                        <View className="mb-6 flex-row">
-                            <View className={`px-3 py-1 rounded-full ${getStatusColor(booking.status).split(' ')[0]}`}>
-                                <Text className={`text-xs font-bold uppercase ${getStatusColor(booking.status).split(' ')[1]}`}>
-                                    {booking.status.replace('-', ' ')}
-                                </Text>
-                            </View>
-                        </View>
-
-                        {/* Customer Info */}
-                        <View className="mb-6">
-                            <Text className="text-neutral-500 text-xs font-bold uppercase mb-2 tracking-wider">Customer</Text>
-                            <View className="bg-neutral-50 p-4 rounded-2xl border border-neutral-100">
-                                <View className="flex-row items-center mb-4">
-                                    <View className="w-14 h-14 rounded-full overflow-hidden bg-neutral-200 mr-4 border-2 border-white shadow-sm">
-                                        {booking.customerAvatar ? (
-                                            <Image source={{ uri: booking.customerAvatar }} className="w-full h-full" />
-                                        ) : (
-                                            <View className="w-full h-full items-center justify-center">
-                                                <Feather name="user" size={28} color="#737373" />
-                                            </View>
-                                        )}
-                                    </View>
-                                    <View className="flex-1">
-                                        <Text className="text-xl font-extrabold text-neutral-900 leading-tight">
-                                            {booking.customerName || 'Client'}
+                                <View style={s.statusRow}>
+                                    <View style={[s.statusBadge, { backgroundColor: statusStyle.bg }]}>
+                                        <Text style={[s.statusText, { color: statusStyle.text }]}>
+                                            {booking.status.replace('-', ' ')}
                                         </Text>
-                                        {booking.customerEmail && (
-                                            <TouchableOpacity 
-                                                onPress={() => Linking.openURL(`mailto:${booking.customerEmail}`)}
-                                                className="flex-row items-center mt-1"
-                                            >
-                                                <Feather name="mail" size={12} color="#737373" />
-                                                <Text className="text-neutral-500 ml-1.5 text-xs font-medium">{booking.customerEmail}</Text>
-                                            </TouchableOpacity>
-                                        )}
                                     </View>
                                 </View>
 
-                                {booking.customerPhone && (
-                                    <View className="flex-row gap-2 mt-2">
-                                        <TouchableOpacity 
-                                            onPress={() => Linking.openURL(`tel:${booking.customerPhone}`)}
-                                            className="flex-1 flex-row items-center justify-center bg-white border border-neutral-200 py-3 rounded-xl active:bg-neutral-50"
-                                        >
-                                            <Feather name="phone" size={16} color="#000" />
-                                            <Text className="ml-2 font-bold text-neutral-900">Call</Text>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity 
-                                            onPress={() => Linking.openURL(`sms:${booking.customerPhone}`)}
-                                            className="flex-1 flex-row items-center justify-center bg-white border border-neutral-200 py-3 rounded-xl active:bg-neutral-50"
-                                        >
-                                            <Feather name="message-square" size={16} color="#000" />
-                                            <Text className="ml-2 font-bold text-neutral-900">Text</Text>
-                                        </TouchableOpacity>
+                                <View style={s.section}>
+                                    <Text style={s.label}>Customer</Text>
+                                    <View style={s.card}>
+                                        <View style={s.customerRow}>
+                                            <View style={s.avatarLarge}>
+                                                {booking.customerAvatar ? (
+                                                    <Image source={{ uri: booking.customerAvatar }} style={s.avatarImage} />
+                                                ) : (
+                                                    <View style={s.avatarPlaceholder}>
+                                                        <Feather name="user" size={28} color="#737373" />
+                                                    </View>
+                                                )}
+                                            </View>
+                                            <View style={{ flex: 1 }}>
+                                                <Text style={s.customerName}>
+                                                    {booking.customerName || 'Client'}
+                                                </Text>
+                                                {booking.customerEmail ? (
+                                                    <TouchableOpacity
+                                                        onPress={() => Linking.openURL(`mailto:${booking.customerEmail}`)}
+                                                        style={s.emailRow}
+                                                    >
+                                                        <Feather name="mail" size={12} color="#737373" />
+                                                        <Text style={s.emailText}>{booking.customerEmail}</Text>
+                                                    </TouchableOpacity>
+                                                ) : null}
+                                            </View>
+                                        </View>
+                                        {booking.customerPhone ? (
+                                            <View style={s.contactButtons}>
+                                                <TouchableOpacity
+                                                    onPress={() => Linking.openURL(`tel:${booking.customerPhone}`)}
+                                                    style={s.contactButton}
+                                                >
+                                                    <Feather name="phone" size={16} color="#000" />
+                                                    <Text style={s.contactButtonText}>Call</Text>
+                                                </TouchableOpacity>
+                                                <TouchableOpacity
+                                                    onPress={() => Linking.openURL(`sms:${booking.customerPhone}`)}
+                                                    style={s.contactButton}
+                                                >
+                                                    <Feather name="message-square" size={16} color="#000" />
+                                                    <Text style={s.contactButtonText}>Text</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        ) : null}
+                                        {!booking.customerPhone && !booking.customerEmail ? (
+                                            <Text style={s.noContactText}>No contact information available</Text>
+                                        ) : null}
                                     </View>
-                                )}
-                                {!booking.customerPhone && !booking.customerEmail && (
-                                    <Text className="text-neutral-400 text-xs italic italic mt-2">No contact information available</Text>
-                                )}
-                            </View>
-                        </View>
+                                </View>
 
-                        {/* Service Info */}
-                        <View className="mb-6">
-                            <Text className="text-neutral-500 text-xs font-bold uppercase mb-2 tracking-wider">Service</Text>
-                            <View className="bg-neutral-50 p-4 rounded-2xl border border-neutral-100">
-                                <Text className="text-lg font-bold text-neutral-900">{booking.serviceName}</Text>
-                                <Text className="text-neutral-500 mt-1">
-                                    {Math.round((endTime.getTime() - startTime.getTime()) / 60000)} minutes
-                                </Text>
-                            </View>
-                        </View>
-
-                        {/* Schedule Info */}
-                        <View className="mb-8">
-                            <Text className="text-neutral-500 text-xs font-bold uppercase mb-2 tracking-wider">Time</Text>
-                            <View className="flex-row items-center">
-                                <Feather name="calendar" size={18} color="#737373" />
-                                <Text className="ml-3 text-neutral-900 font-medium text-base">
-                                    {startTime.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
-                                </Text>
-                            </View>
-                            <View className="flex-row items-center mt-3">
-                                <Feather name="clock" size={18} color="#737373" />
-                                <Text className="ml-3 text-neutral-900 font-medium text-base">
-                                    {startTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
-                                    {' - '}
-                                    {endTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
-                                </Text>
-                            </View>
-                        </View>
-
-                        {/* Actions */}
-                        <View className="space-y-3 pb-4">
-                            {['confirmed', 'in-progress'].includes(booking.status) && (
-                                <TouchableOpacity
-                                    onPress={() => updateStatus('completed')}
-                                    className="w-full bg-neutral-900 py-4 rounded-xl items-center"
-                                >
-                                    <Text className="text-white font-bold text-base">Mark as Completed</Text>
-                                </TouchableOpacity>
-                            )}
-
-                            {['confirmed', 'in-progress'].includes(booking.status) && (
-                                <TouchableOpacity
-                                    onPress={handleReschedule}
-                                    className="w-full bg-neutral-100 py-4 rounded-xl items-center"
-                                >
-                                    <View className="flex-row items-center">
-                                        <Feather name="edit-2" size={18} color="#000" />
-                                        <Text className="text-neutral-900 font-bold text-base ml-2">Reschedule</Text>
+                                <View style={s.section}>
+                                    <Text style={s.label}>Service</Text>
+                                    <View style={s.card}>
+                                        <Text style={s.serviceName}>{booking.serviceName}</Text>
+                                        <Text style={s.serviceDuration}>
+                                            {Math.round((endTime.getTime() - startTime.getTime()) / 60000)} minutes
+                                        </Text>
                                     </View>
-                                </TouchableOpacity>
-                            )}
+                                </View>
 
-                            {booking.status !== 'cancelled' && (
-                                <TouchableOpacity
-                                    onPress={() => updateStatus('cancelled')}
-                                    className="w-full py-4 items-center"
-                                >
-                                    <Text className="text-red-500 font-bold text-base">Cancel Appointment</Text>
-                                </TouchableOpacity>
-                            )}
-                        </View>
-                        </>
+                                <View style={s.sectionLarge}>
+                                    <Text style={s.label}>Time</Text>
+                                    <View style={s.timeInfoRow}>
+                                        <Feather name="calendar" size={18} color="#737373" />
+                                        <Text style={s.timeInfoText}>
+                                            {startTime.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                                        </Text>
+                                    </View>
+                                    <View style={[s.timeInfoRow, { marginTop: 12 }]}>
+                                        <Feather name="clock" size={18} color="#737373" />
+                                        <Text style={s.timeInfoText}>
+                                            {startTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                                            {' - '}
+                                            {endTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                                        </Text>
+                                    </View>
+                                </View>
+
+                                <View style={s.actionsGroup}>
+                                    {['confirmed', 'in-progress'].includes(booking.status) ? (
+                                        <TouchableOpacity
+                                            onPress={() => updateStatus('completed')}
+                                            style={s.primaryButton}
+                                        >
+                                            <Text style={s.primaryButtonText}>Mark as Completed</Text>
+                                        </TouchableOpacity>
+                                    ) : null}
+                                    {['confirmed', 'in-progress'].includes(booking.status) ? (
+                                        <TouchableOpacity
+                                            onPress={handleReschedule}
+                                            style={s.secondaryButton}
+                                        >
+                                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                <Feather name="edit-2" size={18} color="#000" />
+                                                <Text style={s.secondaryButtonText}>Reschedule</Text>
+                                            </View>
+                                        </TouchableOpacity>
+                                    ) : null}
+                                    {booking.status !== 'cancelled' ? (
+                                        <TouchableOpacity
+                                            onPress={() => updateStatus('cancelled')}
+                                            style={s.dangerButton}
+                                        >
+                                            <Text style={s.dangerButtonText}>Cancel Appointment</Text>
+                                        </TouchableOpacity>
+                                    ) : null}
+                                </View>
+                            </>
                         )}
                     </ScrollView>
                 </View>
@@ -305,3 +295,247 @@ export function BookingDetailModal({ visible, onClose, booking, onUpdate, isStyl
         </Modal>
     );
 }
+
+const s = StyleSheet.create({
+    overlay: {
+        flex: 1,
+    },
+    overlayStyleStylist: {
+        backgroundColor: 'white',
+    },
+    overlayStyleModal: {
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 24,
+    },
+    containerStylist: {
+        flex: 1,
+        overflow: 'hidden',
+    },
+    containerModal: {
+        backgroundColor: 'white',
+        width: '100%',
+        maxWidth: 448,
+        borderRadius: 24,
+        overflow: 'hidden',
+    },
+    handle: {
+        width: 48,
+        height: 6,
+        backgroundColor: '#e5e5e5',
+        borderRadius: 3,
+        alignSelf: 'center',
+        marginTop: 12,
+        marginBottom: 4,
+    },
+    header: {
+        paddingHorizontal: 24,
+        paddingVertical: 24,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f5f5f5',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    headerTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#171717',
+    },
+    closeButton: {
+        width: 40,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 20,
+    },
+    scrollContent: {
+        padding: 24,
+    },
+    label: {
+        color: '#737373',
+        fontSize: 12,
+        fontWeight: 'bold',
+        textTransform: 'uppercase',
+        marginBottom: 8,
+        letterSpacing: 0.5,
+    },
+    fieldGroup: {
+        marginBottom: 24,
+    },
+    fieldGroupLarge: {
+        marginBottom: 40,
+    },
+    inputWrapper: {
+        height: 48,
+        backgroundColor: '#fafafa',
+        borderRadius: 12,
+        paddingHorizontal: 16,
+        borderWidth: 1,
+        borderColor: '#e5e5e5',
+        justifyContent: 'center',
+    },
+    statusRow: {
+        marginBottom: 24,
+        flexDirection: 'row',
+    },
+    statusBadge: {
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+        borderRadius: 999,
+    },
+    statusText: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        textTransform: 'uppercase',
+    },
+    section: {
+        marginBottom: 24,
+    },
+    sectionLarge: {
+        marginBottom: 32,
+    },
+    card: {
+        backgroundColor: '#fafafa',
+        padding: 16,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: '#f5f5f5',
+    },
+    customerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    avatarLarge: {
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        overflow: 'hidden',
+        backgroundColor: '#e5e5e5',
+        marginRight: 16,
+        borderWidth: 2,
+        borderColor: 'white',
+    },
+    avatarImage: {
+        width: '100%',
+        height: '100%',
+    },
+    avatarPlaceholder: {
+        width: '100%',
+        height: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    customerName: {
+        fontSize: 20,
+        fontWeight: '800',
+        color: '#171717',
+    },
+    emailRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 4,
+    },
+    emailText: {
+        color: '#737373',
+        marginLeft: 6,
+        fontSize: 12,
+        fontWeight: '500',
+    },
+    contactButtons: {
+        flexDirection: 'row',
+        gap: 8,
+        marginTop: 8,
+    },
+    contactButton: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'white',
+        borderWidth: 1,
+        borderColor: '#e5e5e5',
+        paddingVertical: 12,
+        borderRadius: 12,
+    },
+    contactButtonText: {
+        marginLeft: 8,
+        fontWeight: 'bold',
+        color: '#171717',
+    },
+    noContactText: {
+        color: '#a3a3a3',
+        fontSize: 12,
+        fontStyle: 'italic',
+        marginTop: 8,
+    },
+    serviceName: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#171717',
+    },
+    serviceDuration: {
+        color: '#737373',
+        marginTop: 4,
+    },
+    timeInfoRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    timeInfoText: {
+        marginLeft: 12,
+        color: '#171717',
+        fontWeight: '500',
+        fontSize: 16,
+    },
+    actionsGroup: {
+        gap: 12,
+        paddingBottom: 16,
+    },
+    primaryButton: {
+        width: '100%',
+        backgroundColor: '#171717',
+        paddingVertical: 16,
+        borderRadius: 12,
+        alignItems: 'center',
+    },
+    primaryButtonText: {
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: 16,
+    },
+    secondaryButton: {
+        width: '100%',
+        backgroundColor: '#f5f5f5',
+        paddingVertical: 16,
+        borderRadius: 12,
+        alignItems: 'center',
+    },
+    secondaryButtonText: {
+        color: '#171717',
+        fontWeight: 'bold',
+        fontSize: 16,
+        marginLeft: 8,
+    },
+    cancelTextButton: {
+        width: '100%',
+        paddingVertical: 8,
+        alignItems: 'center',
+    },
+    cancelText: {
+        color: '#737373',
+        fontWeight: 'bold',
+    },
+    dangerButton: {
+        width: '100%',
+        paddingVertical: 16,
+        alignItems: 'center',
+    },
+    dangerButtonText: {
+        color: '#ef4444',
+        fontWeight: 'bold',
+        fontSize: 16,
+    },
+});
