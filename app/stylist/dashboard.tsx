@@ -59,12 +59,26 @@ export default function StylistDashboard() {
 
             const businessId = profileData.business_id;
 
-            // Get bookings where stylist_id matches the user's UID
+            // Find the stylist document ID that belongs to this user
+            const stylistSnap = await getDocs(
+                query(
+                    collection(db, 'businesses', businessId, 'stylists'),
+                    where('userId', '==', user!.uid)
+                )
+            );
+            
+            if (stylistSnap.empty) {
+                setLoading(false);
+                return;
+            }
+            const stylistDocId = stylistSnap.docs[0].id;
+
+            // Get bookings where stylist_id matches the stylist document ID
             const bookingsSnap = await getDocs(
                 query(
                     collection(db, 'bookings'),
                     where('business_id', '==', businessId),
-                    where('stylist_id', '==', user!.uid),
+                    where('stylist_id', '==', stylistDocId),
                     orderBy('start_time', 'desc')
                 )
             );
