@@ -42,6 +42,20 @@ export default function BusinessCalendar() {
     const [stylists, setStylists] = useState<Stylist[]>([]);
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [selectedDate, setSelectedDate] = useState(new Date());
+    const [currentTime, setCurrentTime] = useState(new Date());
+
+    // Update current time every minute
+    useEffect(() => {
+        const interval = setInterval(() => setCurrentTime(new Date()), 60000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const isToday = selectedDate.toDateString() === new Date().toDateString();
+    const nowTop = (() => {
+        const h = currentTime.getHours();
+        const m = currentTime.getMinutes();
+        return (h - 9) * 80 + (m / 60) * 80;
+    })();
 
     const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
@@ -217,6 +231,12 @@ export default function BusinessCalendar() {
                             </TouchableOpacity>
                         );
                     })}
+                    {isToday && nowTop >= 0 && nowTop <= 800 ? (
+                        <View style={[styles.nowIndicator, { top: nowTop }]} pointerEvents="none">
+                            <View style={styles.nowDot} />
+                            <View style={styles.nowLine} />
+                        </View>
+                    ) : null}
                 </View>
             </View>
         );
@@ -647,5 +667,25 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         paddingTop: 80,
-    }
+    },
+    nowIndicator: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        flexDirection: 'row',
+        alignItems: 'center',
+        zIndex: 20,
+    },
+    nowDot: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: '#ef4444',
+        marginLeft: -5,
+    },
+    nowLine: {
+        flex: 1,
+        height: 2,
+        backgroundColor: '#ef4444',
+    },
 });
