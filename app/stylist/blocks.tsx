@@ -266,7 +266,7 @@ export default function StaffBlocksScreen() {
                         <View className="space-y-4">
                             {blocks.length > 0 ? (
                                 blocks.map(block => (
-                                    <View key={block.id} className="bg-white border border-neutral-100 p-5 rounded-2xl flex-row items-center">
+                                    <View key={block.id} className="bg-white border border-neutral-100 p-5 rounded-2xl flex-row items-center mb-4">
                                         <View className="flex-1">
                                             <Text className="font-bold text-lg text-neutral-900">{block.reason}</Text>
                                             <View className="flex-row items-center mt-1">
