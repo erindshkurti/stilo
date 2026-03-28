@@ -82,7 +82,7 @@ export function Toast({ visible, message, type = 'success', onHide, duration = 3
                         },
                     ]}
                 >
-                    <Feather name={iconName as any} size={20} color={iconColor} />
+                    <Feather name={iconName as any} size={28} color={iconColor} style={{ marginBottom: 12 }} />
                     <Text style={styles.text}>{message}</Text>
                 </Animated.View>
             </View>
@@ -93,33 +93,33 @@ export function Toast({ visible, message, type = 'success', onHide, duration = 3
 const styles = StyleSheet.create({
     overlay: {
         ...StyleSheet.absoluteFillObject,
-        justifyContent: 'center', // Center vertically for "Dialog Toast"
+        justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: 30,
         zIndex: 10000,
     },
     toastContainer: {
-        flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 14,
-        paddingHorizontal: 24,
-        borderRadius: 30,
+        justifyContent: 'center',
+        paddingVertical: 24,
+        paddingHorizontal: 32,
+        borderRadius: 32,
         // Premium Shadow
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 12 },
-        shadowOpacity: 0.5,
-        shadowRadius: 16,
+        shadowOffset: { width: 0, height: 16 },
+        shadowOpacity: 0.4,
+        shadowRadius: 24,
         elevation: 24,
         // Ensure visibility
         borderWidth: 1,
         borderColor: 'rgba(255, 255, 255, 0.1)',
-        maxWidth: '90%',
+        maxWidth: '85%',
     },
     text: {
         color: '#ffffff',
-        fontSize: 15,
+        fontSize: 16,
         fontWeight: '700',
-        marginLeft: 10,
         textAlign: 'center',
+        lineHeight: 22,
     },
 });
