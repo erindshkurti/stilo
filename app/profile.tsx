@@ -173,7 +173,7 @@ export default function ProfileScreen() {
 
     return (
         <SafeAreaView className="flex-1 bg-white">
-            <Header showBack={true} />
+            <Header showBack={true} backHref="/" />
 
             <View className="flex-1">
                 <ScrollView className="flex-1">

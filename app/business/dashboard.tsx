@@ -216,7 +216,7 @@ export default function BusinessDashboard() {
 
     return (
         <SafeAreaView className="flex-1 bg-white">
-            <Header />
+            <Header showBack={true} backHref="/" />
 
             {/* Warning Banner */}
             {showWarning && (

@@ -168,7 +168,15 @@ export function Header({ showBack = false, backHref, backLabel = 'Back' }: Heade
                     <View className="flex-row items-center">
                         {showBack ? (
                             <TouchableOpacity 
-                                onPress={() => backHref ? router.push(backHref as any) : router.back()}
+                                onPress={() => {
+                                    if (router.canGoBack()) {
+                                        router.back();
+                                    } else if (backHref) {
+                                        router.replace(backHref as any);
+                                    } else {
+                                        router.replace('/');
+                                    }
+                                }}
                                 className="flex-row items-center py-2 -ml-2 px-2"
                             >
                                 <Feather name="arrow-left" size={24} color="#000" />

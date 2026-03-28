@@ -129,7 +129,7 @@ export default function EditHoursScreen() {
 
     return (
         <SafeAreaView className="flex-1 bg-white">
-            <Header showBack={true} backHref="/business/dashboard" backLabel="Dashboard" />
+            <Header showBack={true} backHref="/business/dashboard" />
 
             <View className="flex-1">
                 <ScrollView className="flex-1">

@@ -188,19 +188,11 @@ export default function StaffHoursScreen() {
 
     return (
         <SafeAreaView className="flex-1 bg-white">
-            <Header />
+            <Header showBack={true} backHref="/stylist/dashboard" />
             <View className="flex-1">
                 <ScrollView className="flex-1">
                     <View className="px-6 py-4 items-center">
                         <View style={{ maxWidth: 800, width: '100%' }}>
-                            <TouchableOpacity 
-                                onPress={() => router.back()}
-                                className="flex-row items-center mb-6"
-                            >
-                                <Feather name="arrow-left" size={20} color="#000" />
-                                <Text className="ml-2 font-bold text-neutral-900">Back to Dashboard</Text>
-                            </TouchableOpacity>
-
                             <Text className="text-3xl font-bold text-neutral-900 mb-2">My Working Hours</Text>
                             <Text className="text-neutral-500 mb-8">Set your personal availability. These hours override the business defaults.</Text>
 

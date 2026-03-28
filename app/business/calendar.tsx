@@ -227,7 +227,7 @@ export default function BusinessCalendar() {
 
     return (
         <SafeAreaView className="flex-1 bg-white">
-            <Header />
+            <Header showBack={true} backHref="/business/dashboard" />
             <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
                 <View className={`py-8 ${isLargeScreen ? 'max-w-[1200px] mx-auto w-full px-6' : 'px-6'}`}>
                     {/* Header */}
