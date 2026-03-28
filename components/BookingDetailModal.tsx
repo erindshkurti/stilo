@@ -278,7 +278,7 @@ export function BookingDetailModal({ visible, onClose, booking, onUpdate, isStyl
                                             </View>
                                         </TouchableOpacity>
                                     ) : null}
-                                    {booking.status !== 'cancelled' ? (
+                                    {booking.status !== 'cancelled' && booking.status !== 'completed' ? (
                                         <TouchableOpacity
                                             onPress={() => updateStatus('cancelled')}
                                             style={s.dangerButton}
