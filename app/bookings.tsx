@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Image, ScrollView, Text, TouchableOpacity, useWindowDimensions, View, Alert, Modal } from 'react-native';
+import { Image, ScrollView, Text, TouchableOpacity, useWindowDimensions, View, Alert, Modal, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../components/Header';
 import { useAuth } from '../lib/auth';
@@ -199,8 +199,8 @@ export default function BookingsScreen() {
                         <View className="flex-1 mt-4">
                             {loadingBookings ? (
                                 <View className="items-center justify-center py-20">
-                                    <View className="w-10 h-10 border-4 border-neutral-100 border-t-black rounded-full animate-spin mb-4" />
-                                    <Text className="text-neutral-500 font-medium">Loading your agenda...</Text>
+                                    <ActivityIndicator size="large" color="#000000" />
+                                    <Text className="text-neutral-500 font-medium mt-4">Loading your agenda...</Text>
                                 </View>
                             ) : (activeTab === 'upcoming' ? upcomingBookings : recentBookings).length > 0 ? (
                                 <View className="gap-6">
