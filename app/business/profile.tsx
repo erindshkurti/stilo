@@ -10,6 +10,7 @@ import { auth, db, storage } from '../../lib/firebase';
 import { signOut } from 'firebase/auth';
 import { addDoc, collection, deleteDoc, doc, getDocs, getDoc, orderBy, query, updateDoc, where } from 'firebase/firestore';
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { AlertModal } from '../../components/AlertModal';
 
 export default function BusinessSettings() {
     const { user } = useAuth();
@@ -28,6 +29,19 @@ export default function BusinessSettings() {
     const [businessId, setBusinessId] = useState<string | null>(null);
     const [portfolioImages, setPortfolioImages] = useState<any[]>([]);
     const [uploadingPortfolio, setUploadingPortfolio] = useState(false);
+    
+    // Alert Modal State
+    const [showAlertModal, setShowAlertModal] = useState(false);
+    const [alertConfig, setAlertConfig] = useState<{ title: string; message: string; type: 'error' | 'success' | 'info' }>({ 
+        title: '', 
+        message: '', 
+        type: 'info' 
+    });
+
+    const showAlert = (title: string, message: string, type: 'error' | 'success' | 'info' = 'info') => {
+        setAlertConfig({ title, message, type });
+        setShowAlertModal(true);
+    };
 
     useEffect(() => {
         loadProfile();
@@ -97,7 +111,7 @@ export default function BusinessSettings() {
             await loadPortfolioImages();
         } catch (error) {
             console.error('Error uploading portfolio image:', error);
-            Alert.alert('Error', 'Failed to upload image');
+            showAlert('Error', 'Failed to upload portfolio image. Please try again.', 'error');
         } finally {
             setUploadingPortfolio(false);
         }
@@ -117,7 +131,7 @@ export default function BusinessSettings() {
             }
         } catch (error) {
             console.error('Error picking image:', error);
-            Alert.alert('Error', 'Failed to pick image');
+            showAlert('Error', 'Failed to pick portfolio image. Please try again.', 'error');
         }
     }
 
@@ -131,7 +145,7 @@ export default function BusinessSettings() {
             await loadPortfolioImages();
         } catch (error) {
             console.error('Error deleting image:', error);
-            Alert.alert('Error', 'Failed to delete image');
+            showAlert('Error', 'Failed to delete portfolio image. Please try again.', 'error');
         }
     }
 
@@ -147,7 +161,7 @@ export default function BusinessSettings() {
             await loadPortfolioImages();
         } catch (error) {
             console.error('Error setting featured image:', error);
-            Alert.alert('Error', 'Failed to set featured image');
+            showAlert('Error', 'Failed to set featured image. Please try again.', 'error');
         }
     }
 
@@ -165,7 +179,7 @@ export default function BusinessSettings() {
             }
         } catch (error) {
             console.error('Error picking image:', error);
-            Alert.alert('Error', 'Failed to pick image');
+            showAlert('Error', 'Failed to pick profile picture. Please try again.', 'error');
         }
     }
 
@@ -185,7 +199,7 @@ export default function BusinessSettings() {
             setAvatarUrl(publicUrl);
         } catch (error) {
             console.error('Error uploading avatar:', error);
-            Alert.alert('Error', 'Failed to upload image');
+            showAlert('Error', 'Failed to upload profile picture. Please try again.', 'error');
         } finally {
             setUploading(false);
         }
@@ -197,10 +211,10 @@ export default function BusinessSettings() {
             if (!user) return;
             await updateDoc(doc(db, 'profiles', user.uid), { full_name: fullName });
             setEditMode(false);
-            Alert.alert('Success', 'Profile updated successfully');
+            showAlert('Success', 'Profile updated successfully!', 'success');
         } catch (error) {
             console.error('Error saving profile:', error);
-            Alert.alert('Error', 'Failed to save profile');
+            showAlert('Error', 'Failed to save profile changes. Please try again.', 'error');
         } finally {
             setSaving(false);
         }
@@ -337,6 +351,14 @@ export default function BusinessSettings() {
                     </View>
                 </View>
             </ScrollView>
+
+            <AlertModal
+                visible={showAlertModal}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                onConfirm={() => setShowAlertModal(false)}
+            />
         </SafeAreaView>
     );
 }

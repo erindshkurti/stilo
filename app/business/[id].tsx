@@ -8,6 +8,7 @@ import { Header } from '../../components/Header';
 import { useAuth } from '../../lib/auth';
 import { db } from '../../lib/firebase';
 import { collection, doc, getDoc, getDocs, orderBy, query, runTransaction, increment } from 'firebase/firestore';
+import { AlertModal } from '../../components/AlertModal';
 
 interface BusinessDetails {
     id: string;
@@ -62,6 +63,19 @@ export default function BusinessPage() {
     const [selectedRating, setSelectedRating] = useState(0);
     const [userRating, setUserRating] = useState<number | null>(null);
     const [ratingLoading, setRatingLoading] = useState(false);
+    
+    // Alert Modal State
+    const [showAlertModal, setShowAlertModal] = useState(false);
+    const [alertConfig, setAlertConfig] = useState<{ title: string; message: string; type: 'error' | 'success' | 'info'; confirmLabel?: string; onConfirm?: () => void; cancelLabel?: string; onCancel?: () => void }>({ 
+        title: '', 
+        message: '', 
+        type: 'info' 
+    });
+
+    const showAlert = (config: typeof alertConfig) => {
+        setAlertConfig(config);
+        setShowAlertModal(true);
+    };
     const { user } = useAuth();
 
     useEffect(() => {
@@ -207,10 +221,18 @@ export default function BusinessPage() {
                                         <TouchableOpacity 
                                             onPress={() => {
                                                 if (!user) {
-                                                    Alert.alert('Sign In Required', 'Please sign in to rate this business.', [
-                                                        { text: 'Cancel', style: 'cancel' },
-                                                        { text: 'Sign In', onPress: () => router.push('/sign-in') }
-                                                    ]);
+                                                    showAlert({
+                                                        title: 'Sign In Required',
+                                                        message: 'Please sign in to rate this business and share your experience.',
+                                                        type: 'info',
+                                                        confirmLabel: 'Sign In',
+                                                        onConfirm: () => {
+                                                            setShowAlertModal(false);
+                                                            router.push('/sign-in');
+                                                        },
+                                                        cancelLabel: 'Cancel',
+                                                        onCancel: () => setShowAlertModal(false)
+                                                    });
                                                     return;
                                                 }
                                                 setRatingModalVisible(true);
@@ -461,7 +483,12 @@ export default function BusinessPage() {
                                         setSelectedRating(0);
                                     } catch (e) {
                                         console.error('Rating error:', e);
-                                        Alert.alert('Error', 'Failed to save rating. Please try again.');
+                                        showAlert({
+                                            title: 'Error',
+                                            message: 'Failed to save rating. Please try again.',
+                                            type: 'error',
+                                            onConfirm: () => setShowAlertModal(false)
+                                        });
                                     } finally {
                                         setRatingLoading(false);
                                     }
@@ -484,6 +511,17 @@ export default function BusinessPage() {
                     </View>
                 </View>
             </Modal>
+
+            <AlertModal
+                visible={showAlertModal}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                confirmLabel={alertConfig.confirmLabel}
+                onConfirm={alertConfig.onConfirm || (() => setShowAlertModal(false))}
+                cancelLabel={alertConfig.cancelLabel}
+                onCancel={alertConfig.onCancel}
+            />
         </View>
     );
 }

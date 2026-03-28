@@ -7,6 +7,7 @@ import { Header } from '../../components/Header';
 import { useAuth } from '../../lib/auth';
 import { db } from '../../lib/firebase';
 import { addDoc, collection, deleteDoc, getDocs, query, where, doc, getDoc, orderBy, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { AlertModal } from '../../components/AlertModal';
 import { DatePicker } from '../../components/DatePicker';
 import { TimePicker } from '../../components/TimePicker';
 import { getLocalTodayStr } from '@/lib/utils';
@@ -30,6 +31,19 @@ export default function StaffBlocksScreen() {
     const [stylistId, setStylistId] = useState<string | null>(null);
     const [blocks, setBlocks] = useState<Block[]>([]);
     const [editingBlockId, setEditingBlockId] = useState<string | null>(null);
+
+    // Alert Modal State
+    const [showAlertModal, setShowAlertModal] = useState(false);
+    const [alertConfig, setAlertConfig] = useState<{ title: string; message: string; type: 'error' | 'success' | 'info' }>({ 
+        title: '', 
+        message: '', 
+        type: 'info' 
+    });
+
+    const showAlert = (title: string, message: string, type: 'error' | 'success' | 'info' = 'info') => {
+        setAlertConfig({ title, message, type });
+        setShowAlertModal(true);
+    };
 
     // New Block Form
     const [showForm, setShowForm] = useState(false);
@@ -109,7 +123,7 @@ export default function StaffBlocksScreen() {
             loadData();
         } catch (error) {
             console.error('Error saving block:', error);
-            Alert.alert('Error', `Failed to ${editingBlockId ? 'update' : 'add'} block`);
+            showAlert('Error', `Failed to ${editingBlockId ? 'update' : 'add'} time block. Please try again.`, 'error');
         } finally {
             setSaving(false);
         }
@@ -296,6 +310,14 @@ export default function StaffBlocksScreen() {
                     <Text className="text-white font-bold text-lg">Add Time Block</Text>
                 </TouchableOpacity>
             </View>
+
+            <AlertModal
+                visible={showAlertModal}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                onConfirm={() => setShowAlertModal(false)}
+            />
         </View>
     </SafeAreaView>
 );

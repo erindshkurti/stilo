@@ -17,25 +17,31 @@ export const parseLocalBookingDate = (date: string | Date, timeStr: string) => {
         day = date.getDate();
     }
     
-    // Handle both 24h (14:00) and 12h (10:00 AM) formats
-    const is12h = timeStr.includes('AM') || timeStr.includes('PM');
+    // Handle both 24h (14:00) and 12h (10:00 AM) formats robustly
     let hours = 0;
     let minutes = 0;
-
-    if (is12h) {
-        const [timePart, modifier] = timeStr.split(' ');
-        const [h, m] = timePart.split(':').map(Number);
-        hours = h;
-        minutes = m;
+    
+    // Regex matches HH:MM and optionally AM/PM with any (or no) whitespace
+    const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+    
+    if (match) {
+        hours = parseInt(match[1], 10);
+        minutes = parseInt(match[2], 10);
+        const modifier = match[3]?.toUpperCase();
+        
         if (modifier === 'PM' && hours < 12) hours += 12;
         if (modifier === 'AM' && hours === 12) hours = 0;
-    } else {
-        const [h, m] = timeStr.split(':').map(Number);
-        hours = h;
-        minutes = m;
     }
     
-    return new Date(year, month, day, hours, minutes, 0, 0);
+    const result = new Date(year, month, day, hours, minutes, 0, 0);
+    
+    // Safety check: Ensure the date is valid before returning
+    if (isNaN(result.getTime())) {
+        console.error('Invalid Date generated:', { year, month, day, hours, minutes, timeStr });
+        return new Date(); // Fallback to current time instead of throwing RangeError
+    }
+    
+    return result;
 };
 
 /**

@@ -7,6 +7,7 @@ import { useAuth } from '../../lib/auth';
 import { db } from '../../lib/firebase';
 import { parseLocalBookingDate } from '@/lib/utils';
 import { addDoc, updateDoc, doc, getDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { AlertModal } from '../../components/AlertModal';
 
 // Types
 type Step = 1 | 2 | 3 | 4 | 5;
@@ -62,6 +63,19 @@ export default function BookingScreen() {
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [availableSlots, setAvailableSlots] = useState<string[]>([]);
     const [slotsLoading, setSlotsLoading] = useState(false);
+    
+    // Alert Modal State
+    const [showAlertModal, setShowAlertModal] = useState(false);
+    const [alertConfig, setAlertConfig] = useState<{ title: string; message: string; type: 'error' | 'success' | 'info' }>({ 
+        title: '', 
+        message: '', 
+        type: 'info' 
+    });
+
+    const showAlert = (title: string, message: string, type: 'error' | 'success' | 'info' = 'info') => {
+        setAlertConfig({ title, message, type });
+        setShowAlertModal(true);
+    };
 
     // Initial Fetch
     useEffect(() => {
@@ -95,7 +109,7 @@ export default function BookingScreen() {
             } catch (error: any) {
                 console.error('fetchData error:', error);
                 const msg = error?.message || 'Unknown error';
-                Alert.alert('Error', `Failed to load booking data: ${msg}`);
+                showAlert('Error', `Failed to load booking data: ${msg}`, 'error');
             } finally {
                 setLoading(false);
             }
@@ -304,7 +318,7 @@ export default function BookingScreen() {
     async function handleBook() {
         console.log('Attempting to book...');
         if (!selectedService || !selectedDate || !selectedTime) {
-            Alert.alert('Missing Info', 'Please complete all steps.');
+            showAlert('Missing Info', 'Please complete all steps to book your appointment.', 'info');
             return;
         }
         setSubmitting(true);
@@ -341,7 +355,7 @@ export default function BookingScreen() {
             setStep(5);
 
         } catch (error: any) {
-            Alert.alert('Booking Error', error.message || 'An unknown error occurred.');
+            showAlert('Booking Error', error.message || 'An unknown error occurred while saving your booking. Please try again.', 'error');
             console.error('Full Error:', error);
         } finally {
             setSubmitting(false);
@@ -657,6 +671,14 @@ export default function BookingScreen() {
                     </View>
                 )}
             </View>
+
+            <AlertModal
+                visible={showAlertModal}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                onConfirm={() => setShowAlertModal(false)}
+            />
         </View>
     );
 }

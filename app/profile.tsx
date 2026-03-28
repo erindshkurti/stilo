@@ -11,6 +11,7 @@ import { Header } from '../components/Header';
 import { Toast } from '../components/Toast';
 import { useAuth } from '../lib/auth';
 import { db, storage } from '../lib/firebase';
+import { AlertModal } from '../components/AlertModal';
 
 export default function ProfileScreen() {
     const router = useRouter();
@@ -28,6 +29,19 @@ export default function ProfileScreen() {
     const [phone, setPhone] = useState('');
     const [email, setEmail] = useState('');
     const [businessName, setBusinessName] = useState<string | null>(null);
+    
+    // Alert Modal State
+    const [showAlertModal, setShowAlertModal] = useState(false);
+    const [alertConfig, setAlertConfig] = useState<{ title: string; message: string; type: 'error' | 'success' | 'info' }>({ 
+        title: '', 
+        message: '', 
+        type: 'info' 
+    });
+
+    const showAlert = (title: string, message: string, type: 'error' | 'success' | 'info' = 'info') => {
+        setAlertConfig({ title, message, type });
+        setShowAlertModal(true);
+    };
 
     const isLargeScreen = width > 768;
     const containerMaxWidth = isLargeScreen ? 600 : width - 48;
@@ -102,8 +116,7 @@ export default function ProfileScreen() {
             }
         } catch (error) {
             console.error('Error picking image:', error);
-            if (typeof window !== 'undefined' && window.alert) window.alert('Failed to pick image');
-            else Alert.alert('Error', 'Failed to pick image');
+            showAlert('Error', 'Failed to pick image from library. Please try again.', 'error');
         }
     }
 
@@ -123,8 +136,7 @@ export default function ProfileScreen() {
             setAvatarUrl(publicUrl);
         } catch (error) {
             console.error('Error uploading avatar:', error);
-            if (typeof window !== 'undefined' && window.alert) window.alert('Failed to upload image');
-            else Alert.alert('Error', 'Failed to upload image');
+            showAlert('Error', 'Failed to upload image. Please try again.', 'error');
         } finally {
             setUploadingAvatar(false);
         }
@@ -260,12 +272,19 @@ export default function ProfileScreen() {
                     </View>
                 </View>
             </View>
-
             <Toast 
                 visible={toast.visible} 
                 message={toast.message} 
                 type={toast.type} 
                 onHide={() => setToast(prev => ({ ...prev, visible: false }))} 
+            />
+
+            <AlertModal
+                visible={showAlertModal}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                onConfirm={() => setShowAlertModal(false)}
             />
         </View>
     );
