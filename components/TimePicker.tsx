@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
-import React, { useState, useCallback, useMemo } from 'react';
-import { Platform, FlatList, Text, TouchableOpacity, View, Modal, SafeAreaView } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { Platform, ScrollView, Text, TouchableOpacity, View, Modal, SafeAreaView } from 'react-native';
 
 const TIMES: string[] = (() => {
     const times: string[] = [];
@@ -25,36 +25,28 @@ interface TimePickerProps {
 
 export function TimePicker({ value, onChange, placeholder, className, isInline, showChevron = false, ...props }: TimePickerProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const scrollRef = useRef<ScrollView>(null);
+    const valueIndex = TIMES.indexOf(value);
 
-    const valueIndex = useMemo(() => TIMES.indexOf(value), [value]);
+    useEffect(() => {
+        if (isOpen && valueIndex !== -1) {
+            // Give a tiny bit of time for layout after modal transition
+            setTimeout(() => {
+                scrollRef.current?.scrollTo({ y: Math.max(0, valueIndex - 2) * 60, animated: false });
+            }, 100);
+        }
+    }, [isOpen, valueIndex]);
 
-    const handleSelect = useCallback((time: string) => {
+    const handleSelect = (time: string) => {
         onChange(time);
         setIsOpen(false);
-    }, [onChange]);
-
-    const renderItem = useCallback(({ item: t }: { item: string }) => (
-        <TouchableOpacity
-            onPress={() => handleSelect(t)}
-            className={`h-16 px-6 justify-center border-b border-neutral-50 ${value === t ? 'bg-neutral-50' : ''}`}
-        >
-            <Text className={`text-center text-xl ${value === t ? 'font-bold text-black' : 'text-neutral-500 font-medium'}`}>
-                {t}
-            </Text>
-        </TouchableOpacity>
-    ), [value, handleSelect]);
-
-    const getItemLayout = useCallback((data: any, index: number) => ({
-        length: 64,
-        offset: 64 * index,
-        index
-    }), []);
+    };
 
     return (
         <View className={`${isInline ? '' : 'flex-1'} ${className}`}>
             <TouchableOpacity
                 onPress={() => setIsOpen(true)}
-                className={`w-full ${isInline ? 'h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200' : 'h-full'} justify-center`}
+                className={`w-full ${isInline ? 'h-12 bg-neutral-50 rounded-xl px-4 border border-neutral-200' : 'h-full'} justify-center`}
                 activeOpacity={0.7}
             >
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: isInline ? 'space-between' : 'flex-start' }}>
@@ -85,15 +77,25 @@ export function TimePicker({ value, onChange, placeholder, className, isInline, 
                         </TouchableOpacity>
                     </View>
                     
-                    <FlatList 
-                        data={TIMES}
-                        keyExtractor={(t) => t}
-                        initialScrollIndex={valueIndex !== -1 ? Math.max(0, valueIndex - 2) : 0}
-                        getItemLayout={getItemLayout}
-                        renderItem={renderItem}
-                        showsVerticalScrollIndicator={false}
-                        contentContainerStyle={{ paddingVertical: 10 }}
-                    />
+                    <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 20 }}>
+                        {TIMES.map((t, idx) => {
+                            const isSelected = value === t;
+                            return (
+                                <TouchableOpacity
+                                    key={t}
+                                    onPress={() => handleSelect(t)}
+                                    className={`h-[60px] px-8 justify-center border-b border-neutral-50 ${isSelected ? 'bg-neutral-50' : 'bg-white'}`}
+                                >
+                                    <View className="flex-row items-center justify-between">
+                                        <Text className={`text-xl ${isSelected ? 'font-bold text-black' : 'text-neutral-500 font-medium'}`}>
+                                            {t}
+                                        </Text>
+                                        {isSelected && <Feather name="check" size={20} color="#000" />}
+                                    </View>
+                                </TouchableOpacity>
+                            );
+                        })}
+                    </ScrollView>
                 </SafeAreaView>
             </Modal>
         </View>
