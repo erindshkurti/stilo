@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, Text, TextInput, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FormInput } from '../../../components/FormInput';
 import { Header } from '../../../components/Header';
@@ -101,127 +101,137 @@ export default function EditBusinessDetailsScreen() {
         <SafeAreaView className="flex-1 bg-white">
             <Header showBack={true} backHref="/business/dashboard" />
 
-            <ScrollView className="flex-1">
-                <View className="px-6 py-8 items-center">
-                    <View style={{ maxWidth, width: '100%' }}>
+            <View className="flex-1">
+                <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+                    <View className="px-6 py-8 items-center">
+                        <View style={{ maxWidth, width: '100%' }}>
 
-                        <Text className={`font-bold mb-2 ${isLargeScreen ? 'text-3xl' : 'text-2xl'}`}>
-                            Business Details
-                        </Text>
-                        <Text className="text-neutral-600 mb-10">
-                            Manage your business profile information
-                        </Text>
+                            <Text className={`font-bold mb-2 ${isLargeScreen ? 'text-3xl' : 'text-2xl'}`}>
+                                Business Details
+                            </Text>
+                            <Text className="text-neutral-600 mb-10">
+                                Manage your business profile information
+                            </Text>
 
-                        {loading ? (
-                            <View className="items-center py-8">
-                                <Text className="text-neutral-500">Loading...</Text>
-                            </View>
-                        ) : (
-                            <View>
-                                {/* Business Name */}
-                                <View className="mb-6">
-                                    <Text className="text-sm font-medium text-neutral-700 mb-2">Business Name *</Text>
-                                    <FormInput
-                                        value={businessName}
-                                        onChangeText={setBusinessName}
-                                        placeholder="Enter business name"
-                                    />
+                            {loading ? (
+                                <View className="items-center py-8">
+                                    <ActivityIndicator color="#000" />
                                 </View>
-                                
-                                {/* Description */}
-                                <View className="mb-6">
-                                    <Text className="text-sm font-medium text-neutral-700 mb-2">Description</Text>
-                                    <TextInput
-                                        value={description}
-                                        onChangeText={setDescription}
-                                        placeholder="Brief description of your business"
-                                        multiline
-                                        numberOfLines={3}
-                                        className="bg-neutral-50 rounded-2xl p-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white"
-                                        style={{ minHeight: 80, textAlignVertical: 'top' }}
-                                    />
-                                </View>
-
-                                {/* Address */}
-                                <View className="mb-6">
-                                    <Text className="text-sm font-medium text-neutral-700 mb-2">Street Address *</Text>
-                                    <FormInput
-                                        value={address}
-                                        onChangeText={setAddress}
-                                        placeholder="123 Main St"
-                                    />
-                                </View>
-
-                                {/* City, State, Zip */}
-                                <View className="flex-row gap-3 mb-6">
-                                    <View className="flex-1">
-                                        <Text className="text-sm font-medium text-neutral-700 mb-2">City *</Text>
+                            ) : (
+                                <View>
+                                    {/* Business Name */}
+                                    <View className="mb-6">
+                                        <Text className="text-sm font-medium text-neutral-700 mb-2">Business Name *</Text>
                                         <FormInput
-                                            value={city}
-                                            onChangeText={setCity}
-                                            placeholder="City"
+                                            value={businessName}
+                                            onChangeText={setBusinessName}
+                                            placeholder="Enter business name"
                                         />
                                     </View>
-                                    <View style={{ width: 100 }}>
-                                        <Text className="text-sm font-medium text-neutral-700 mb-2">State</Text>
-                                        <FormInput
-                                            value={state}
-                                            onChangeText={setState}
-                                            placeholder="ST"
-                                            maxLength={2}
-                                            autoCapitalize="characters"
+                                    
+                                    {/* Description */}
+                                    <View className="mb-6">
+                                        <Text className="text-sm font-medium text-neutral-700 mb-2">Description</Text>
+                                        <TextInput
+                                            value={description}
+                                            onChangeText={setDescription}
+                                            placeholder="Brief description of your business"
+                                            multiline
+                                            numberOfLines={3}
+                                            className="bg-neutral-50 rounded-2xl p-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white"
+                                            style={{ minHeight: 80, textAlignVertical: 'top' }}
                                         />
                                     </View>
-                                    <View style={{ width: 100 }}>
-                                        <Text className="text-sm font-medium text-neutral-700 mb-2">Zip</Text>
+
+                                    {/* Address */}
+                                    <View className="mb-6">
+                                        <Text className="text-sm font-medium text-neutral-700 mb-2">Street Address *</Text>
                                         <FormInput
-                                            value={zipCode}
-                                            onChangeText={setZipCode}
-                                            placeholder="12345"
-                                            keyboardType="numeric"
-                                            maxLength={5}
+                                            value={address}
+                                            onChangeText={setAddress}
+                                            placeholder="123 Main St"
+                                        />
+                                    </View>
+
+                                    {/* City, State, Zip */}
+                                    <View className="flex-row gap-3 mb-6">
+                                        <View className="flex-1">
+                                            <Text className="text-sm font-medium text-neutral-700 mb-2">City *</Text>
+                                            <FormInput
+                                                value={city}
+                                                onChangeText={setCity}
+                                                placeholder="City"
+                                            />
+                                        </View>
+                                        <View style={{ width: 100 }}>
+                                            <Text className="text-sm font-medium text-neutral-700 mb-2">State</Text>
+                                            <FormInput
+                                                value={state}
+                                                onChangeText={setState}
+                                                placeholder="ST"
+                                                maxLength={2}
+                                                autoCapitalize="characters"
+                                            />
+                                        </View>
+                                        <View style={{ width: 100 }}>
+                                            <Text className="text-sm font-medium text-neutral-700 mb-2">Zip</Text>
+                                            <FormInput
+                                                value={zipCode}
+                                                onChangeText={setZipCode}
+                                                placeholder="12345"
+                                                keyboardType="numeric"
+                                                maxLength={5}
+                                            />
+                                        </View>
+                                    </View>
+
+                                    {/* Phone */}
+                                    <View className="mb-6">
+                                        <Text className="text-sm font-medium text-neutral-700 mb-2">Phone</Text>
+                                        <FormInput
+                                            value={phone}
+                                            onChangeText={setPhone}
+                                            placeholder="(555) 123-4567"
+                                            keyboardType="phone-pad"
+                                        />
+                                    </View>
+
+                                    {/* Email */}
+                                    <View className="mb-6">
+                                        <Text className="text-sm font-medium text-neutral-700 mb-2">Email</Text>
+                                        <FormInput
+                                            value={email}
+                                            onChangeText={setEmail}
+                                            placeholder="business@example.com"
+                                            keyboardType="email-address"
+                                            autoCapitalize="none"
                                         />
                                     </View>
                                 </View>
-
-                                {/* Phone */}
-                                <View className="mb-6">
-                                    <Text className="text-sm font-medium text-neutral-700 mb-2">Phone</Text>
-                                    <FormInput
-                                        value={phone}
-                                        onChangeText={setPhone}
-                                        placeholder="(555) 123-4567"
-                                        keyboardType="phone-pad"
-                                    />
-                                </View>
-
-                                {/* Email */}
-                                <View className="mb-6">
-                                    <Text className="text-sm font-medium text-neutral-700 mb-2">Email</Text>
-                                    <FormInput
-                                        value={email}
-                                        onChangeText={setEmail}
-                                        placeholder="business@example.com"
-                                        keyboardType="email-address"
-                                        autoCapitalize="none"
-                                    />
-                                </View>
-
-                                {/* Save Button */}
-                                <TouchableOpacity
-                                    onPress={handleSave}
-                                    disabled={saving}
-                                    className={`mt-6 py-4 rounded-xl items-center justify-center ${saving ? 'bg-neutral-300' : 'bg-black'}`}
-                                >
-                                    <Text className="text-white font-semibold text-base">
-                                        {saving ? 'Saving...' : 'Save Changes'}
-                                    </Text>
-                                </TouchableOpacity>
-                            </View>
-                        )}
+                            )}
+                        </View>
                     </View>
-                </View>
-            </ScrollView>
+                </ScrollView>
+
+                {/* Fixed Save Button Footer */}
+                {!loading && (
+                    <View className="p-6 border-t border-neutral-100 bg-white items-center">
+                        <View style={{ maxWidth, width: '100%' }}>
+                            <TouchableOpacity
+                                onPress={handleSave}
+                                disabled={saving}
+                                className={`py-4 rounded-2xl items-center justify-center shadow-lg ${saving ? 'bg-neutral-300' : 'bg-black'}`}
+                                activeOpacity={0.8}
+                            >
+                                <Text className="text-white font-bold text-lg">
+                                    {saving ? 'Saving...' : 'Save Changes'}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                )}
+            </View>
         </SafeAreaView>
     );
+
 }

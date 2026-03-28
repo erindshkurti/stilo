@@ -207,80 +207,95 @@ export default function EditTeamScreen() {
         <SafeAreaView className="flex-1 bg-white">
             <Header showBack={true} backHref="/business/dashboard" />
 
-            <ScrollView className="flex-1">
-                <View className="px-6 py-8 items-center">
-                    <View style={{ maxWidth, width: '100%' }}>
+            <View className="flex-1">
+                <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+                    <View className="px-6 py-8 items-center">
+                        <View style={{ maxWidth, width: '100%' }}>
 
-                        <Text className={`font-bold mb-2 ${isLargeScreen ? 'text-3xl' : 'text-2xl'}`}>
-                            Team Members
-                        </Text>
-                        <Text className="text-neutral-600 mb-8">
-                            Manage your team members
-                        </Text>
+                            <Text className={`font-bold mb-2 ${isLargeScreen ? 'text-3xl' : 'text-2xl'}`}>
+                                Team Members
+                            </Text>
+                            <Text className="text-neutral-600 mb-8">
+                                Manage your team members
+                            </Text>
 
-                        {loading ? (
-                            <Text className="text-neutral-500 text-center py-8">Loading...</Text>
-                        ) : (
-                            <>
-                                {/* Current Team Members */}
-                                {stylists.length > 0 && (
-                                    <View className="mb-6">
-                                        {stylists.map((stylist) => (
-                                            <View key={stylist.id} className="bg-neutral-50 rounded-2xl p-4 flex-row items-center justify-between mb-3">
-                                                <View className="flex-row items-center flex-1">
-                                                    {stylist.image_url ? (
-                                                        <Image 
-                                                            source={{ uri: stylist.image_url }} 
-                                                            className="w-12 h-12 rounded-full bg-neutral-200 mr-4"
-                                                        />
-                                                    ) : (
-                                                        <View className="w-12 h-12 rounded-full bg-neutral-200 items-center justify-center mr-4">
-                                                            <Feather name="user" size={20} color="#737373" />
-                                                        </View>
-                                                    )}
-                                                    <View className="flex-1">
-                                                        <Text className="font-semibold text-base">{stylist.name}</Text>
-                                                        {!!stylist.bio && (
-                                                            <Text className="text-sm text-neutral-600 mt-1" numberOfLines={1}>
-                                                                {stylist.bio}
-                                                            </Text>
+                            {loading ? (
+                                <View className="items-center py-12">
+                                    <ActivityIndicator color="#000" />
+                                </View>
+                            ) : (
+                                <>
+                                    {/* Current Team Members */}
+                                    {stylists.length > 0 && (
+                                        <View className="mb-6">
+                                            {stylists.map((stylist) => (
+                                                <View key={stylist.id} className="bg-neutral-50 rounded-2xl p-4 flex-row items-center justify-between mb-3">
+                                                    <View className="flex-row items-center flex-1">
+                                                        {stylist.image_url ? (
+                                                            <Image 
+                                                                source={{ uri: stylist.image_url }} 
+                                                                className="w-12 h-12 rounded-full bg-neutral-200 mr-4"
+                                                            />
+                                                        ) : (
+                                                            <View className="w-12 h-12 rounded-full bg-neutral-200 items-center justify-center mr-4">
+                                                                <Feather name="user" size={20} color="#737373" />
+                                                            </View>
                                                         )}
+                                                        <View className="flex-1">
+                                                            <Text className="font-semibold text-base">{stylist.name}</Text>
+                                                            {!!stylist.bio && (
+                                                                <Text className="text-sm text-neutral-600 mt-1" numberOfLines={1}>
+                                                                    {stylist.bio}
+                                                                </Text>
+                                                            )}
+                                                        </View>
+                                                    </View>
+                                                    <View className="flex-row">
+                                                        <TouchableOpacity onPress={() => editStylist(stylist)} className="ml-1 p-2">
+                                                            <Feather name="edit-2" size={18} color="#000" />
+                                                        </TouchableOpacity>
+                                                        <TouchableOpacity onPress={() => removeStylist(stylist)} className="ml-1 p-2">
+                                                            <Feather name="trash-2" size={18} color="#ef4444" />
+                                                        </TouchableOpacity>
                                                     </View>
                                                 </View>
-                                                <View className="flex-row">
-                                                    <TouchableOpacity onPress={() => editStylist(stylist)} className="ml-1 p-2">
-                                                        <Feather name="edit-2" size={18} color="#000" />
-                                                    </TouchableOpacity>
-                                                    <TouchableOpacity onPress={() => removeStylist(stylist)} className="ml-1 p-2">
-                                                        <Feather name="trash-2" size={18} color="#ef4444" />
-                                                    </TouchableOpacity>
-                                                </View>
-                                            </View>
-                                        ))}
-                                    </View>
-                                )}
-
-                                    {stylists.length === 0 && (
-                                        <View className="items-center py-12 px-6">
-                                            <Feather name="users" size={48} color="#d4d4d8" />
-                                            <Text className="text-neutral-500 mt-4 text-center">No team members yet. Add stylists to let clients book them directly!</Text>
+                                            ))}
                                         </View>
                                     )}
 
-                                    <TouchableOpacity 
-                                        onPress={handleAddClick} 
-                                        className="bg-black h-14 rounded-2xl flex-row items-center justify-center mt-4 w-full"
-                                    >
-                                        <Feather name="plus" size={20} color="white" />
-                                        <Text className="text-white font-semibold ml-2 text-base">
-                                            Add Team Member
-                                        </Text>
-                                    </TouchableOpacity>
-                            </>
-                        )}
+                                    {stylists.length === 0 && (
+                                        <View className="items-center py-12 px-6">
+                                            <View className="w-20 h-20 bg-neutral-50 rounded-full items-center justify-center mb-4">
+                                                <Feather name="users" size={32} color="#d4d4d8" />
+                                            </View>
+                                            <Text className="text-neutral-500 text-center text-base leading-6">No team members yet. Add stylists to let clients book them directly!</Text>
+                                        </View>
+                                    )}
+                                </>
+                            )}
+                        </View>
                     </View>
-                </View>
-            </ScrollView>
+                </ScrollView>
+
+                {/* Fixed Add Button Footer */}
+                {!loading && (
+                    <View className="p-6 border-t border-neutral-100 bg-white items-center">
+                        <View style={{ maxWidth, width: '100%' }}>
+                            <TouchableOpacity 
+                                onPress={handleAddClick} 
+                                className="bg-black py-4 rounded-2xl items-center flex-row justify-center shadow-lg"
+                                activeOpacity={0.8}
+                            >
+                                <Feather name="plus" size={20} color="white" />
+                                <Text className="text-white font-bold ml-2 text-lg">
+                                    Add Team Member
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                )}
+            </View>
+
 
             {/* Modal Form for Add/Edit using native PageSheet */}
             <Modal
