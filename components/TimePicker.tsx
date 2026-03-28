@@ -1,6 +1,17 @@
 import { Feather } from '@expo/vector-icons';
-import React, { useState, useRef, useEffect } from 'react';
-import { Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState, useCallback, useMemo } from 'react';
+import { Platform, FlatList, Text, TouchableOpacity, View } from 'react-native';
+
+const TIMES: string[] = (() => {
+    const times: string[] = [];
+    for (let h = 0; h < 24; h++) {
+        for (let m = 0; m < 60; m += 30) {
+            const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+            times.push(time);
+        }
+    }
+    return times;
+})();
 
 interface TimePickerProps {
     value: string; // "HH:mm"
@@ -13,46 +24,43 @@ interface TimePickerProps {
 
 export function TimePicker({ value, onChange, placeholder, className, isInline, ...props }: TimePickerProps) {
     const [isOpen, setIsOpen] = useState(false);
-    const scrollRef = useRef<ScrollView>(null);
 
-    // Generate times from 00:00 to 23:30 in 30-minute intervals
-    const times: string[] = [];
-    for (let h = 0; h < 24; h++) {
-        for (let m = 0; m < 60; m += 30) {
-            const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-            times.push(time);
-        }
-    }
+    const valueIndex = useMemo(() => TIMES.indexOf(value), [value]);
 
-    // Auto-scroll logic
-    useEffect(() => {
-        if (isOpen && value) {
-            const index = times.indexOf(value);
-            if (index !== -1) {
-                // Wait a tiny bit for the View to be ready and measured
-                setTimeout(() => {
-                    scrollRef.current?.scrollTo({
-                        y: index * 48, // Based on h-12 (48px)
-                        animated: false
-                    });
-                }, 10);
-            }
-        }
-    }, [isOpen, value]);
-
-    const handleSelect = (time: string) => {
+    const handleSelect = useCallback((time: string) => {
         onChange(time);
         setIsOpen(false);
-    };
+    }, [onChange]);
+
+    const renderItem = useCallback(({ item: t }: { item: string }) => (
+        <TouchableOpacity
+            onPress={() => handleSelect(t)}
+            className={`h-12 px-4 justify-center border-b border-neutral-50 ${value === t ? 'bg-neutral-50' : ''}`}
+        >
+            <Text className={`text-center ${value === t ? 'font-bold text-black' : 'text-neutral-600'}`}>
+                {t}
+            </Text>
+        </TouchableOpacity>
+    ), [value, handleSelect]);
+
+    const getItemLayout = useCallback((data: any, index: number) => ({
+        length: 48,
+        offset: 48 * index,
+        index
+    }), []);
 
     return (
-        <View className={`${isInline ? '' : 'relative flex-1'} ${className}`} style={{ zIndex: isOpen ? 1000 : 1 }}>
+        <View className={`relative ${isInline ? '' : 'flex-1'} ${className}`} style={{ zIndex: isOpen ? 1000 : 1 }}>
             <TouchableOpacity
                 onPress={() => setIsOpen(!isOpen)}
                 className={`w-full ${isInline ? 'h-12 bg-neutral-50 rounded-xl px-4 border border-neutral-200' : 'h-full'} justify-center`}
+                activeOpacity={0.7}
             >
-                <View className="flex-row items-center justify-between">
-                    <Text className={`text-base ${value ? 'text-neutral-900' : 'text-neutral-400'}`}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                    <Text 
+                        style={{ fontSize: 16, color: value ? '#000' : '#a3a3a3' }}
+                        numberOfLines={1}
+                    >
                         {value || placeholder || "Select Time"}
                     </Text>
                     <Feather name="chevron-down" size={16} color="#a3a3a3" />
@@ -70,23 +78,17 @@ export function TimePicker({ value, onChange, placeholder, className, isInline, 
                         />
                     )}
 
-                    <View className={`${isInline ? 'mt-1 w-full' : 'absolute top-full left-0 mt-1 w-full'} max-h-60 bg-white rounded-xl shadow-xl border border-neutral-200 overflow-hidden z-50`}>
-                        <ScrollView 
-                            ref={scrollRef}
+                    <View className="absolute top-full left-0 mt-1 w-full max-h-60 bg-white rounded-xl shadow-xl border border-neutral-200 overflow-hidden z-50">
+                        <FlatList 
+                            data={TIMES}
+                            keyExtractor={(t) => t}
+                            initialScrollIndex={valueIndex !== -1 ? valueIndex : 0}
+                            getItemLayout={getItemLayout}
+                            renderItem={renderItem}
                             showsVerticalScrollIndicator={false}
-                        >
-                            {times.map((t) => (
-                                <TouchableOpacity
-                                    key={t}
-                                    onPress={() => handleSelect(t)}
-                                    className={`h-12 px-4 justify-center border-b border-neutral-50 ${value === t ? 'bg-neutral-50' : ''}`}
-                                >
-                                    <Text className={`text-center ${value === t ? 'font-bold text-black' : 'text-neutral-600'}`}>
-                                        {t}
-                                    </Text>
-                                </TouchableOpacity>
-                            ))}
-                        </ScrollView>
+                            initialNumToRender={48} // Render enough to cover the list
+                            windowSize={1} // Keep window small since all items are rendered
+                        />
                     </View>
                 </>
             )}

@@ -91,15 +91,18 @@ export function DatePicker({ value, onChange, placeholder, className, isInline, 
             <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => setIsOpen(!isOpen)}
-                className={`w-full flex-row items-center justify-center border bg-neutral-50 ${isInline ? 'h-12 rounded-xl px-4 border-neutral-200' : 'h-14 rounded-2xl px-4 border-neutral-200'} ${isOpen ? 'border-neutral-900 bg-white' : 'border-neutral-200'}`}
+                className={`w-full ${isInline ? 'h-12 rounded-xl border-neutral-200' : 'h-14 rounded-2xl border-neutral-200'} ${isOpen ? 'border-neutral-900 bg-white' : 'border-neutral-200 bg-neutral-50'} border`}
+                style={{ paddingHorizontal: 16 }}
             >
-                {icon && <Feather name={icon} size={20} color="#737373" style={{ marginRight: 12 }} />}
-                <Text
-                    className={`text-base flex-1 ${value ? 'text-neutral-900' : 'text-neutral-400'}`}
-                    numberOfLines={1}
-                >
-                    {value || placeholder || "Select Date"}
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                    {icon && <Feather name={icon} size={20} color="#737373" style={{ marginRight: 12 }} />}
+                    <Text
+                        style={{ fontSize: 16, color: value ? '#000' : '#a3a3a3', flex: 1 }}
+                        numberOfLines={1}
+                    >
+                        {value || placeholder || "Select Date"}
+                    </Text>
+                </View>
             </TouchableOpacity>
 
             {/* Dropdown Calendar */}
@@ -116,7 +119,7 @@ export function DatePicker({ value, onChange, placeholder, className, isInline, 
                     )}
 
                     <View 
-                        className={`${isInline ? 'mt-2 w-full' : 'absolute top-full left-0 right-0 items-center mt-2'} z-50`}
+                        className="absolute top-full left-0 right-0 items-center mt-2 z-50"
                         style={Platform.OS === 'web' ? { zIndex: 1000 } : {}}
                     >
                         <View className="bg-white rounded-xl shadow-xl border border-neutral-200 p-4 w-72">

@@ -195,35 +195,32 @@ export default function StaffBlocksScreen() {
                                     
                                     <View className="mb-4" style={{ zIndex: 20 }}>
                                         <Text className="text-xs font-bold text-neutral-500 uppercase mb-2">Date</Text>
-                                        <View className="h-12 bg-white rounded-xl px-4 border border-neutral-200 justify-center">
-                                            <DatePicker 
-                                                value={newBlock.date}
-                                                onChange={(date) => setNewBlock(prev => ({ ...prev, date }))}
-                                                placeholder="Select Date"
-                                            />
-                                        </View>
+                                        <DatePicker 
+                                            isInline
+                                            value={newBlock.date}
+                                            onChange={(date) => setNewBlock(prev => ({ ...prev, date }))}
+                                            placeholder="Select Date"
+                                        />
                                     </View>
 
                                     <View className="flex-row gap-4 mb-4" style={{ zIndex: 10 }}>
                                         <View className="flex-1">
                                             <Text className="text-xs font-bold text-neutral-500 uppercase mb-2">Start Time</Text>
-                                            <View className="h-12 bg-white rounded-xl px-4 border border-neutral-200 justify-center">
-                                                <TimePicker 
-                                                    value={newBlock.start_time}
-                                                    onChange={(t) => setNewBlock(prev => ({ ...prev, start_time: t }))}
-                                                    placeholder="Start"
-                                                />
-                                            </View>
+                                            <TimePicker 
+                                                isInline
+                                                value={newBlock.start_time}
+                                                onChange={(t) => setNewBlock(prev => ({ ...prev, start_time: t }))}
+                                                placeholder="Start"
+                                            />
                                         </View>
                                         <View className="flex-1">
                                             <Text className="text-xs font-bold text-neutral-500 uppercase mb-2">End Time</Text>
-                                            <View className="h-12 bg-white rounded-xl px-4 border border-neutral-200 justify-center">
-                                                <TimePicker 
-                                                    value={newBlock.end_time}
-                                                    onChange={(t) => setNewBlock(prev => ({ ...prev, end_time: t }))}
-                                                    placeholder="End"
-                                                />
-                                            </View>
+                                            <TimePicker 
+                                                isInline
+                                                value={newBlock.end_time}
+                                                onChange={(t) => setNewBlock(prev => ({ ...prev, end_time: t }))}
+                                                placeholder="End"
+                                            />
                                         </View>
                                     </View>
 
