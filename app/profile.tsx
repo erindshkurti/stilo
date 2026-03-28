@@ -12,6 +12,7 @@ import { Toast } from '../components/Toast';
 import { useAuth } from '../lib/auth';
 import { db, storage } from '../lib/firebase';
 import { AlertModal } from '../components/AlertModal';
+import { FormInput } from '../components/FormInput';
 
 export default function ProfileScreen() {
     const router = useRouter();
@@ -214,44 +215,43 @@ export default function ProfileScreen() {
                             <View>
                                 <View className="mb-6">
                                     <Text className="font-semibold text-neutral-900 mb-1.5 px-1">Email</Text>
-                                    <TextInput
+                                    <FormInput
                                         value={email}
                                         editable={false}
-                                        className="h-14 bg-neutral-100 rounded-2xl px-4 border border-neutral-200 text-neutral-500 text-base"
+                                        style={{ backgroundColor: '#f5f5f5' }}
                                     />
                                     <Text className="text-neutral-500 text-xs mt-2 px-1">Email cannot be changed natively at this time.</Text>
                                 </View>
 
                                 <View className="mb-6">
                                     <Text className="font-semibold text-neutral-900 mb-1.5 px-1">Full Name</Text>
-                                    <TextInput
+                                    <FormInput
                                         placeholder="Enter your full name"
                                         value={displayName}
                                         onChangeText={setDisplayName}
-                                        className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-black text-base"
                                     />
                                 </View>
 
                                 <View className="mb-6">
                                     <Text className="font-semibold text-neutral-900 mb-1.5 px-1">Phone Number</Text>
-                                    <TextInput
+                                    <FormInput
                                         placeholder="Enter your phone number"
                                         value={phone}
                                         onChangeText={setPhone}
                                         keyboardType="phone-pad"
-                                        className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-black text-base"
                                     />
                                 </View>
 
                                 {businessName && (
                                     <View className="mb-6">
                                         <Text className="font-semibold text-neutral-900 mb-1.5 px-1">Business Association</Text>
-                                        <View className="h-14 bg-neutral-100 rounded-2xl px-4 border border-neutral-200 justify-center">
-                                            <Text className="text-neutral-600 text-base font-medium">
-                                                {businessName}
-                                            </Text>
-                                        </View>
-                                        <Text className="text-neutral-500 text-xs mt-2 px-1">
+                                        <FormInput 
+                                            value={businessName}
+                                            editable={false}
+                                            style={{ backgroundColor: '#f5f5f5' }}
+                                            inputStyle={{ color: '#525252', fontWeight: '500' }}
+                                        />
+                                        <Text className="text-neutral-500 text-xs mt-1.5 px-1">
                                             Linked as a {user?.uid ? 'Staff Member' : 'Owner'}
                                         </Text>
                                     </View>
