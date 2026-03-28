@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View, useWindowDimensions, Image, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Header } from '../../components/Header';
@@ -46,12 +46,42 @@ export default function BusinessCalendar() {
     const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedStylistId, setSelectedStylistId] = useState<string | null>(null);
-    const [stripStartDate, setStripStartDate] = useState(() => {
+
+    // Date strip: generate 60 days centered on today
+    const STRIP_DAYS = 60;
+    const STRIP_OFFSET = 30; // today is at index 30
+    const DATE_CHIP_WIDTH = 64; // 56px chip + 8px margin
+    const dateStripRef = useRef<ScrollView>(null);
+
+    const baseDate = useMemo(() => {
         const d = new Date();
         d.setHours(0, 0, 0, 0);
-        if (width < 1024) d.setDate(d.getDate() - 3);
+        d.setDate(d.getDate() - STRIP_OFFSET);
         return d;
-    });
+    }, []);
+
+    const dateStrip = useMemo(() => Array.from({ length: STRIP_DAYS }, (_, i) => {
+        const d = new Date(baseDate);
+        d.setDate(d.getDate() + i);
+        return d;
+    }), [baseDate]);
+
+    // Scroll to center a specific date in the strip
+    const scrollViewWidth = useRef(0);
+    const scrollToDate = useCallback((date: Date, animated = true) => {
+        const dateNorm = new Date(date);
+        dateNorm.setHours(0, 0, 0, 0);
+        const baseNorm = new Date(baseDate);
+        baseNorm.setHours(0, 0, 0, 0);
+        const daysDiff = Math.round((dateNorm.getTime() - baseNorm.getTime()) / (1000 * 60 * 60 * 24));
+        // Center the date using measured ScrollView width
+        const visibleWidth = scrollViewWidth.current || (width - 144);
+        const offset = (daysDiff * DATE_CHIP_WIDTH) - (visibleWidth / 2) + (DATE_CHIP_WIDTH / 2);
+        dateStripRef.current?.scrollTo({ x: Math.max(0, offset), animated });
+    }, [baseDate, width]);
+
+    // Initial scroll to today — fires from onLayout after width is measured
+    const hasScrolledInitially = useRef(false);
 
     useEffect(() => {
         if (stylists.length > 0 && !selectedStylistId) {
@@ -59,11 +89,17 @@ export default function BusinessCalendar() {
         }
     }, [stylists]);
 
-    const dateStrip = Array.from({ length: isLargeScreen ? 14 : 7 }, (_, i) => {
-        const d = new Date(stripStartDate);
-        d.setDate(d.getDate() + i);
-        return d;
-    });
+    const handleDateSelect = useCallback((date: Date) => {
+        setSelectedDate(date);
+        scrollToDate(date);
+    }, [scrollToDate]);
+
+    const shiftSelectedDate = useCallback((delta: number) => {
+        const newDate = new Date(selectedDate);
+        newDate.setDate(newDate.getDate() + delta);
+        setSelectedDate(newDate);
+        scrollToDate(newDate);
+    }, [selectedDate, scrollToDate]);
 
     useEffect(() => {
         if (isLoading || !user) return;
@@ -211,10 +247,7 @@ export default function BusinessCalendar() {
                                 onPress={() => {
                                     const today = new Date();
                                     setSelectedDate(today);
-                                    const start = new Date(today);
-                                    start.setHours(0, 0, 0, 0);
-                                    if (!isLargeScreen) start.setDate(start.getDate() - 3);
-                                    setStripStartDate(start);
+                                    scrollToDate(today);
                                 }}
                                 style={styles.todayButton}
                             >
@@ -227,24 +260,34 @@ export default function BusinessCalendar() {
                         </Text>
 
                         <View style={styles.dateStripContainer}>
-                            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexDirection: 'row' }}>
-                                <TouchableOpacity
-                                    onPress={() => {
-                                        const prev = new Date(stripStartDate);
-                                        prev.setDate(prev.getDate() - 7);
-                                        setStripStartDate(prev);
-                                    }}
-                                    style={styles.navDateButton}
-                                >
-                                    <Feather name="chevron-left" size={20} color="#737373" />
-                                </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => shiftSelectedDate(-1)}
+                                style={styles.navArrowButton}
+                            >
+                                <Feather name="chevron-left" size={20} color="#737373" />
+                            </TouchableOpacity>
 
+                            <ScrollView
+                                ref={dateStripRef}
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                style={styles.dateScrollView}
+                                contentContainerStyle={styles.dateScrollContent}
+                                onLayout={(e) => {
+                                    scrollViewWidth.current = e.nativeEvent.layout.width;
+                                    if (!hasScrolledInitially.current) {
+                                        hasScrolledInitially.current = true;
+                                        // Use setTimeout(0) to ensure content is rendered
+                                        setTimeout(() => scrollToDate(selectedDate, false), 0);
+                                    }
+                                }}
+                            >
                                 {dateStrip.map((date, idx) => {
                                     const isSelected = date.toDateString() === selectedDate.toDateString();
                                     return (
                                         <TouchableOpacity
                                             key={idx}
-                                            onPress={() => setSelectedDate(date)}
+                                            onPress={() => handleDateSelect(date)}
                                             style={[styles.dateButton, isSelected ? styles.dateButtonSelected : styles.dateButtonNormal]}
                                         >
                                             <Text style={[styles.dateWeekday, isSelected ? styles.textNeutral400 : styles.textNeutral400]}>
@@ -256,17 +299,14 @@ export default function BusinessCalendar() {
                                         </TouchableOpacity>
                                     );
                                 })}
-                                <TouchableOpacity
-                                    onPress={() => {
-                                        const next = new Date(stripStartDate);
-                                        next.setDate(next.getDate() + 7);
-                                        setStripStartDate(next);
-                                    }}
-                                    style={styles.navDateButton}
-                                >
-                                    <Feather name="chevron-right" size={20} color="#737373" />
-                                </TouchableOpacity>
                             </ScrollView>
+
+                            <TouchableOpacity
+                                onPress={() => shiftSelectedDate(1)}
+                                style={styles.navArrowButton}
+                            >
+                                <Feather name="chevron-right" size={20} color="#737373" />
+                            </TouchableOpacity>
                         </View>
 
                         {!isLargeScreen && (
@@ -397,17 +437,26 @@ const styles = StyleSheet.create({
     },
     dateStripContainer: {
         marginBottom: 32,
+        flexDirection: 'row',
+        alignItems: 'center',
     },
-    navDateButton: {
+    navArrowButton: {
         alignItems: 'center',
         justifyContent: 'center',
-        width: 56,
+        width: 40,
         height: 80,
-        borderRadius: 16,
+        borderRadius: 12,
         backgroundColor: '#fafafa',
         borderWidth: 1,
         borderColor: '#f5f5f5',
-        marginRight: 12,
+    },
+    dateScrollView: {
+        flex: 1,
+        marginHorizontal: 8,
+    },
+    dateScrollContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     dateButton: {
         alignItems: 'center',
@@ -415,7 +464,7 @@ const styles = StyleSheet.create({
         width: 56,
         height: 80,
         borderRadius: 16,
-        marginRight: 12,
+        marginHorizontal: 4,
     },
     dateButtonNormal: {
         backgroundColor: '#fafafa',
