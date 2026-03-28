@@ -1,8 +1,8 @@
 import { Feather } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View, useWindowDimensions, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View, useWindowDimensions, Image, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Header } from '../../components/Header';
 import { useAuth } from '../../lib/auth';
 import { db } from '../../lib/firebase';
@@ -32,8 +32,8 @@ interface Booking {
 }
 
 export default function BusinessCalendar() {
-    const { user } = useAuth();
-    const router = useRouter();
+    const insets = useSafeAreaInsets();
+    const { user, isLoading } = useAuth();
     const { width } = useWindowDimensions();
     const isLargeScreen = width > 1024;
 
@@ -49,19 +49,16 @@ export default function BusinessCalendar() {
     const [stripStartDate, setStripStartDate] = useState(() => {
         const d = new Date();
         d.setHours(0, 0, 0, 0);
-        // Start 3 days ago on mobile to center today
         if (width < 1024) d.setDate(d.getDate() - 3);
         return d;
     });
 
-    // Initial selected stylist
     useEffect(() => {
         if (stylists.length > 0 && !selectedStylistId) {
             setSelectedStylistId(stylists[0].id);
         }
     }, [stylists]);
 
-    // Generate dates for horizontal strip (Show 14 days on desktop, 7 on mobile)
     const dateStrip = Array.from({ length: isLargeScreen ? 14 : 7 }, (_, i) => {
         const d = new Date(stripStartDate);
         d.setDate(d.getDate() + i);
@@ -69,25 +66,22 @@ export default function BusinessCalendar() {
     });
 
     useEffect(() => {
-        if (!user) return;
+        if (isLoading || !user) return;
         loadData();
-    }, [user, selectedDate]);
+    }, [user, selectedDate, isLoading]);
 
     async function loadData() {
         try {
-            // 1. Get Business
             const bizSnap = await getDocs(query(collection(db, 'businesses'), where('owner_id', '==', user!.uid)));
             if (bizSnap.empty) return;
             const bizDoc = bizSnap.docs[0];
             const bizData = { id: bizDoc.id, ...bizDoc.data() };
             setBusiness(bizData);
 
-            // 2. Get Stylists
             const stylistsSnap = await getDocs(collection(db, 'businesses', bizDoc.id, 'stylists'));
             const stylistsList = stylistsSnap.docs.map(d => ({ id: d.id, ...d.data() } as Stylist));
             setStylists(stylistsList);
 
-            // 3. Get Bookings for the selected day
             const startOfDay = new Date(selectedDate);
             startOfDay.setHours(0, 0, 0, 0);
             const endOfDay = new Date(selectedDate);
@@ -112,14 +106,9 @@ export default function BusinessCalendar() {
                 if (bData.status === 'cancelled') continue;
                 const b = { id: d.id, ...bData } as Booking;
                 
-                // Enrich
                 if (!profileCache[b.customer_id]) {
                     const cSnap = await getDoc(doc(db, 'profiles', b.customer_id));
-                    if (cSnap.exists()) {
-                        profileCache[b.customer_id] = cSnap.data();
-                    } else {
-                        profileCache[b.customer_id] = { full_name: 'Customer' };
-                    }
+                    profileCache[b.customer_id] = cSnap.exists() ? cSnap.data() : { full_name: 'Customer' };
                 }
                 if (!serviceCache[b.service_id]) {
                     const sSnap = await getDoc(doc(db, 'businesses', bizDoc.id, 'services', b.service_id));
@@ -136,11 +125,7 @@ export default function BusinessCalendar() {
                 });
             }
             setBookings(fetchedBookings);
-
         } catch (error: any) {
-            if (error.message?.includes('requires an index')) {
-                console.warn('Calendar query failed: Missing Firestore index. Please click the link in your console to create it.');
-            }
             console.error('Error loading calendar:', error);
         } finally {
             setLoading(false);
@@ -149,30 +134,24 @@ export default function BusinessCalendar() {
 
     const renderStylistColumn = (stylist: Stylist) => {
         const stylistBookings = bookings.filter(b => b.stylist_id === stylist.id);
-        
         return (
-            <View 
-                key={stylist.id} 
-                className={`border-l border-neutral-100 ${isLargeScreen ? 'px-4 flex-1 min-w-[300px] max-w-[500px]' : 'px-2 flex-1'}`}
-            >
+            <View key={stylist.id} style={[styles.stylistColumn, isLargeScreen ? styles.stylistColumnLarge : styles.stylistColumnMobile]}>
                 {isLargeScreen && (
-                    <View className="items-center mb-6">
+                    <View style={styles.stylistHeader}>
                         {stylist.image_url ? (
-                            <Image source={{ uri: stylist.image_url }} className="w-12 h-12 rounded-full mb-2 bg-neutral-100" />
+                            <Image source={{ uri: stylist.image_url }} style={styles.stylistAvatar} />
                         ) : (
-                            <View className="w-12 h-12 rounded-full bg-neutral-200 items-center justify-center mb-2">
+                            <View style={styles.stylistAvatarPlaceholder}>
                                 <Feather name="user" size={20} color="#737373" />
                             </View>
                         )}
-                        <Text className="font-bold text-neutral-900 text-center" numberOfLines={1}>{stylist.name}</Text>
+                        <Text style={styles.stylistName} numberOfLines={1}>{stylist.name}</Text>
                     </View>
                 )}
-
-                <View className="relative">
+                <View style={{ position: 'relative' }}>
                     {[9, 10, 11, 12, 13, 14, 15, 16, 17, 18].map(h => (
-                        <View key={h} className="h-20 border-t border-neutral-50" />
+                        <View key={h} style={styles.hourSlot} />
                     ))}
-
                     {stylistBookings.map((b) => {
                         const start = new Date(b.start_time);
                         const hour = start.getHours();
@@ -185,27 +164,17 @@ export default function BusinessCalendar() {
                         return (
                             <TouchableOpacity 
                                 key={b.id}
-                                onPress={() => {
-                                    setSelectedBooking(b);
-                                    setModalVisible(true);
-                                }}
-                                style={{ 
-                                    position: 'absolute', 
-                                    top, 
-                                    height: height - 4,
-                                    left: 4,
-                                    right: 4,
-                                }}
-                                className="bg-neutral-900 rounded-xl px-3 py-1 shadow-sm border border-black/10"
+                                onPress={() => { setSelectedBooking(b); setModalVisible(true); }}
+                                style={[styles.bookingCard, { top, height: height - 4 }]}
                             >
-                                <View className="flex-1 justify-center items-center px-2">
-                                    <View className="flex-row items-center justify-center">
-                                        <View className="mr-1.5 opacity-80">
+                                <View style={styles.bookingContent}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                                        <View style={{ marginRight: 6, opacity: 0.8 }}>
                                             <Feather name="scissors" size={13} color="#fff" />
                                         </View>
-                                        <Text className="text-white font-bold text-sm leading-tight text-center" numberOfLines={1}>
+                                        <Text style={styles.bookingText} numberOfLines={1}>
                                             {b.customerName || 'Client'}{' '}
-                                            <Text className="text-neutral-200 font-medium text-xs">• {b.serviceName}</Text>
+                                            <Text style={styles.bookingService}>• {b.serviceName}</Text>
                                         </Text>
                                     </View>
                                 </View>
@@ -217,163 +186,422 @@ export default function BusinessCalendar() {
         );
     };
 
-    if (loading) {
+    if (isLoading || loading) {
         return (
-            <View className="flex-1 items-center justify-center bg-white">
+            <View style={[styles.loadingContainer, { paddingTop: insets.top }]}>
                 <ActivityIndicator size="large" color="#000" />
             </View>
         );
     }
 
+    if (!user) return null;
+
     return (
-        <SafeAreaView className="flex-1 bg-white">
-            <Header showBack={true} backHref="/business/dashboard" />
-            <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-                <View className={`py-8 ${isLargeScreen ? 'max-w-[1200px] mx-auto w-full px-6' : 'px-6'}`}>
-                    {/* Header */}
-                    <View className="flex-row items-center justify-between mb-2">
-                        <View>
-                            <Text className="text-3xl font-bold text-neutral-900">Schedule</Text>
-                            <Text className="text-neutral-500 mt-1">{business?.name}</Text>
+        <View style={[styles.root, { paddingTop: insets.top }]}>
+            <View style={{ flex: 1 }}>
+                <Header showBack={true} backHref="/business/dashboard" />
+                <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+                    <View style={[styles.container, isLargeScreen ? styles.containerLarge : styles.containerMobile]}>
+                        <View style={styles.headerRow}>
+                            <View>
+                                <Text style={styles.title}>Schedule</Text>
+                                <Text style={styles.subtitle}>{business?.name}</Text>
+                            </View>
+                            <TouchableOpacity 
+                                onPress={() => {
+                                    const today = new Date();
+                                    setSelectedDate(today);
+                                    const start = new Date(today);
+                                    start.setHours(0, 0, 0, 0);
+                                    if (!isLargeScreen) start.setDate(start.getDate() - 3);
+                                    setStripStartDate(start);
+                                }}
+                                style={styles.todayButton}
+                            >
+                                <Text style={styles.todayButtonText}>Today</Text>
+                            </TouchableOpacity>
                         </View>
-                        <TouchableOpacity 
-                            onPress={() => {
-                                const today = new Date();
-                                setSelectedDate(today);
-                                const start = new Date(today);
-                                start.setHours(0, 0, 0, 0);
-                                if (!isLargeScreen) start.setDate(start.getDate() - 3);
-                                setStripStartDate(start);
-                            }}
-                            className="bg-neutral-100 px-4 py-2 rounded-full active:bg-neutral-200"
-                        >
-                            <Text className="text-neutral-900 font-bold text-xs">Today</Text>
-                        </TouchableOpacity>
-                    </View>
 
-                    <Text className="text-neutral-400 font-medium mb-6">
-                        {selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                    </Text>
+                        <Text style={styles.dateLabel}>
+                            {selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                        </Text>
 
-                    {/* Horizontal Date Strip */}
-                    <View className="mb-8">
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
-                            <TouchableOpacity
-                                onPress={() => {
-                                    const prev = new Date(stripStartDate);
-                                    prev.setDate(prev.getDate() - 7);
-                                    setStripStartDate(prev);
-                                }}
-                                className="items-center justify-center w-14 h-20 rounded-2xl bg-neutral-50 border border-neutral-100 active:bg-neutral-100 mr-3"
-                            >
-                                <Feather name="chevron-left" size={20} color="#737373" />
-                            </TouchableOpacity>
+                        <View style={styles.dateStripContainer}>
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexDirection: 'row' }}>
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        const prev = new Date(stripStartDate);
+                                        prev.setDate(prev.getDate() - 7);
+                                        setStripStartDate(prev);
+                                    }}
+                                    style={styles.navDateButton}
+                                >
+                                    <Feather name="chevron-left" size={20} color="#737373" />
+                                </TouchableOpacity>
 
-                            {dateStrip.map((date, idx) => {
-                                const isSelected = date.toDateString() === selectedDate.toDateString();
-                                return (
-                                    <TouchableOpacity
-                                        key={idx}
-                                        onPress={() => setSelectedDate(date)}
-                                        className={`items-center justify-center w-14 h-20 rounded-2xl mr-3 ${isSelected ? 'bg-black' : 'bg-neutral-50 border border-neutral-100'}`}
-                                    >
-                                        <Text className={`text-[10px] uppercase font-bold ${isSelected ? 'text-neutral-400' : 'text-neutral-400'}`}>
-                                            {date.toLocaleDateString('en-US', { weekday: 'short' })}
-                                        </Text>
-                                        <Text className={`text-lg font-bold mt-1 ${isSelected ? 'text-white' : 'text-neutral-900'}`}>
-                                            {date.getDate()}
-                                        </Text>
-                                    </TouchableOpacity>
-                                );
-                            })}
-                            <TouchableOpacity
-                                onPress={() => {
-                                    const next = new Date(stripStartDate);
-                                    next.setDate(next.getDate() + 7);
-                                    setStripStartDate(next);
-                                }}
-                                className="items-center justify-center w-14 h-20 rounded-2xl bg-neutral-50 border border-neutral-100 active:bg-neutral-100"
-                            >
-                                <Feather name="chevron-right" size={20} color="#737373" />
-                            </TouchableOpacity>
-                        </ScrollView>
-                    </View>
-
-                    {/* Stylist Avatar Switcher (Only for mobile) */}
-                    {!isLargeScreen && (
-                        <View className="mb-8">
-                            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
-                                {stylists.map((stylist) => {
-                                    const isSelected = selectedStylistId === stylist.id;
+                                {dateStrip.map((date, idx) => {
+                                    const isSelected = date.toDateString() === selectedDate.toDateString();
                                     return (
                                         <TouchableOpacity
-                                            key={stylist.id}
-                                            onPress={() => setSelectedStylistId(stylist.id)}
-                                            className={`flex-row items-center px-4 py-2 rounded-full mr-3 border ${isSelected ? 'bg-black border-black shadow-lg shadow-black/20' : 'bg-white border-neutral-200'}`}
+                                            key={idx}
+                                            onPress={() => setSelectedDate(date)}
+                                            style={[styles.dateButton, isSelected ? styles.dateButtonSelected : styles.dateButtonNormal]}
                                         >
-                                            {stylist.image_url ? (
-                                                <Image source={{ uri: stylist.image_url }} className="w-6 h-6 rounded-full mr-2" />
-                                            ) : (
-                                                <View className={`w-6 h-6 rounded-full items-center justify-center mr-2 ${isSelected ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
-                                                    <Feather name="user" size={12} color={isSelected ? '#fff' : '#737373'} />
-                                                </View>
-                                            )}
-                                            <Text className={`font-medium text-sm ${isSelected ? 'text-white' : 'text-neutral-900'}`}>{stylist.name}</Text>
+                                            <Text style={[styles.dateWeekday, isSelected ? styles.textNeutral400 : styles.textNeutral400]}>
+                                                {date.toLocaleDateString('en-US', { weekday: 'short' })}
+                                            </Text>
+                                            <Text style={[styles.dateDay, isSelected ? styles.textWhite : styles.textNeutral900]}>
+                                                {date.getDate()}
+                                            </Text>
                                         </TouchableOpacity>
                                     );
                                 })}
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        const next = new Date(stripStartDate);
+                                        next.setDate(next.getDate() + 7);
+                                        setStripStartDate(next);
+                                    }}
+                                    style={styles.navDateButton}
+                                >
+                                    <Feather name="chevron-right" size={20} color="#737373" />
+                                </TouchableOpacity>
                             </ScrollView>
                         </View>
-                    )}
 
-                    {/* Master Grid */}
-                    <View className="flex-row" style={{ minHeight: 600 }}>
-                        {/* Time labels column */}
-                        <View className={`${isLargeScreen ? 'w-20' : 'w-16'} border-r border-neutral-100 ${isLargeScreen ? 'pt-[104px]' : 'pt-0'}`}>
-                            {[9, 10, 11, 12, 13, 14, 15, 16, 17, 18].map(h => (
-                                <View key={h} className="h-20 relative">
-                                    <View className={`absolute -top-[10px] ${isLargeScreen ? 'right-4' : 'right-3'} bg-white px-1 z-10`}>
-                                        <Text className={`text-neutral-500 ${isLargeScreen ? 'text-sm' : 'text-sm'} font-bold uppercase tracking-tight`}>
-                                            {h}:00
-                                        </Text>
-                                    </View>
-                                </View>
-                            ))}
-                        </View>
-
-                        {/* Stylist content area */}
-                        <View className="flex-1">
-                            {isLargeScreen ? (
-                                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                                    <View className="flex-row">
-                                        {stylists.map(stylist => renderStylistColumn(stylist))}
-                                    </View>
+                        {!isLargeScreen && (
+                            <View style={styles.stylistStripContainer}>
+                                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexDirection: 'row' }}>
+                                    {stylists.map((stylist) => {
+                                        const isSelected = selectedStylistId === stylist.id;
+                                        return (
+                                            <TouchableOpacity
+                                                key={stylist.id}
+                                                onPress={() => setSelectedStylistId(stylist.id)}
+                                                style={[styles.stylistPill, isSelected ? styles.stylistPillSelected : styles.stylistPillNormal]}
+                                            >
+                                                {stylist.image_url ? (
+                                                    <Image source={{ uri: stylist.image_url }} style={styles.pillAvatar} />
+                                                ) : (
+                                                    <View style={[styles.pillAvatarPlaceholder, isSelected ? styles.bgNeutral800 : styles.bgNeutral100]}>
+                                                        <Feather name="user" size={12} color={isSelected ? '#fff' : '#737373'} />
+                                                    </View>
+                                                )}
+                                                <Text style={[styles.pillText, isSelected ? styles.textWhite : styles.textNeutral900]}>{stylist.name}</Text>
+                                            </TouchableOpacity>
+                                        );
+                                      })}
                                 </ScrollView>
-                            ) : (
-                                <View>
-                                    {stylists.find(s => s.id === selectedStylistId) ? (
-                                        renderStylistColumn(stylists.find(s => s.id === selectedStylistId)!)
-                                    ) : (
-                                        <View className="flex-1 items-center justify-center pt-20">
-                                            <Text className="text-neutral-400">Select a team member</Text>
+                            </View>
+                        )}
+
+                        <View style={styles.calendarBody}>
+                            <View style={[isLargeScreen ? styles.timeGutterLarge : styles.timeGutterMobile, isLargeScreen ? { paddingTop: 104 } : { paddingTop: 0 }]}>
+                                {[9, 10, 11, 12, 13, 14, 15, 16, 17, 18].map(h => (
+                                    <View key={h} style={styles.timeLabelSlot}>
+                                        <View style={[styles.timeLabelContainer, isLargeScreen ? { right: 16 } : { right: 12 }]}>
+                                            <Text style={styles.timeLabelText}>
+                                                {h}:00
+                                            </Text>
                                         </View>
-                                    )}
-                                </View>
-                            )}
+                                    </View>
+                                ))}
+                            </View>
+
+                            <View style={{ flex: 1 }}>
+                                {isLargeScreen ? (
+                                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                                        <View style={{ flexDirection: 'row' }}>
+                                            {stylists.map(stylist => renderStylistColumn(stylist))}
+                                        </View>
+                                    </ScrollView>
+                                ) : (
+                                    <View>
+                                        {stylists.find(s => s.id === selectedStylistId) ? (
+                                            renderStylistColumn(stylists.find(s => s.id === selectedStylistId)!)
+                                        ) : (
+                                            <View style={styles.emptyState}>
+                                                <Text style={{ color: '#a3a3a3' }}>Select a team member</Text>
+                                            </View>
+                                        )}
+                                    </View>
+                                )}
+                            </View>
                         </View>
                     </View>
-                </View>
-            </ScrollView>
-
-            <BookingDetailModal 
-                visible={modalVisible}
-                onClose={() => {
-                    setModalVisible(false);
-                    setSelectedBooking(null);
-                }}
-                booking={selectedBooking}
-                onUpdate={loadData}
-            />
-        </SafeAreaView>
+                </ScrollView>
+                <BookingDetailModal 
+                    visible={modalVisible}
+                    onClose={() => { setModalVisible(false); setSelectedBooking(null); }}
+                    booking={selectedBooking}
+                    onUpdate={loadData}
+                />
+            </View>
+        </View>
     );
 }
+
+const styles = StyleSheet.create({
+    root: {
+        flex: 1,
+        backgroundColor: 'white',
+    },
+    loadingContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'white',
+    },
+    container: {
+        paddingVertical: 32,
+    },
+    containerLarge: {
+        maxWidth: 1200,
+        marginHorizontal: 'auto',
+        width: '100%',
+        paddingHorizontal: 24,
+    },
+    containerMobile: {
+        paddingHorizontal: 24,
+    },
+    headerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'between',
+        marginBottom: 8,
+    },
+    title: {
+        fontSize: 30,
+        fontWeight: 'bold',
+        color: '#171717',
+    },
+    subtitle: {
+        color: '#737373',
+        marginTop: 4,
+    },
+    todayButton: {
+        backgroundColor: '#f5f5f5',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 999,
+    },
+    todayButtonText: {
+        color: '#171717',
+        fontWeight: 'bold',
+        fontSize: 12,
+    },
+    dateLabel: {
+        color: '#a3a3a3',
+        fontWeight: '500',
+        marginBottom: 24,
+    },
+    dateStripContainer: {
+        marginBottom: 32,
+    },
+    navDateButton: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 56,
+        height: 80,
+        borderRadius: 16,
+        backgroundColor: '#fafafa',
+        borderWidth: 1,
+        borderColor: '#f5f5f5',
+        marginRight: 12,
+    },
+    dateButton: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 56,
+        height: 80,
+        borderRadius: 16,
+        marginRight: 12,
+    },
+    dateButtonNormal: {
+        backgroundColor: '#fafafa',
+        borderWidth: 1,
+        borderColor: '#f5f5f5',
+    },
+    dateButtonSelected: {
+        backgroundColor: 'black',
+    },
+    dateWeekday: {
+        fontSize: 10,
+        fontWeight: 'bold',
+        textTransform: 'uppercase',
+    },
+    dateDay: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginTop: 4,
+    },
+    textNeutral400: {
+        color: '#a3a3a3',
+    },
+    textNeutral900: {
+        color: '#171717',
+    },
+    textWhite: {
+        color: 'white',
+    },
+    stylistStripContainer: {
+        marginBottom: 32,
+    },
+    stylistPill: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 999,
+        marginRight: 12,
+        borderWidth: 1,
+    },
+    stylistPillNormal: {
+        backgroundColor: 'white',
+        borderColor: '#e5e5e5',
+    },
+    stylistPillSelected: {
+        backgroundColor: 'black',
+        borderColor: 'black',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 10,
+        elevation: 5,
+    },
+    pillAvatar: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        marginRight: 8,
+    },
+    pillAvatarPlaceholder: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 8,
+    },
+    bgNeutral800: {
+        backgroundColor: '#262626',
+    },
+    bgNeutral100: {
+        backgroundColor: '#f5f5f5',
+    },
+    pillText: {
+        fontWeight: '500',
+        fontSize: 14,
+    },
+    calendarBody: {
+        flexDirection: 'row',
+        minHeight: 600,
+    },
+    timeGutterLarge: {
+        width: 80,
+        borderRightWidth: 1,
+        borderRightColor: '#f5f5f5',
+    },
+    timeGutterMobile: {
+        width: 64,
+        borderRightWidth: 1,
+        borderRightColor: '#f5f5f5',
+    },
+    timeLabelSlot: {
+        height: 80,
+        position: 'relative',
+    },
+    timeLabelContainer: {
+        position: 'absolute',
+        top: -10,
+        backgroundColor: 'white',
+        paddingHorizontal: 4,
+        zIndex: 10,
+    },
+    timeLabelText: {
+        color: '#737373',
+        fontSize: 14,
+        fontWeight: 'bold',
+        textTransform: 'uppercase',
+        letterSpacing: -0.5,
+    },
+    stylistColumn: {
+        borderLeftWidth: 1,
+        borderLeftColor: '#f5f5f5',
+        flex: 1,
+    },
+    stylistColumnLarge: {
+        paddingHorizontal: 16,
+        minWidth: 300,
+    },
+    stylistColumnMobile: {
+        paddingHorizontal: 8,
+    },
+    stylistHeader: {
+        alignItems: 'center',
+        marginBottom: 24,
+    },
+    stylistAvatar: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        marginBottom: 8,
+        backgroundColor: '#f5f5f5',
+    },
+    stylistAvatarPlaceholder: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: '#e5e5e5',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 8,
+    },
+    stylistName: {
+        fontWeight: 'bold',
+        color: '#171717',
+        textAlign: 'center',
+    },
+    hourSlot: {
+        height: 80,
+        borderTopWidth: 1,
+        borderTopColor: '#fafafa',
+    },
+    bookingCard: {
+        position: 'absolute',
+        left: 4,
+        right: 4,
+        backgroundColor: '#171717',
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+        borderWidth: 1,
+        borderColor: 'rgba(0,0,0,0.1)',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+    },
+    bookingContent: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    bookingText: {
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: 14,
+        textAlign: 'center',
+    },
+    bookingService: {
+        color: '#e5e5e5',
+        fontWeight: '500',
+        fontSize: 12,
+    },
+    emptyState: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingTop: 80,
+    }
+});

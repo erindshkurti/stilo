@@ -59,6 +59,7 @@ function RootLayoutContent({ colorScheme }: { colorScheme: 'light' | 'dark' | nu
           <Stack.Screen name="business-signup" />
           <Stack.Screen name="business/onboarding" />
           <Stack.Screen name="business/dashboard" />
+          <Stack.Screen name="business/calendar" />
           <Stack.Screen name="business/profile" />
           <Stack.Screen name="profile" />
           <Stack.Screen name="bookings" />

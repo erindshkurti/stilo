@@ -4,7 +4,7 @@ import { Feather } from '@expo/vector-icons';
 import { db } from '@/lib/firebase';
 import { parseLocalBookingDate } from '@/lib/utils';
 import { doc, updateDoc } from 'firebase/firestore';
-import { useRouter } from 'expo-router';
+import { router } from 'expo-router';
 import { DatePicker } from './DatePicker';
 import { TimePicker } from './TimePicker';
 
@@ -33,7 +33,6 @@ interface Props {
 }
 
 export function BookingDetailModal({ visible, onClose, booking, onUpdate, isStylistView }: Props) {
-    const router = useRouter();
     const [isRescheduling, setIsRescheduling] = React.useState(false);
     const [resDate, setResDate] = React.useState('');
     const [resTime, setResTime] = React.useState('');

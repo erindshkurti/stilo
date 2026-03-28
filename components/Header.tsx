@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons';
-import { Link, useRouter } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Image, Text, TouchableOpacity, useWindowDimensions, View, Platform } from 'react-native';
 import { useAuth } from '../lib/auth';
@@ -16,7 +16,6 @@ interface HeaderProps {
 
 export function Header({ showBack = false, backHref, backLabel = 'Back' }: HeaderProps) {
     const { user } = useAuth();
-    const router = useRouter();
     let canGoBack = false;
     try {
         canGoBack = router.canGoBack();
