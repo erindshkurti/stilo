@@ -113,7 +113,7 @@ export default function EditBusinessDetailsScreen() {
                         <Text className={`font-bold mb-2 ${isLargeScreen ? 'text-3xl' : 'text-2xl'}`}>
                             Business Details
                         </Text>
-                        <Text className="text-neutral-600 mb-8">
+                        <Text className="text-neutral-600 mb-10">
                             Manage your business profile information
                         </Text>
 
@@ -122,9 +122,9 @@ export default function EditBusinessDetailsScreen() {
                                 <Text className="text-neutral-500">Loading...</Text>
                             </View>
                         ) : (
-                            <View className="space-y-4">
+                            <View>
                                 {/* Business Name */}
-                                <View>
+                                <View className="mb-6">
                                     <Text className="text-sm font-medium text-neutral-700 mb-2">Business Name *</Text>
                                     <TextInput
                                         value={businessName}
@@ -133,9 +133,9 @@ export default function EditBusinessDetailsScreen() {
                                         className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white"
                                     />
                                 </View>
-
+                                
                                 {/* Description */}
-                                <View>
+                                <View className="mb-6">
                                     <Text className="text-sm font-medium text-neutral-700 mb-2">Description</Text>
                                     <TextInput
                                         value={description}
@@ -149,7 +149,7 @@ export default function EditBusinessDetailsScreen() {
                                 </View>
 
                                 {/* Address */}
-                                <View>
+                                <View className="mb-6">
                                     <Text className="text-sm font-medium text-neutral-700 mb-2">Street Address *</Text>
                                     <TextInput
                                         value={address}
@@ -160,7 +160,7 @@ export default function EditBusinessDetailsScreen() {
                                 </View>
 
                                 {/* City, State, Zip */}
-                                <View className="flex-row gap-3">
+                                <View className="flex-row gap-3 mb-6">
                                     <View className="flex-1">
                                         <Text className="text-sm font-medium text-neutral-700 mb-2">City *</Text>
                                         <TextInput
@@ -195,7 +195,7 @@ export default function EditBusinessDetailsScreen() {
                                 </View>
 
                                 {/* Phone */}
-                                <View>
+                                <View className="mb-6">
                                     <Text className="text-sm font-medium text-neutral-700 mb-2">Phone</Text>
                                     <TextInput
                                         value={phone}
@@ -207,7 +207,7 @@ export default function EditBusinessDetailsScreen() {
                                 </View>
 
                                 {/* Email */}
-                                <View>
+                                <View className="mb-6">
                                     <Text className="text-sm font-medium text-neutral-700 mb-2">Email</Text>
                                     <TextInput
                                         value={email}
