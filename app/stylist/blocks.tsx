@@ -171,30 +171,38 @@ export default function StaffBlocksScreen() {
                         </View>
 
                         {/* Add/Edit Block Modal */}
-                        <Modal visible={showForm} transparent animationType="fade">
-                            <View className="flex-1 bg-black/40 justify-center items-center px-6">
-                                <View className="bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl">
-                                    <View className="flex-row justify-between items-center mb-6">
-                                        <Text className="text-2xl font-bold text-neutral-900">{editingBlockId ? 'Edit Block' : 'Add Block'}</Text>
-                                        <TouchableOpacity 
-                                            onPress={() => {
-                                                setShowForm(false);
-                                                setEditingBlockId(null);
-                                                setNewBlock({
-                                                    date: getLocalTodayStr(),
-                                                    start_time: '12:00',
-                                                    end_time: '13:00',
-                                                    reason: 'Lunch Break'
-                                                });
-                                            }}
-                                            className="p-2 bg-neutral-100 rounded-full"
-                                        >
-                                            <Feather name="x" size={20} color="#000" />
-                                        </TouchableOpacity>
-                                    </View>
-                                    
-                                    <View className="mb-4" style={{ zIndex: 20 }}>
-                                        <Text className="text-xs font-bold text-neutral-500 uppercase mb-2">Date</Text>
+                        <Modal 
+                            visible={showForm} 
+                            animationType="slide"
+                            presentationStyle="pageSheet"
+                            onRequestClose={() => {
+                                setShowForm(false);
+                                setEditingBlockId(null);
+                            }}
+                        >
+                            <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
+                                <View className="flex-row items-center justify-between px-6 py-4 border-b border-neutral-100">
+                                    <Text className="text-xl font-bold">{editingBlockId ? 'Edit Block' : 'Add Block'}</Text>
+                                    <TouchableOpacity 
+                                        onPress={() => {
+                                            setShowForm(false);
+                                            setEditingBlockId(null);
+                                            setNewBlock({
+                                                date: getLocalTodayStr(),
+                                                start_time: '12:00',
+                                                end_time: '13:00',
+                                                reason: 'Lunch Break'
+                                            });
+                                        }}
+                                        className="p-2 -mr-2"
+                                    >
+                                        <Feather name="x" size={24} color="#000" />
+                                    </TouchableOpacity>
+                                </View>
+                                
+                                <ScrollView className="flex-1 px-6 pt-8">
+                                    <View className="mb-6" style={{ zIndex: 30 }}>
+                                        <Text className="text-sm font-medium text-neutral-500 uppercase mb-2 tracking-wider">Date</Text>
                                         <DatePicker 
                                             isInline
                                             value={newBlock.date}
@@ -203,9 +211,9 @@ export default function StaffBlocksScreen() {
                                         />
                                     </View>
 
-                                    <View className="flex-row gap-4 mb-4" style={{ zIndex: 10 }}>
+                                    <View className="flex-row gap-4 mb-8" style={{ zIndex: 20 }}>
                                         <View className="flex-1">
-                                            <Text className="text-xs font-bold text-neutral-500 uppercase mb-2">Start Time</Text>
+                                            <Text className="text-sm font-medium text-neutral-500 uppercase mb-2 tracking-wider">Start Time</Text>
                                             <TimePicker 
                                                 isInline
                                                 value={newBlock.start_time}
@@ -214,7 +222,7 @@ export default function StaffBlocksScreen() {
                                             />
                                         </View>
                                         <View className="flex-1">
-                                            <Text className="text-xs font-bold text-neutral-500 uppercase mb-2">End Time</Text>
+                                            <Text className="text-sm font-medium text-neutral-500 uppercase mb-2 tracking-wider">End Time</Text>
                                             <TimePicker 
                                                 isInline
                                                 value={newBlock.end_time}
@@ -224,12 +232,12 @@ export default function StaffBlocksScreen() {
                                         </View>
                                     </View>
 
-                                    <View className="mb-8">
-                                        <Text className="text-xs font-bold text-neutral-500 uppercase mb-2">Reason</Text>
+                                    <View className="mb-10">
+                                        <Text className="text-sm font-medium text-neutral-500 uppercase mb-2 tracking-wider">Reason</Text>
                                         <TextInput 
                                             value={newBlock.reason}
                                             onChangeText={(t) => setNewBlock(prev => ({ ...prev, reason: t }))}
-                                            className="h-12 bg-white rounded-xl px-4 border border-neutral-200"
+                                            className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
                                             placeholder="Lunch Break, Off, etc."
                                         />
                                     </View>
@@ -237,18 +245,22 @@ export default function StaffBlocksScreen() {
                                     <TouchableOpacity 
                                         onPress={handleSaveBlock}
                                         disabled={saving}
-                                        className="bg-black py-4 rounded-2xl items-center"
+                                        className={`h-14 rounded-2xl flex-row items-center justify-center shadow-sm ${saving ? 'bg-neutral-200' : 'bg-black'}`}
                                     >
                                         {saving ? (
                                             <ActivityIndicator color="white" />
                                         ) : (
-                                            <Text className="text-white font-bold text-lg">
-                                                {editingBlockId ? 'Save Changes' : 'Add Block'}
-                                            </Text>
+                                            <>
+                                                <Feather name="check" size={20} color="white" />
+                                                <Text className="text-white font-bold ml-2 text-lg">
+                                                    {editingBlockId ? 'Save Changes' : 'Add Block'}
+                                                </Text>
+                                            </>
                                         )}
                                     </TouchableOpacity>
-                                </View>
-                            </View>
+                                    <View className="h-20" />
+                                </ScrollView>
+                            </SafeAreaView>
                         </Modal>
 
                         <View className="space-y-4">
