@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { FormInput } from '../../../components/FormInput';
 import { Header } from '../../../components/Header';
 import { useAuth } from '../../../lib/auth';
 import { db } from '../../../lib/firebase';
@@ -120,11 +121,10 @@ export default function EditBusinessDetailsScreen() {
                                 {/* Business Name */}
                                 <View className="mb-6">
                                     <Text className="text-sm font-medium text-neutral-700 mb-2">Business Name *</Text>
-                                    <TextInput
+                                    <FormInput
                                         value={businessName}
                                         onChangeText={setBusinessName}
                                         placeholder="Enter business name"
-                                        className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white"
                                     />
                                 </View>
                                 
@@ -145,11 +145,10 @@ export default function EditBusinessDetailsScreen() {
                                 {/* Address */}
                                 <View className="mb-6">
                                     <Text className="text-sm font-medium text-neutral-700 mb-2">Street Address *</Text>
-                                    <TextInput
+                                    <FormInput
                                         value={address}
                                         onChangeText={setAddress}
                                         placeholder="123 Main St"
-                                        className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white"
                                     />
                                 </View>
 
@@ -157,33 +156,30 @@ export default function EditBusinessDetailsScreen() {
                                 <View className="flex-row gap-3 mb-6">
                                     <View className="flex-1">
                                         <Text className="text-sm font-medium text-neutral-700 mb-2">City *</Text>
-                                        <TextInput
+                                        <FormInput
                                             value={city}
                                             onChangeText={setCity}
                                             placeholder="City"
-                                            className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white"
                                         />
                                     </View>
                                     <View style={{ width: 100 }}>
                                         <Text className="text-sm font-medium text-neutral-700 mb-2">State</Text>
-                                        <TextInput
+                                        <FormInput
                                             value={state}
                                             onChangeText={setState}
                                             placeholder="ST"
                                             maxLength={2}
                                             autoCapitalize="characters"
-                                            className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white"
                                         />
                                     </View>
                                     <View style={{ width: 100 }}>
                                         <Text className="text-sm font-medium text-neutral-700 mb-2">Zip</Text>
-                                        <TextInput
+                                        <FormInput
                                             value={zipCode}
                                             onChangeText={setZipCode}
                                             placeholder="12345"
                                             keyboardType="numeric"
                                             maxLength={5}
-                                            className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white"
                                         />
                                     </View>
                                 </View>
@@ -191,25 +187,23 @@ export default function EditBusinessDetailsScreen() {
                                 {/* Phone */}
                                 <View className="mb-6">
                                     <Text className="text-sm font-medium text-neutral-700 mb-2">Phone</Text>
-                                    <TextInput
+                                    <FormInput
                                         value={phone}
                                         onChangeText={setPhone}
                                         placeholder="(555) 123-4567"
                                         keyboardType="phone-pad"
-                                        className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white"
                                     />
                                 </View>
 
                                 {/* Email */}
                                 <View className="mb-6">
                                     <Text className="text-sm font-medium text-neutral-700 mb-2">Email</Text>
-                                    <TextInput
+                                    <FormInput
                                         value={email}
                                         onChangeText={setEmail}
                                         placeholder="business@example.com"
                                         keyboardType="email-address"
                                         autoCapitalize="none"
-                                        className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white"
                                     />
                                 </View>
 

@@ -17,6 +17,12 @@ interface HeaderProps {
 export function Header({ showBack = false, backHref, backLabel = 'Back' }: HeaderProps) {
     const { user } = useAuth();
     const router = useRouter();
+    let canGoBack = false;
+    try {
+        canGoBack = router.canGoBack();
+    } catch (e) {
+        // Navigation not ready
+    }
     const { width } = useWindowDimensions();
     const [menuOpen, setMenuOpen] = useState(false);
     const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);

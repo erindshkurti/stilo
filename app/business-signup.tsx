@@ -9,6 +9,7 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { GoogleAuthProvider, signInWithCredential, signInWithPopup, createUserWithEmailAndPassword } from 'firebase/auth';
 import { Button } from '../components/Button';
 import { GoogleLogo } from '../components/GoogleLogo';
+import { FormInput } from '../components/FormInput';
 import { Header } from '../components/Header';
 import { auth, db } from '../lib/firebase';
 
@@ -200,11 +201,10 @@ export default function BusinessSignUpScreen() {
                     <View>
                         <View className="mb-6">
                             <Text className="font-semibold text-base mb-2 px-1">Enter your business name</Text>
-                            <TextInput
+                            <FormInput
                                 placeholder="Business Name"
                                 value={businessName}
                                 onChangeText={updateBusinessName}
-                                className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-100 focus:border-neutral-300 text-base"
                             />
                         </View>
 
@@ -235,20 +235,19 @@ export default function BusinessSignUpScreen() {
                             </View>
 
                             <View>
-                                <TextInput
+                                <FormInput
                                     placeholder="Email"
                                     value={email}
                                     onChangeText={updateEmail}
                                     autoCapitalize="none"
                                     keyboardType="email-address"
-                                    className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-100 focus:border-neutral-300 text-base mb-4"
+                                    style={{ marginBottom: 16 }}
                                 />
-                                <TextInput
+                                <FormInput
                                     placeholder="Password"
                                     value={password}
                                     onChangeText={setPassword}
                                     secureTextEntry
-                                    className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-100 focus:border-neutral-300 text-base"
                                 />
                             </View>
                         </View>

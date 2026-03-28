@@ -9,6 +9,7 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { GoogleAuthProvider, signInWithCredential, signInWithEmailAndPassword, signInWithPopup, createUserWithEmailAndPassword } from 'firebase/auth';
 import { Button } from '../components/Button';
 import { GoogleLogo } from '../components/GoogleLogo';
+import { FormInput } from '../components/FormInput';
 import { Header } from '../components/Header';
 import { useAuth } from '../lib/auth';
 import { auth, db } from '../lib/firebase';
@@ -269,27 +270,26 @@ export default function SignInScreen() {
 
                         <View>
                             {isSignUp && (
-                                <TextInput
+                                <FormInput
                                     placeholder="Full Name"
                                     value={fullName}
                                     onChangeText={setFullName}
-                                    className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-100 focus:border-neutral-300 text-base mb-4"
+                                    style={{ marginBottom: 16 }}
                                 />
                             )}
-                            <TextInput
+                            <FormInput
                                 placeholder="Email"
                                 value={email}
                                 onChangeText={setEmail}
                                 autoCapitalize="none"
                                 keyboardType="email-address"
-                                className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-100 focus:border-neutral-300 text-base mb-4"
+                                style={{ marginBottom: 16 }}
                             />
-                            <TextInput
+                            <FormInput
                                 placeholder="Password"
                                 value={password}
                                 onChangeText={setPassword}
                                 secureTextEntry
-                                className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-100 focus:border-neutral-300 text-base"
                             />
                         </View>
 
