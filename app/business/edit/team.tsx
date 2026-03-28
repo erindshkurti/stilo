@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { Image, ScrollView, Text, TextInput, TouchableOpacity, View, useWindowDimensions, ActivityIndicator, Modal, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../../../components/Header';
+import { FormInput } from '../../../components/FormInput';
 import { useAuth } from '../../../lib/auth';
 import { db, storage } from '../../../lib/firebase';
 import { addDoc, collection, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
@@ -350,23 +351,21 @@ export default function EditTeamScreen() {
 
                         <View className="mb-5">
                             <Text className="text-sm font-medium text-neutral-700 mb-2">Stylist Name</Text>
-                            <TextInput
+                            <FormInput
                                 placeholder="e.g., Sarah Johnson"
                                 value={currentStylist.name}
                                 onChangeText={(value) => setCurrentStylist({ ...currentStylist, name: value })}
-                                className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
                             />
                         </View>
 
                         <View className="mb-5">
                             <Text className="text-sm font-medium text-neutral-700 mb-2">Email Address (Optional)</Text>
-                            <TextInput
+                            <FormInput
                                 placeholder="stylist@example.com"
                                 value={currentStylist.email}
                                 onChangeText={(value) => setCurrentStylist({ ...currentStylist, email: value })}
                                 autoCapitalize="none"
                                 keyboardType="email-address"
-                                className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
                             />
                             <Text className="text-xs text-neutral-500 mt-1">Linking an email allows the stylist to log in and manage their own schedule.</Text>
                         </View>

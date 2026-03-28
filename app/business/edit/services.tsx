@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, View, useWindowDimensions, ActivityIndicator, Modal, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../../../components/Header';
+import { FormInput } from '../../../components/FormInput';
 import { useAuth } from '../../../lib/auth';
 import { db } from '../../../lib/firebase';
 import { addDoc, collection, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
@@ -258,34 +259,31 @@ export default function EditServicesScreen() {
 
                             <View className="mb-6">
                                 <Text className="text-sm font-medium text-neutral-500 uppercase mb-2 tracking-wider">Service Name</Text>
-                                <TextInput
+                                <FormInput
                                     placeholder="e.g., Women's Haircut"
                                     value={currentService.name}
                                     onChangeText={(value) => setCurrentService({ ...currentService, name: value })}
-                                    className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
                                 />
                             </View>
 
                             <View className="flex-row gap-4 mb-6">
                                 <View className="flex-1">
                                     <Text className="text-sm font-medium text-neutral-500 uppercase mb-2 tracking-wider">Duration (min)</Text>
-                                    <TextInput
+                                    <FormInput
                                         placeholder="60"
                                         value={currentService.duration_minutes > 0 ? currentService.duration_minutes.toString() : ''}
                                         onChangeText={(value) => setCurrentService({ ...currentService, duration_minutes: parseInt(value) || 0 })}
                                         keyboardType="number-pad"
-                                        className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
                                     />
                                 </View>
 
                                 <View className="flex-1">
                                     <Text className="text-sm font-medium text-neutral-500 uppercase mb-2 tracking-wider">Price ($)</Text>
-                                    <TextInput
+                                    <FormInput
                                         placeholder="50"
                                         value={currentService.price > 0 ? currentService.price.toString() : ''}
                                         onChangeText={(value) => setCurrentService({ ...currentService, price: parseFloat(value) || 0 })}
                                         keyboardType="decimal-pad"
-                                        className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
                                     />
                                 </View>
                             </View>
