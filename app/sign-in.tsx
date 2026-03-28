@@ -237,7 +237,7 @@ export default function SignInScreen() {
 
     return (
         <View className="flex-1 bg-white">
-            <Header />
+            <Header showBack={true} />
 
             <ScrollView
                 contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 32 }}

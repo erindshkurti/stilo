@@ -129,18 +129,11 @@ export default function EditHoursScreen() {
 
     return (
         <SafeAreaView className="flex-1 bg-white">
-            <Header />
+            <Header showBack={true} backHref="/business/dashboard" backLabel="Dashboard" />
 
             <View className="flex-1">
                 <ScrollView className="flex-1">
                     <View className="px-6 py-4">
-                        <TouchableOpacity 
-                            onPress={() => router.back()}
-                            className="flex-row items-center mb-6"
-                        >
-                            <Feather name="arrow-left" size={20} color="#000" />
-                            <Text className="ml-2 font-bold text-neutral-900">Back</Text>
-                        </TouchableOpacity>
 
                         <Text className="text-3xl font-bold text-neutral-900 mb-2">Business Hours</Text>
                         <Text className="text-neutral-500 mb-8">Set the default operating hours for your business.</Text>

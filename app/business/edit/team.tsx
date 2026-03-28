@@ -205,17 +205,11 @@ export default function EditTeamScreen() {
 
     return (
         <SafeAreaView className="flex-1 bg-white">
-            <Header />
+            <Header showBack={true} backHref="/business/dashboard" backLabel="Dashboard" />
 
             <ScrollView className="flex-1">
                 <View className="px-6 py-8 items-center">
                     <View style={{ maxWidth, width: '100%' }}>
-                        <TouchableOpacity onPress={() => router.back()} className="mb-4">
-                            <View className="flex-row items-center">
-                                <Feather name="arrow-left" size={20} color="#000" />
-                                <Text className="ml-2 font-medium">Back to Dashboard</Text>
-                            </View>
-                        </TouchableOpacity>
 
                         <Text className={`font-bold mb-2 ${isLargeScreen ? 'text-3xl' : 'text-2xl'}`}>
                             Team Members

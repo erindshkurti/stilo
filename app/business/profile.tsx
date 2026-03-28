@@ -227,7 +227,7 @@ export default function BusinessSettings() {
 
     return (
         <SafeAreaView className="flex-1 bg-white">
-            <Header />
+            <Header showBack={true} backHref="/business/dashboard" backLabel="Dashboard" />
 
             <ScrollView className="flex-1">
                 <View className="px-6 py-8 items-center">

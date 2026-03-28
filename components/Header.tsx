@@ -8,7 +8,13 @@ import { signOut } from 'firebase/auth';
 import { doc, getDoc, getDocs, collection, query, where } from 'firebase/firestore';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export function Header() {
+interface HeaderProps {
+    showBack?: boolean;
+    backHref?: string;
+    backLabel?: string;
+}
+
+export function Header({ showBack = false, backHref, backLabel = 'Back' }: HeaderProps) {
     const { user } = useAuth();
     const router = useRouter();
     const { width } = useWindowDimensions();
@@ -158,12 +164,24 @@ export function Header() {
         <View className="bg-white border-b border-neutral-100" style={{ overflow: 'visible', zIndex: 50 }}>
             <View className="px-6 pb-4 pt-2" style={{ overflow: 'visible' }}>
                 <View className="flex-row items-center justify-between mx-auto w-full" style={{ overflow: 'visible', maxWidth: 1200 }}>
-                    {/* Logo */}
-                    <Link href="/" asChild>
-                        <TouchableOpacity onPress={() => setMenuOpen(false)}>
-                            <Text className="text-2xl font-bold text-neutral-900">Stilo</Text>
-                        </TouchableOpacity>
-                    </Link>
+                    {/* Navigation / Logo */}
+                    <View className="flex-row items-center">
+                        {showBack ? (
+                            <TouchableOpacity 
+                                onPress={() => backHref ? router.push(backHref as any) : router.back()}
+                                className="flex-row items-center py-2 -ml-2 px-2"
+                            >
+                                <Feather name="arrow-left" size={24} color="#000" />
+                                <Text className="ml-2 font-medium text-lg text-neutral-900">{backLabel}</Text>
+                            </TouchableOpacity>
+                        ) : (
+                            <Link href="/" asChild>
+                                <TouchableOpacity onPress={() => setMenuOpen(false)}>
+                                    <Text className="text-2xl font-bold text-neutral-900">Stilo</Text>
+                                </TouchableOpacity>
+                            </Link>
+                        )}
+                    </View>
 
                     {/* Desktop Navigation */}
                     {!isMobile && (

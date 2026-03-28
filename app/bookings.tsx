@@ -158,7 +158,7 @@ export default function BookingsScreen() {
     return (
         <SafeAreaView className="flex-1 bg-white">
             <View className="flex-1">
-                <Header />
+                <Header showBack={true} />
 
                 <ScrollView 
                     contentContainerStyle={{ flexGrow: 1 }} 
