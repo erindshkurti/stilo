@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ScrollView, Switch, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, ScrollView, Switch, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../../../components/Header';
 import { Toast } from '../../../components/Toast';
@@ -132,75 +132,87 @@ export default function EditHoursScreen() {
             <Header showBack={true} backHref="/business/dashboard" />
 
             <View className="flex-1">
-                <ScrollView className="flex-1">
-                    <View className="px-6 py-4">
+                <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+                    <View className="px-6 py-8 items-center">
+                        <View style={{ maxWidth, width: '100%' }}>
 
-                        <Text className="text-3xl font-bold text-neutral-900 mb-2">Business Hours</Text>
-                        <Text className="text-neutral-500 mb-8">Set the default operating hours for your business.</Text>
+                            <Text className={`font-bold mb-2 ${isLargeScreen ? 'text-3xl' : 'text-2xl'}`}>
+                                Business Hours
+                            </Text>
+                            <Text className="text-neutral-600 mb-8">
+                                Set the default operating hours for your business
+                            </Text>
 
-                        {loading ? (
-                            <Text className="text-neutral-500 text-center py-8">Loading...</Text>
-                        ) : (
-                            <>
-                                {hours.map((day, index) => (
-                                    <View 
-                                        key={index} 
-                                        className="bg-neutral-50 rounded-2xl p-4 mb-3"
-                                        style={{ zIndex: hours.length - index, overflow: 'visible' }}
-                                    >
-                                        <View className="flex-row items-center justify-between mb-3">
-                                            <Text className="font-semibold text-base">{day.day_name}</Text>
-                                            <View className="flex-row items-center">
-                                                <Text className="text-sm text-neutral-600 mr-2">
-                                                    {day.is_closed ? 'Closed' : 'Open'}
-                                                </Text>
-                                                <Switch
-                                                    value={!day.is_closed}
-                                                    onValueChange={() => toggleDay(index)}
-                                                    trackColor={{ false: '#d4d4d4', true: '#000000' }}
-                                                    thumbColor="#ffffff"
-                                                />
+                            {loading ? (
+                                <View className="items-center py-12">
+                                    <ActivityIndicator color="#000" />
+                                </View>
+                            ) : (
+                                <View className="space-y-3">
+                                    {hours.map((day, index) => (
+                                        <View 
+                                            key={index} 
+                                            className="bg-neutral-50 rounded-2xl p-5 mb-3 border border-neutral-100"
+                                        >
+                                            <View className="flex-row items-center justify-between mb-4">
+                                                <Text className="font-bold text-lg text-neutral-900">{day.day_name}</Text>
+                                                <View className="flex-row items-center">
+                                                    <Text className={`text-sm font-medium mr-3 ${day.is_closed ? 'text-neutral-400' : 'text-emerald-600'}`}>
+                                                        {day.is_closed ? 'CLOSED' : 'OPEN'}
+                                                    </Text>
+                                                    <Switch
+                                                        value={!day.is_closed}
+                                                        onValueChange={() => toggleDay(index)}
+                                                        trackColor={{ false: '#e5e5e5', true: '#10b981' }}
+                                                        thumbColor="#ffffff"
+                                                        ios_backgroundColor="#e5e5e5"
+                                                    />
+                                                </View>
                                             </View>
+
+                                            {!day.is_closed && (
+                                                <View className="flex-row items-center gap-4 bg-white p-4 rounded-xl border border-neutral-100">
+                                                    <View className="flex-1">
+                                                        <Text className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1">Open</Text>
+                                                        <Text className="text-lg font-semibold text-neutral-900">{day.open_time}</Text>
+                                                    </View>
+
+                                                    <View className="w-8 h-8 rounded-full bg-neutral-50 items-center justify-center">
+                                                        <Feather name="arrow-right" size={14} color="#a3a3a3" />
+                                                    </View>
+
+                                                    <View className="flex-1 items-end">
+                                                        <Text className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1">Close</Text>
+                                                        <Text className="text-lg font-semibold text-neutral-900">{day.close_time}</Text>
+                                                    </View>
+                                                </View>
+                                            )}
                                         </View>
-
-                                        {!day.is_closed && (
-                                            <View className="flex-row items-center gap-3">
-                                                <View className="flex-1">
-                                                    <Text className="text-xs text-neutral-600 mb-1">Open</Text>
-                                                    <View className="h-12 bg-white rounded-xl px-3 border border-neutral-200 justify-center">
-                                                        <Text className="text-base">{day.open_time}</Text>
-                                                    </View>
-                                                </View>
-
-                                                <Feather name="arrow-right" size={16} color="#737373" className="mt-5" />
-
-                                                <View className="flex-1">
-                                                    <Text className="text-xs text-neutral-600 mb-1">Close</Text>
-                                                    <View className="h-12 bg-white rounded-xl px-3 border border-neutral-200 justify-center">
-                                                        <Text className="text-base">{day.close_time}</Text>
-                                                    </View>
-                                                </View>
-                                            </View>
-                                        )}
-                                    </View>
-                                ))}
-                            </>
-                        )}
+                                    ))}
+                                </View>
+                            )}
+                        </View>
                     </View>
                 </ScrollView>
 
-                <View className="p-6 border-t border-neutral-100 bg-white">
-                    <TouchableOpacity
-                        onPress={handleSave}
-                        disabled={saving}
-                        className={`py-4 rounded-xl ${saving ? 'bg-neutral-300' : 'bg-black'}`}
-                    >
-                        <Text className="text-white font-medium text-center text-base">
-                            {saving ? 'Saving...' : 'Save Hours'}
-                        </Text>
-                    </TouchableOpacity>
+                <View className="p-6 border-t border-neutral-100 bg-white items-center">
+                    <View style={{ maxWidth, width: '100%' }}>
+                        <TouchableOpacity 
+                            onPress={handleSave} 
+                            disabled={saving}
+                            className={`py-4 rounded-2xl items-center justify-center shadow-lg ${saving ? 'bg-neutral-300' : 'bg-black'}`}
+                            activeOpacity={0.8}
+                        >
+                            {saving ? (
+                                <ActivityIndicator color="white" />
+                            ) : (
+                                <Text className="text-white font-bold text-lg">Save Hours</Text>
+                            )}
+                        </TouchableOpacity>
+                    </View>
                 </View>
             </View>
+
 
             <Toast 
                 visible={toast.visible} 
