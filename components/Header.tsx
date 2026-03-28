@@ -607,7 +607,7 @@ export function Header({ showBack = false, backHref, backLabel = 'Back' }: Heade
                                         <Link href="/bookings" asChild>
                                             <TouchableOpacity
                                                 onPress={() => setMenuOpen(false)}
-                                                className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100"
+                                                className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
                                             >
                                                 <View className="flex-row items-center">
                                                     <Feather name="calendar" size={18} color="#737373" />
@@ -619,7 +619,7 @@ export function Header({ showBack = false, backHref, backLabel = 'Back' }: Heade
                                         <Link href="/profile" asChild>
                                             <TouchableOpacity
                                                 onPress={() => setMenuOpen(false)}
-                                                className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100"
+                                                className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
                                             >
                                                 <View className="flex-row items-center">
                                                     <Feather name="user" size={18} color="#737373" />
@@ -635,7 +635,7 @@ export function Header({ showBack = false, backHref, backLabel = 'Back' }: Heade
                                         setMenuOpen(false);
                                         handleSignOut();
                                     }}
-                                    className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100"
+                                    className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
                                 >
                                     <View className="flex-row items-center">
                                         <Feather name="log-out" size={18} color="#737373" />
