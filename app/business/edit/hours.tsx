@@ -5,6 +5,7 @@ import { ActivityIndicator, ScrollView, Switch, Text, TouchableOpacity, View, us
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../../../components/Header';
 import { Toast } from '../../../components/Toast';
+import { TimePicker } from '../../../components/TimePicker';
 import { useAuth } from '../../../lib/auth';
 import { db } from '../../../lib/firebase';
 import { addDoc, collection, deleteDoc, getDocs, orderBy, query, where } from 'firebase/firestore';
@@ -95,6 +96,12 @@ export default function EditHoursScreen() {
         setHours(newHours);
     };
 
+    const updateTime = (dayIndex: number, field: 'open_time' | 'close_time', time: string) => {
+        const newHours = [...hours];
+        newHours[dayIndex][field] = time;
+        setHours(newHours);
+    };
+
     const handleSave = async () => {
         if (!business) return;
         setSaving(true);
@@ -152,18 +159,18 @@ export default function EditHoursScreen() {
                                     {hours.map((day, index) => (
                                         <View 
                                             key={index} 
-                                            className="bg-neutral-50 rounded-2xl p-5 mb-3 border border-neutral-100"
+                                            className="bg-neutral-50 rounded-2xl p-4 mb-3"
                                         >
-                                            <View className="flex-row items-center justify-between mb-4">
-                                                <Text className="font-bold text-lg text-neutral-900">{day.day_name}</Text>
+                                            <View className="flex-row items-center justify-between mb-3">
+                                                <Text className="font-semibold text-base text-neutral-900">{day.day_name}</Text>
                                                 <View className="flex-row items-center">
-                                                    <Text className={`text-sm font-medium mr-3 ${day.is_closed ? 'text-neutral-400' : 'text-emerald-600'}`}>
+                                                    <Text className="text-sm text-neutral-600 mr-2">
                                                         {day.is_closed ? 'CLOSED' : 'OPEN'}
                                                     </Text>
                                                     <Switch
                                                         value={!day.is_closed}
                                                         onValueChange={() => toggleDay(index)}
-                                                        trackColor={{ false: '#e5e5e5', true: '#10b981' }}
+                                                        trackColor={{ false: '#d4d4d4', true: '#000000' }}
                                                         thumbColor="#ffffff"
                                                         ios_backgroundColor="#e5e5e5"
                                                     />
@@ -171,19 +178,29 @@ export default function EditHoursScreen() {
                                             </View>
 
                                             {!day.is_closed && (
-                                                <View className="flex-row items-center gap-4 bg-white p-4 rounded-xl border border-neutral-100">
+                                                <View className="flex-row items-center gap-3">
                                                     <View className="flex-1">
-                                                        <Text className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1">Open</Text>
-                                                        <Text className="text-lg font-semibold text-neutral-900">{day.open_time}</Text>
+                                                        <Text className="text-xs text-neutral-600 mb-1">Start</Text>
+                                                        <View className="h-12 bg-white rounded-xl px-3 border border-neutral-200 justify-center">
+                                                            <TimePicker 
+                                                                value={day.open_time} 
+                                                                onChange={(t) => updateTime(index, 'open_time', t)} 
+                                                            />
+                                                        </View>
                                                     </View>
 
-                                                    <View className="w-8 h-8 rounded-full bg-neutral-50 items-center justify-center">
-                                                        <Feather name="arrow-right" size={14} color="#a3a3a3" />
+                                                    <View className="mt-5">
+                                                        <Feather name="arrow-right" size={16} color="#737373" />
                                                     </View>
 
-                                                    <View className="flex-1 items-end">
-                                                        <Text className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1">Close</Text>
-                                                        <Text className="text-lg font-semibold text-neutral-900">{day.close_time}</Text>
+                                                    <View className="flex-1">
+                                                        <Text className="text-xs text-neutral-600 mb-1">End</Text>
+                                                        <View className="h-12 bg-white rounded-xl px-3 border border-neutral-200 justify-center">
+                                                            <TimePicker 
+                                                                value={day.close_time} 
+                                                                onChange={(t) => updateTime(index, 'close_time', t)} 
+                                                            />
+                                                        </View>
                                                     </View>
                                                 </View>
                                             )}
@@ -200,13 +217,13 @@ export default function EditHoursScreen() {
                         <TouchableOpacity 
                             onPress={handleSave} 
                             disabled={saving}
-                            className={`py-4 rounded-2xl items-center justify-center shadow-lg ${saving ? 'bg-neutral-300' : 'bg-black'}`}
+                            className={`py-4 rounded-xl items-center justify-center ${saving ? 'bg-neutral-300' : 'bg-black'}`}
                             activeOpacity={0.8}
                         >
                             {saving ? (
                                 <ActivityIndicator color="white" />
                             ) : (
-                                <Text className="text-white font-bold text-lg">Save Hours</Text>
+                                <Text className="text-white font-medium text-center text-base">Save Hours</Text>
                             )}
                         </TouchableOpacity>
                     </View>

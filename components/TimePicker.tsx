@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import React, { useState, useCallback, useMemo } from 'react';
-import { Platform, FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { Platform, FlatList, Text, TouchableOpacity, View, Modal, SafeAreaView } from 'react-native';
 
 const TIMES: string[] = (() => {
     const times: string[] = [];
@@ -19,10 +19,11 @@ interface TimePickerProps {
     placeholder?: string;
     className?: string;
     isInline?: boolean;
+    showChevron?: boolean;
     [key: string]: any;
 }
 
-export function TimePicker({ value, onChange, placeholder, className, isInline, ...props }: TimePickerProps) {
+export function TimePicker({ value, onChange, placeholder, className, isInline, showChevron = false, ...props }: TimePickerProps) {
     const [isOpen, setIsOpen] = useState(false);
 
     const valueIndex = useMemo(() => TIMES.indexOf(value), [value]);
@@ -35,63 +36,66 @@ export function TimePicker({ value, onChange, placeholder, className, isInline, 
     const renderItem = useCallback(({ item: t }: { item: string }) => (
         <TouchableOpacity
             onPress={() => handleSelect(t)}
-            className={`h-12 px-4 justify-center border-b border-neutral-50 ${value === t ? 'bg-neutral-50' : ''}`}
+            className={`h-16 px-6 justify-center border-b border-neutral-50 ${value === t ? 'bg-neutral-50' : ''}`}
         >
-            <Text className={`text-center ${value === t ? 'font-bold text-black' : 'text-neutral-600'}`}>
+            <Text className={`text-center text-xl ${value === t ? 'font-bold text-black' : 'text-neutral-500 font-medium'}`}>
                 {t}
             </Text>
         </TouchableOpacity>
     ), [value, handleSelect]);
 
     const getItemLayout = useCallback((data: any, index: number) => ({
-        length: 48,
-        offset: 48 * index,
+        length: 64,
+        offset: 64 * index,
         index
     }), []);
 
     return (
-        <View className={`relative ${isInline ? '' : 'flex-1'} ${className}`} style={{ zIndex: isOpen ? 1000 : 1 }}>
+        <View className={`${isInline ? '' : 'flex-1'} ${className}`}>
             <TouchableOpacity
-                onPress={() => setIsOpen(!isOpen)}
-                className={`w-full ${isInline ? 'h-12 bg-neutral-50 rounded-xl px-4 border border-neutral-200' : 'h-full'} justify-center`}
+                onPress={() => setIsOpen(true)}
+                className={`w-full ${isInline ? 'h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200' : 'h-full'} justify-center`}
                 activeOpacity={0.7}
             >
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: isInline ? 'space-between' : 'flex-start' }}>
                     <Text 
-                        style={{ fontSize: 16, color: value ? '#000' : '#a3a3a3' }}
+                        className={`text-lg font-semibold ${value ? 'text-neutral-900' : 'text-neutral-400'}`}
                         numberOfLines={1}
                     >
                         {value || placeholder || "Select Time"}
                     </Text>
-                    <Feather name="chevron-down" size={16} color="#a3a3a3" />
+                    {showChevron && <Feather name="chevron-down" size={16} color="#a3a3a3" className="ml-2" />}
                 </View>
             </TouchableOpacity>
 
-            {isOpen && (
-                <>
-                    {!isInline && (
-                        <TouchableOpacity
-                            activeOpacity={1}
-                            className="absolute w-[9999px] h-[9999px] top-[-5000px] left-[-5000px] bg-transparent"
-                            style={Platform.OS === 'web' ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 40 } as any : { zIndex: 40 }}
+            <Modal
+                visible={isOpen}
+                animationType="slide"
+                presentationStyle="pageSheet"
+                onRequestClose={() => setIsOpen(false)}
+            >
+                <SafeAreaView className="flex-1 bg-white">
+                    <View className="h-16 flex-row items-center justify-between px-6 border-b border-neutral-100">
+                        <Text className="text-xl font-bold text-neutral-900">Select Time</Text>
+                        <TouchableOpacity 
                             onPress={() => setIsOpen(false)}
-                        />
-                    )}
-
-                    <View className="absolute top-full left-0 mt-1 w-full max-h-60 bg-white rounded-xl shadow-xl border border-neutral-200 overflow-hidden z-50">
-                        <FlatList 
-                            data={TIMES}
-                            keyExtractor={(t) => t}
-                            initialScrollIndex={valueIndex !== -1 ? valueIndex : 0}
-                            getItemLayout={getItemLayout}
-                            renderItem={renderItem}
-                            showsVerticalScrollIndicator={false}
-                            initialNumToRender={48} // Render enough to cover the list
-                            windowSize={1} // Keep window small since all items are rendered
-                        />
+                            className="h-10 w-10 items-center justify-center rounded-full bg-neutral-100"
+                        >
+                            <Feather name="x" size={20} color="#171717" />
+                        </TouchableOpacity>
                     </View>
-                </>
-            )}
+                    
+                    <FlatList 
+                        data={TIMES}
+                        keyExtractor={(t) => t}
+                        initialScrollIndex={valueIndex !== -1 ? Math.max(0, valueIndex - 2) : 0}
+                        getItemLayout={getItemLayout}
+                        renderItem={renderItem}
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={{ paddingVertical: 10 }}
+                    />
+                </SafeAreaView>
+            </Modal>
         </View>
     );
 }
