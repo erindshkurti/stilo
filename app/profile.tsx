@@ -172,7 +172,7 @@ export default function ProfileScreen() {
     }
 
     return (
-        <View className="flex-1 bg-white">
+        <SafeAreaView className="flex-1 bg-white">
             <Header />
 
             <View className="flex-1">
@@ -286,6 +286,6 @@ export default function ProfileScreen() {
                 type={alertConfig.type}
                 onConfirm={() => setShowAlertModal(false)}
             />
-        </View>
+        </SafeAreaView>
     );
 }

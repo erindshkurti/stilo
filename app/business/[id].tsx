@@ -3,7 +3,7 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import * as Linking from 'expo-linking';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Modal, ScrollView, Share, Text, TouchableOpacity, View, useWindowDimensions, Alert, Platform } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Header } from '../../components/Header';
 import { useAuth } from '../../lib/auth';
 import { db } from '../../lib/firebase';
@@ -168,7 +168,7 @@ export default function BusinessPage() {
     }
 
     return (
-        <View className="flex-1 bg-white">
+        <SafeAreaView className="flex-1 bg-white">
             <Stack.Screen options={{ headerShown: false }} />
             <Header />
 
@@ -522,6 +522,6 @@ export default function BusinessPage() {
                 cancelLabel={alertConfig.cancelLabel}
                 onCancel={alertConfig.onCancel}
             />
-        </View>
+        </SafeAreaView>
     );
 }

@@ -156,7 +156,7 @@ export default function BookingsScreen() {
     }
 
     return (
-        <View className="flex-1 bg-white">
+        <SafeAreaView className="flex-1 bg-white">
             <View className="flex-1">
                 <Header />
 
@@ -330,6 +330,6 @@ export default function BookingsScreen() {
                     </View>
                 </View>
             </Modal>
-        </View>
+        </SafeAreaView>
     );
 }

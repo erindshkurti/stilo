@@ -155,7 +155,7 @@ export function Header() {
     }, [profileDropdownOpen, businessDropdownOpen]);
 
     return (
-        <View className="bg-white border-b border-neutral-100" style={{ overflow: 'visible', zIndex: 50, paddingTop: Platform.OS === 'ios' ? insets.top : 0 }}>
+        <View className="bg-white border-b border-neutral-100" style={{ overflow: 'visible', zIndex: 50 }}>
             <View className="px-6 pb-4 pt-2" style={{ overflow: 'visible' }}>
                 <View className="flex-row items-center justify-between mx-auto w-full" style={{ overflow: 'visible', maxWidth: 1200 }}>
                     {/* Logo */}

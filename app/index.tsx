@@ -248,7 +248,7 @@ export default function LandingPage() {
     }));
 
     return (
-        <View className="flex-1" style={{ flex: 1, backgroundColor: 'white' }}>
+        <SafeAreaView className="flex-1 bg-white" style={{ flex: 1, backgroundColor: 'white' }}>
             <LinearGradient
                 colors={['#ffffff', '#f3f4f6', '#ffffff']}
                 start={{ x: 0, y: 0 }}
@@ -444,6 +444,6 @@ export default function LandingPage() {
                     </ScrollView>
                 </View>
             </LinearGradient>
-        </View>
+        </SafeAreaView>
     );
 }
