@@ -272,7 +272,7 @@ export default function BusinessSignUpScreen() {
                             onPress={() => router.push('/sign-in')}
                             className="items-center mt-4 py-2"
                         >
-                            <Text className={`text-neutral-500 ${isLargeScreen ? 'text-base' : 'text-sm'}`}>
+                            <Text className="text-neutral-500 text-base">
                                 Already have an account?
                                 <Text className="font-semibold text-black"> Sign in</Text>
                             </Text>

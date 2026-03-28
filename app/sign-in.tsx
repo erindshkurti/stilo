@@ -320,7 +320,7 @@ export default function SignInScreen() {
                             onPress={() => setIsSignUp(!isSignUp)}
                             className="items-center mt-4 py-2"
                         >
-                            <Text className={`text-neutral-500 ${isLargeScreen ? 'text-base' : 'text-sm'}`}>
+                            <Text className="text-neutral-500 text-base">
                                 {isSignUp ? "Already have an account? " : "Don't have an account? "}
                                 <Text className="font-semibold text-black">
                                     {isSignUp ? "Sign in" : "Sign up"}
@@ -335,7 +335,7 @@ export default function SignInScreen() {
                                     onPress={() => router.push('/business-signup')}
                                     className="items-center py-3"
                                 >
-                                    <Text className="text-neutral-600 text-center">
+                                    <Text className="text-neutral-600 text-center text-base">
                                         Want to list your business?{' '}
                                         <Text className="font-semibold text-black">Create a business account</Text>
                                     </Text>
