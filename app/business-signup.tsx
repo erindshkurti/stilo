@@ -213,7 +213,7 @@ export default function BusinessSignUpScreen() {
 
                             {/* Google Auth Error Display */}
                             {googleError && (
-                                <View className="mb-3 bg-red-50 border border-red-200 rounded-xl p-3">
+                                <View className="mb-4 bg-red-50 border border-red-200 rounded-xl p-3">
                                     <View className="flex-row items-center">
                                         <Feather name="alert-circle" size={18} color="#dc2626" />
                                         <Text className="text-red-600 ml-2 flex-1 text-sm">{googleError}</Text>
@@ -255,7 +255,7 @@ export default function BusinessSignUpScreen() {
 
                         {/* Email Form Error Display */}
                         {formError && (
-                            <View className="mb-4 bg-red-50 border border-red-200 rounded-xl p-4">
+                            <View className="my-4 bg-red-50 border border-red-200 rounded-xl p-4">
                                 <View className="flex-row items-center">
                                     <Feather name="alert-circle" size={20} color="#dc2626" />
                                     <Text className="text-red-600 ml-3 flex-1">{formError}</Text>

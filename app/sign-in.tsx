@@ -295,7 +295,7 @@ export default function SignInScreen() {
 
                         {/* Error Message - Right above the action button */}
                         {error ? (
-                            <View className="bg-red-50 border border-red-300 rounded-xl p-4 flex-row items-center">
+                            <View className="bg-red-50 border border-red-300 rounded-xl p-4 flex-row items-center my-4">
                                 <View className="w-6 h-6 bg-red-500 rounded-full items-center justify-center mr-3">
                                     <Text className="text-white text-sm font-bold">✕</Text>
                                 </View>
