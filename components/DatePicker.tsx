@@ -91,7 +91,7 @@ export function DatePicker({ value, onChange, placeholder, className, isInline, 
             <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => setIsOpen(!isOpen)}
-                className={`w-full ${isInline ? 'h-12 rounded-xl border-neutral-200' : 'h-14 rounded-2xl border-neutral-200'} ${isOpen ? 'border-neutral-900 bg-white' : 'border-neutral-200 bg-neutral-50'} border`}
+                className={`w-full h-14 rounded-2xl ${isOpen ? 'border-neutral-900 bg-white' : 'border-neutral-200 bg-neutral-50'} border`}
                 style={{ paddingHorizontal: 16 }}
             >
                 <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>

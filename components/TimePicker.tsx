@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import React, { useState, useEffect, useRef } from 'react';
-import { Platform, ScrollView, Text, TouchableOpacity, View, Modal, SafeAreaView } from 'react-native';
+import { Platform, ScrollView, Text, TouchableOpacity, View, Modal } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const TIMES: string[] = (() => {
     const times: string[] = [];
@@ -46,7 +47,7 @@ export function TimePicker({ value, onChange, placeholder, className, isInline, 
         <View className={`${isInline ? '' : 'flex-1'} ${className}`}>
             <TouchableOpacity
                 onPress={() => setIsOpen(true)}
-                className={`w-full ${isInline ? 'h-12 bg-neutral-50 rounded-xl px-4 border border-neutral-200' : 'h-full'} justify-center`}
+                className={`w-full ${isInline ? 'h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200' : 'h-full'} justify-center`}
                 activeOpacity={0.7}
             >
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: isInline ? 'space-between' : 'flex-start' }}>

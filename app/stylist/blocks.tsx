@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View, useWindowDimensions, ActivityIndicator, Alert, TextInput, Modal } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View, useWindowDimensions, ActivityIndicator, Alert, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../../components/Header';
 import { useAuth } from '../../lib/auth';
@@ -11,6 +11,7 @@ import { AlertModal } from '../../components/AlertModal';
 import { DatePicker } from '../../components/DatePicker';
 import { TimePicker } from '../../components/TimePicker';
 import { getLocalTodayStr } from '@/lib/utils';
+import { FormInput } from '../../components/FormInput';
 
 interface Block {
     id: string;
@@ -234,10 +235,9 @@ export default function StaffBlocksScreen() {
 
                                     <View className="mb-10">
                                         <Text className="text-sm font-medium text-neutral-500 uppercase mb-2 tracking-wider">Reason</Text>
-                                        <TextInput 
+                                        <FormInput 
                                             value={newBlock.reason}
                                             onChangeText={(t) => setNewBlock(prev => ({ ...prev, reason: t }))}
-                                            className="h-14 bg-neutral-50 rounded-2xl px-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
                                             placeholder="Lunch Break, Off, etc."
                                         />
                                     </View>
