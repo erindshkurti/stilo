@@ -177,15 +177,15 @@ export default function ProfileScreen() {
 
             <View className="flex-1">
                 <ScrollView className="flex-1">
-                    <View className="px-6 py-4 items-center">
+                    <View className="px-6 pt-8 pb-4 items-center">
                         <View style={{ maxWidth: containerMaxWidth, width: '100%' }}>
                             <Text className={`font-bold mb-2 ${isLargeScreen ? 'text-4xl' : 'text-3xl'}`}>
                                 Profile
                             </Text>
-                            <Text className="text-neutral-500 mb-8">Manage your personal information and account settings.</Text>
+                            <Text className="text-neutral-500 mb-6">Manage your personal information and account settings.</Text>
 
                             {/* Avatar Upload */}
-                            <View className="items-center mb-8">
+                            <View className="items-center mb-6">
                                 <TouchableOpacity 
                                     onPress={pickImage} 
                                     disabled={uploadingAvatar}
@@ -211,9 +211,9 @@ export default function ProfileScreen() {
                                 <Text className="text-neutral-500 text-sm mt-2">Tap to change profile picture</Text>
                             </View>
 
-                            <View className="space-y-6">
-                                <View>
-                                    <Text className="font-semibold text-neutral-900 mb-2 px-1">Email</Text>
+                            <View>
+                                <View className="mb-6">
+                                    <Text className="font-semibold text-neutral-900 mb-1.5 px-1">Email</Text>
                                     <TextInput
                                         value={email}
                                         editable={false}
@@ -222,8 +222,8 @@ export default function ProfileScreen() {
                                     <Text className="text-neutral-500 text-xs mt-2 px-1">Email cannot be changed natively at this time.</Text>
                                 </View>
 
-                                <View>
-                                    <Text className="font-semibold text-neutral-900 mb-2 px-1">Full Name</Text>
+                                <View className="mb-6">
+                                    <Text className="font-semibold text-neutral-900 mb-1.5 px-1">Full Name</Text>
                                     <TextInput
                                         placeholder="Enter your full name"
                                         value={displayName}
@@ -232,8 +232,8 @@ export default function ProfileScreen() {
                                     />
                                 </View>
 
-                                <View>
-                                    <Text className="font-semibold text-neutral-900 mb-2 px-1">Phone Number</Text>
+                                <View className="mb-6">
+                                    <Text className="font-semibold text-neutral-900 mb-1.5 px-1">Phone Number</Text>
                                     <TextInput
                                         placeholder="Enter your phone number"
                                         value={phone}
@@ -244,8 +244,8 @@ export default function ProfileScreen() {
                                 </View>
 
                                 {businessName && (
-                                    <View>
-                                        <Text className="font-semibold text-neutral-900 mb-2 px-1">Business Association</Text>
+                                    <View className="mb-6">
+                                        <Text className="font-semibold text-neutral-900 mb-1.5 px-1">Business Association</Text>
                                         <View className="h-14 bg-neutral-100 rounded-2xl px-4 border border-neutral-200 justify-center">
                                             <Text className="text-neutral-600 text-base font-medium">
                                                 {businessName}
@@ -261,7 +261,7 @@ export default function ProfileScreen() {
                     </View>
                 </ScrollView>
 
-                <View className="p-6 border-t border-neutral-100 bg-white items-center">
+                <View className="p-5 border-t border-neutral-100 bg-white items-center">
                     <View style={{ width: '100%', maxWidth: containerMaxWidth }}>
                         <Button
                             label={saving ? "Saving..." : "Save Profile"}
