@@ -302,7 +302,11 @@ export default function SearchScreen() {
                             </TouchableOpacity>
                         </View>
 
-                        <ScrollView className="flex-1 p-6" keyboardShouldPersistTaps="handled">
+                        <ScrollView 
+                            className="flex-1 p-6" 
+                            contentContainerStyle={{ paddingBottom: 350 }}
+                            keyboardShouldPersistTaps="handled"
+                        >
                             <View className="gap-8 flex-col">
                                 {/* Location */}
                                 <View style={{ zIndex: 30 }}>

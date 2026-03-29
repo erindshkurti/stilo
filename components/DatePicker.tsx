@@ -59,7 +59,7 @@ export function DatePicker({ value, onChange, placeholder, className, isInline, 
         const days = [];
         // Empty slots for startDay
         for (let i = 0; i < startDay; i++) {
-            days.push(<View key={`empty-${i}`} className="w-[14.28%] aspect-square" />);
+            days.push(<View key={`empty-start-${i}`} className="w-[14.28%] h-9" />);
         }
         // Actual days
         for (let i = 1; i <= daysInMonth; i++) {
@@ -73,7 +73,7 @@ export function DatePicker({ value, onChange, placeholder, className, isInline, 
                 <TouchableOpacity
                     key={i}
                     onPress={() => handleDaySelect(i)}
-                    className={`w-[14.28%] aspect-square items-center justify-center rounded-full mb-1 ${isSelected ? 'bg-black' : isToday ? 'bg-neutral-100' : ''
+                    className={`w-[14.28%] h-9 items-center justify-center rounded-full mb-1 ${isSelected ? 'bg-black' : isToday ? 'bg-neutral-100' : ''
                         }`}
                 >
                     <Text className={`text-sm ${isSelected ? 'text-white font-medium' : isToday ? 'text-neutral-900 font-medium' : 'text-neutral-700'}`}>
@@ -82,6 +82,7 @@ export function DatePicker({ value, onChange, placeholder, className, isInline, 
                 </TouchableOpacity>
             );
         }
+
         return days;
     };
 
@@ -153,9 +154,9 @@ export function DatePicker({ value, onChange, placeholder, className, isInline, 
                             {/* Clear Button */}
                             <TouchableOpacity
                                 onPress={() => { onChange(''); setIsOpen(false); }}
-                                className="mt-4 py-2 bg-neutral-100 rounded-lg items-center"
+                                className="mt-4 py-3 bg-neutral-100 rounded-lg items-center"
                             >
-                                <Text className="text-xs font-semibold text-neutral-600">Clear Date</Text>
+                                <Text className="text-sm font-semibold text-neutral-600">Clear Date</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
