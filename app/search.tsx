@@ -303,7 +303,7 @@ export default function SearchScreen() {
                         </View>
 
                         <ScrollView className="flex-1 p-6" keyboardShouldPersistTaps="handled">
-                            <View className="space-y-6">
+                            <View className="gap-8 flex-col">
                                 {/* Location */}
                                 <View style={{ zIndex: 30 }}>
                                     <Text className="font-semibold text-lg mb-3">Where to?</Text>
