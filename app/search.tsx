@@ -312,7 +312,7 @@ export default function SearchScreen() {
                                 <View style={{ zIndex: 30 }}>
                                     <Text className="font-semibold text-lg mb-3">Where to?</Text>
                                     <AutocompleteInput
-                                        placeholder="City, zip code, or neighborhood"
+                                        placeholder="City"
                                         value={location}
                                         onChangeText={setLocation}
                                         suggestions={locationSuggestions}

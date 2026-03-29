@@ -291,7 +291,7 @@ export default function LandingPage() {
                                             style={{ zIndex: 30 }}
                                         >
                                             <AutocompleteInput
-                                                placeholder="Location"
+                                                placeholder="City"
                                                 value={location}
                                                 onChangeText={setLocation}
                                                 suggestions={locationSuggestions}
