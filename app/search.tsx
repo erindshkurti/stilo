@@ -155,7 +155,7 @@ export default function SearchScreen() {
     return (
         <SafeAreaView className="flex-1 bg-white">
             <View className="flex-1">
-                <Header />
+                <Header showBack={true} />
 
                 {/* Filter Bar */}
                 <View className="bg-white pt-2 border-b border-neutral-100 pb-2 px-6 md:px-8" style={{ zIndex: 100 }}>
