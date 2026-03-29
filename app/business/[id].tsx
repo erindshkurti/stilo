@@ -251,17 +251,17 @@ export default function BusinessPage() {
                             <View className="bg-white rounded-2xl shadow-sm border border-neutral-100 p-6">
                                 <View className="flex-row justify-between items-center">
                                     <View className="flex-1 mr-4">
-                                        <Text className="text-2xl font-bold text-neutral-900 mb-2">{business.name}</Text>
+                                        <Text className="text-3xl font-bold text-neutral-900 mb-2">{business.name}</Text>
                                         <View className="flex-row items-center mb-1">
-                                            <Feather name="map-pin" size={14} color="#737373" />
-                                            <Text className="text-neutral-600 ml-1 text-sm">
+                                            <Feather name="map-pin" size={16} color="#737373" />
+                                            <Text className="text-neutral-600 ml-1 text-base">
                                                 {business.address}, {business.city}
                                             </Text>
                                         </View>
                                         <View className="flex-row items-center">
-                                            <Feather name="star" size={16} color="#F59E0B" fill="#F59E0B" />
-                                            <Text className="font-bold ml-1 text-neutral-900">{business.rating?.toFixed(1) || 'New'}</Text>
-                                            <Text className="text-neutral-500 ml-1">({business.review_count || 0} reviews)</Text>
+                                            <Feather name="star" size={18} color="#F59E0B" fill="#F59E0B" />
+                                            <Text className="font-bold ml-1 text-base text-neutral-900">{business.rating?.toFixed(1) || 'New'}</Text>
+                                            <Text className="text-neutral-500 ml-1 text-base">({business.review_count || 0} reviews)</Text>
                                         </View>
                                     </View>
 
@@ -293,7 +293,7 @@ export default function BusinessPage() {
 
                                 {/* Description */}
                                 {!!business.description && (
-                                    <Text className="mt-4 text-neutral-600 leading-6" numberOfLines={3}>
+                                    <Text className="mt-4 text-neutral-600 text-base leading-6" numberOfLines={3}>
                                         {business.description}
                                     </Text>
                                 )}
@@ -304,9 +304,9 @@ export default function BusinessPage() {
                         {portfolio.length > 0 && (
                             <View className="mt-8">
                                 <View className="px-6 flex-row justify-between items-center mb-4">
-                                    <Text className="text-lg font-bold text-neutral-900">Portfolio</Text>
+                                    <Text className="text-xl font-bold text-neutral-900">Portfolio</Text>
                                     <TouchableOpacity>
-                                        <Text className="text-neutral-500 font-medium">See all</Text>
+                                        <Text className="text-neutral-500 font-medium text-base">See all</Text>
                                     </TouchableOpacity>
                                 </View>
                                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 24, gap: 12 }}>
@@ -325,22 +325,22 @@ export default function BusinessPage() {
 
                         {/* Services */}
                         <View className="mt-8 px-6">
-                            <Text className="text-lg font-bold text-neutral-900 mb-4">Services</Text>
+                            <Text className="text-xl font-bold text-neutral-900 mb-4">Services</Text>
                             <View className={isLargeScreen ? "flex-row flex-wrap -mx-2" : "gap-y-4"}>
                                 {services.map((service) => (
                                     <View key={service.id} className={isLargeScreen ? "w-1/2 p-2" : ""}>
                                         <View className="flex-row justify-between items-center p-4 bg-neutral-50 rounded-xl border border-neutral-100">
                                             <View className="flex-1 mr-4">
-                                                <Text className="font-semibold text-neutral-900 text-base">{service.name}</Text>
-                                                <Text className="text-neutral-500 text-sm mt-0.5">{service.duration_minutes} min</Text>
+                                                <Text className="font-semibold text-neutral-900 text-lg">{service.name}</Text>
+                                                <Text className="text-neutral-500 text-base mt-1">{service.duration_minutes} min</Text>
                                             </View>
                                             <View className="items-end">
-                                                <Text className="font-bold text-neutral-900 text-base">${service.price}</Text>
+                                                <Text className="font-bold text-neutral-900 text-lg">${service.price}</Text>
                                                 <TouchableOpacity
                                                     onPress={() => router.push(`/booking/${id}?serviceId=${service.id}`)}
-                                                    className="mt-2 bg-black px-3 py-1.5 rounded-lg"
+                                                    className="mt-2 bg-black px-4 py-2 rounded-lg"
                                                 >
-                                                    <Text className="text-white text-xs font-bold">Book</Text>
+                                                    <Text className="text-white text-sm font-bold">Book</Text>
                                                 </TouchableOpacity>
                                             </View>
                                         </View>
@@ -354,26 +354,26 @@ export default function BusinessPage() {
 
                         {/* Team Grid */}
                         <View className="mt-8 px-6">
-                            <Text className="text-lg font-bold text-neutral-900 mb-4">Meet the Team</Text>
+                            <Text className="text-xl font-bold text-neutral-900 mb-4">Meet the Team</Text>
                             <View className={`flex-row flex-wrap ${isLargeScreen ? 'gap-8' : '-mx-2'}`}>
                                 {team.map((member) => (
                                     <TouchableOpacity
                                         key={member.id}
                                         className={`${isLargeScreen ? 'w-auto items-start' : 'w-1/3 px-2 mb-4 items-center'}`}
                                     >
-                                        <View className="w-20 h-20 rounded-full bg-neutral-100 mb-2 overflow-hidden shadow-sm border border-neutral-100">
+                                        <View className="w-24 h-24 rounded-full bg-neutral-100 mb-3 overflow-hidden shadow-sm border border-neutral-100">
                                             {member.image_url ? (
                                                 <Image source={{ uri: member.image_url }} className="w-full h-full" />
                                             ) : (
                                                 <View className="w-full h-full items-center justify-center bg-neutral-200">
-                                                    <Feather name="user" size={24} color="#a3a3a3" />
+                                                    <Feather name="user" size={32} color="#a3a3a3" />
                                                 </View>
                                             )}
                                         </View>
-                                        <Text className={`font-medium text-sm ${isLargeScreen ? 'text-left' : 'text-center'}`} numberOfLines={1}>
+                                        <Text className={`font-medium text-base ${isLargeScreen ? 'text-left' : 'text-center'}`} numberOfLines={1}>
                                             {member.name}
                                         </Text>
-                                        <Text className={`text-xs text-neutral-500 ${isLargeScreen ? 'text-left' : 'text-center'}`} numberOfLines={1}>
+                                        <Text className={`text-sm text-neutral-500 ${isLargeScreen ? 'text-left' : 'text-center'}`} numberOfLines={1}>
                                             Stylist
                                         </Text>
                                     </TouchableOpacity>
