@@ -106,10 +106,10 @@ export default function EditBusinessDetailsScreen() {
                     <View className="px-6 py-8 items-center">
                         <View style={{ maxWidth, width: '100%' }}>
 
-                            <Text className={`font-bold mb-2 ${isLargeScreen ? 'text-3xl' : 'text-2xl'}`}>
+                            <Text className={`font-bold mb-2 ${isLargeScreen ? 'text-5xl' : 'text-4xl'}`}>
                                 Business Details
                             </Text>
-                            <Text className="text-neutral-600 mb-10">
+                            <Text className="text-neutral-600 mb-10 text-lg">
                                 Manage your business profile information
                             </Text>
 
@@ -121,7 +121,7 @@ export default function EditBusinessDetailsScreen() {
                                 <View>
                                     {/* Business Name */}
                                     <View className="mb-6">
-                                        <Text className="text-sm font-medium text-neutral-700 mb-2">Business Name *</Text>
+                                        <Text className="text-base font-medium text-neutral-700 mb-2">Business Name *</Text>
                                         <FormInput
                                             value={businessName}
                                             onChangeText={setBusinessName}
@@ -131,21 +131,21 @@ export default function EditBusinessDetailsScreen() {
                                     
                                     {/* Description */}
                                     <View className="mb-6">
-                                        <Text className="text-sm font-medium text-neutral-700 mb-2">Description</Text>
+                                        <Text className="text-base font-medium text-neutral-700 mb-2">Description</Text>
                                         <TextInput
                                             value={description}
                                             onChangeText={setDescription}
                                             placeholder="Brief description of your business"
                                             multiline
                                             numberOfLines={3}
-                                            className="bg-neutral-50 rounded-2xl p-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white"
-                                            style={{ minHeight: 80, textAlignVertical: 'top' }}
+                                            className="bg-neutral-50 rounded-2xl p-4 border border-neutral-200 focus:border-neutral-900 focus:bg-white text-base"
+                                            style={{ minHeight: 100, textAlignVertical: 'top' }}
                                         />
                                     </View>
 
                                     {/* Address */}
                                     <View className="mb-6">
-                                        <Text className="text-sm font-medium text-neutral-700 mb-2">Street Address *</Text>
+                                        <Text className="text-base font-medium text-neutral-700 mb-2">Street Address *</Text>
                                         <FormInput
                                             value={address}
                                             onChangeText={setAddress}
@@ -156,7 +156,7 @@ export default function EditBusinessDetailsScreen() {
                                     {/* City, State, Zip */}
                                     <View className="flex-row gap-3 mb-6">
                                         <View className="flex-1">
-                                            <Text className="text-sm font-medium text-neutral-700 mb-2">City *</Text>
+                                            <Text className="text-base font-medium text-neutral-700 mb-2">City *</Text>
                                             <FormInput
                                                 value={city}
                                                 onChangeText={setCity}
@@ -164,7 +164,7 @@ export default function EditBusinessDetailsScreen() {
                                             />
                                         </View>
                                         <View style={{ width: 100 }}>
-                                            <Text className="text-sm font-medium text-neutral-700 mb-2">State</Text>
+                                            <Text className="text-base font-medium text-neutral-700 mb-2">State</Text>
                                             <FormInput
                                                 value={state}
                                                 onChangeText={setState}
@@ -174,7 +174,7 @@ export default function EditBusinessDetailsScreen() {
                                             />
                                         </View>
                                         <View style={{ width: 100 }}>
-                                            <Text className="text-sm font-medium text-neutral-700 mb-2">Zip</Text>
+                                            <Text className="text-base font-medium text-neutral-700 mb-2">Zip</Text>
                                             <FormInput
                                                 value={zipCode}
                                                 onChangeText={setZipCode}
@@ -187,7 +187,7 @@ export default function EditBusinessDetailsScreen() {
 
                                     {/* Phone */}
                                     <View className="mb-6">
-                                        <Text className="text-sm font-medium text-neutral-700 mb-2">Phone</Text>
+                                        <Text className="text-base font-medium text-neutral-700 mb-2">Phone</Text>
                                         <FormInput
                                             value={phone}
                                             onChangeText={setPhone}
@@ -198,7 +198,7 @@ export default function EditBusinessDetailsScreen() {
 
                                     {/* Email */}
                                     <View className="mb-6">
-                                        <Text className="text-sm font-medium text-neutral-700 mb-2">Email</Text>
+                                        <Text className="text-base font-medium text-neutral-700 mb-2">Email</Text>
                                         <FormInput
                                             value={email}
                                             onChangeText={setEmail}
@@ -223,7 +223,7 @@ export default function EditBusinessDetailsScreen() {
                                 className={`py-4 rounded-2xl items-center justify-center shadow-lg ${saving ? 'bg-neutral-300' : 'bg-black'}`}
                                 activeOpacity={0.8}
                             >
-                                <Text className="text-white font-bold text-lg">
+                                <Text className="text-white font-bold text-xl">
                                     {saving ? 'Saving...' : 'Save Changes'}
                                 </Text>
                             </TouchableOpacity>
