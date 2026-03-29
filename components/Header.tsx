@@ -417,12 +417,12 @@ export function Header({ showBack = false, backHref, backLabel = 'Back' }: Heade
                                 <>
                                     <Link href="/business-signup" asChild>
                                         <TouchableOpacity>
-                                            <Text className="text-neutral-700 font-medium">Add Your Business</Text>
+                                            <Text className="text-neutral-700 font-medium text-base">Add Your Business</Text>
                                         </TouchableOpacity>
                                     </Link>
                                     <Link href="/sign-in" asChild>
                                         <TouchableOpacity className="bg-black px-6 py-2.5 rounded-xl">
-                                            <Text className="text-white font-medium">Sign In</Text>
+                                            <Text className="text-white font-medium text-base">Sign In</Text>
                                         </TouchableOpacity>
                                     </Link>
                                 </>
@@ -652,7 +652,7 @@ export function Header({ showBack = false, backHref, backLabel = 'Back' }: Heade
                             <View className="gap-8">
                                 {/* For Customers Section */}
                                 <View>
-                                    <Text className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2 px-4">
+                                    <Text className="text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-2 px-4">
                                         For Users and Businesses
                                     </Text>
                                     <Link href="/sign-in" asChild>
@@ -660,14 +660,14 @@ export function Header({ showBack = false, backHref, backLabel = 'Back' }: Heade
                                             onPress={() => setMenuOpen(false)}
                                             className="py-4 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100"
                                         >
-                                            <Text className="text-neutral-900 font-medium text-base">Sign In</Text>
+                                            <Text className="text-neutral-900 font-medium text-lg">Sign In</Text>
                                         </TouchableOpacity>
                                     </Link>
                                 </View>
 
                                 {/* For Businesses Section */}
                                 <View>
-                                    <Text className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2 px-4">
+                                    <Text className="text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-2 px-4">
                                         For New Businesses
                                     </Text>
                                     <Link href="/business-signup" asChild>
@@ -675,7 +675,7 @@ export function Header({ showBack = false, backHref, backLabel = 'Back' }: Heade
                                             onPress={() => setMenuOpen(false)}
                                             className="py-4 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100"
                                         >
-                                            <Text className="text-neutral-900 font-medium text-base">List Your Business</Text>
+                                            <Text className="text-neutral-900 font-medium text-lg">List Your Business</Text>
                                         </TouchableOpacity>
                                     </Link>
                                 </View>
