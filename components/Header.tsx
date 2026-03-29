@@ -477,17 +477,17 @@ export function Header({ showBack = false, backHref, backLabel = 'Back' }: Heade
                                 {isBusinessOwner ? (
                                     <>
                                         <View className="mb-4">
-                                            <Text className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3 px-4">Business Tools</Text>
+                                            <Text className="text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-2 px-4">Business Tools</Text>
                                             <TouchableOpacity
                                                 onPress={() => {
                                                     setMenuOpen(false);
                                                     router.push('/business/dashboard');
                                                 }}
-                                                className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
+                                                className="py-4 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
                                             >
                                                 <View className="flex-row items-center">
-                                                    <Feather name="layout" size={18} color="#737373" />
-                                                    <Text className="ml-3 text-neutral-900 font-medium text-base">Dashboard</Text>
+                                                    <Feather name="layout" size={20} color="#737373" />
+                                                    <Text className="ml-3 text-neutral-900 font-medium text-lg">Dashboard</Text>
                                                 </View>
                                             </TouchableOpacity>
 
@@ -496,27 +496,27 @@ export function Header({ showBack = false, backHref, backLabel = 'Back' }: Heade
                                                     setMenuOpen(false);
                                                     router.push('/business/calendar');
                                                 }}
-                                                className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
+                                                className="py-4 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
                                             >
                                                 <View className="flex-row items-center">
-                                                    <Feather name="grid" size={18} color="#737373" />
-                                                    <Text className="ml-3 text-neutral-900 font-medium text-base">Staff Calendar</Text>
+                                                    <Feather name="grid" size={20} color="#737373" />
+                                                    <Text className="ml-3 text-neutral-900 font-medium text-lg">Staff Calendar</Text>
                                                 </View>
                                             </TouchableOpacity>
                                         </View>
 
                                         <View className="mb-4">
-                                            <Text className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3 px-4">Personal Account</Text>
+                                            <Text className="text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-2 px-4">Personal Account</Text>
                                             <TouchableOpacity
                                                 onPress={() => {
                                                     setMenuOpen(false);
                                                     router.push('/bookings');
                                                 }}
-                                                className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
+                                                className="py-4 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
                                             >
                                                 <View className="flex-row items-center">
-                                                    <Feather name="calendar" size={18} color="#737373" />
-                                                    <Text className="ml-3 text-neutral-900 font-medium text-base">My Personal Bookings</Text>
+                                                    <Feather name="calendar" size={20} color="#737373" />
+                                                    <Text className="ml-3 text-neutral-900 font-medium text-lg">My Personal Bookings</Text>
                                                 </View>
                                             </TouchableOpacity>
 
@@ -525,11 +525,11 @@ export function Header({ showBack = false, backHref, backLabel = 'Back' }: Heade
                                                     setMenuOpen(false);
                                                     router.push('/business/profile');
                                                 }}
-                                                className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
+                                                className="py-4 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
                                             >
                                                 <View className="flex-row items-center">
-                                                    <Feather name="user" size={18} color="#737373" />
-                                                    <Text className="ml-3 text-neutral-900 font-medium text-base">My Profile</Text>
+                                                    <Feather name="user" size={20} color="#737373" />
+                                                    <Text className="ml-3 text-neutral-900 font-medium text-lg">My Profile</Text>
                                                 </View>
                                             </TouchableOpacity>
                                         </View>
@@ -537,17 +537,17 @@ export function Header({ showBack = false, backHref, backLabel = 'Back' }: Heade
                                 ) : isStylist ? (
                                     <>
                                         <View className="mb-4">
-                                            <Text className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3 px-4">Business Tools</Text>
+                                            <Text className="text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-2 px-4">Business Tools</Text>
                                             <TouchableOpacity
                                                 onPress={() => {
                                                     setMenuOpen(false);
                                                     router.push('/stylist/dashboard');
                                                 }}
-                                                className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
+                                                className="py-4 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
                                             >
                                                 <View className="flex-row items-center">
-                                                    <Feather name="layout" size={18} color="#737373" />
-                                                    <Text className="ml-3 text-neutral-900 font-medium text-base">My Work Bookings</Text>
+                                                    <Feather name="layout" size={20} color="#737373" />
+                                                    <Text className="ml-3 text-neutral-900 font-medium text-lg">My Work Bookings</Text>
                                                 </View>
                                             </TouchableOpacity>
 
@@ -556,11 +556,11 @@ export function Header({ showBack = false, backHref, backLabel = 'Back' }: Heade
                                                     setMenuOpen(false);
                                                     router.push('/stylist/hours');
                                                 }}
-                                                className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
+                                                className="py-4 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
                                             >
                                                 <View className="flex-row items-center">
-                                                    <Feather name="clock" size={18} color="#737373" />
-                                                    <Text className="ml-3 text-neutral-900 font-medium text-base">Working Hours</Text>
+                                                    <Feather name="clock" size={20} color="#737373" />
+                                                    <Text className="ml-3 text-neutral-900 font-medium text-lg">Working Hours</Text>
                                                 </View>
                                             </TouchableOpacity>
 
@@ -569,27 +569,27 @@ export function Header({ showBack = false, backHref, backLabel = 'Back' }: Heade
                                                     setMenuOpen(false);
                                                     router.push('/stylist/blocks');
                                                 }}
-                                                className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
+                                                className="py-4 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
                                             >
                                                 <View className="flex-row items-center">
-                                                    <Feather name="slash" size={18} color="#737373" />
-                                                    <Text className="ml-3 text-neutral-900 font-medium text-base">Blocked Time</Text>
+                                                    <Feather name="slash" size={20} color="#737373" />
+                                                    <Text className="ml-3 text-neutral-900 font-medium text-lg">Blocked Time</Text>
                                                 </View>
                                             </TouchableOpacity>
                                         </View>
 
                                         <View className="mb-4">
-                                            <Text className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3 px-4">Personal Account</Text>
+                                            <Text className="text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-2 px-4">Personal Account</Text>
                                             <TouchableOpacity
                                                 onPress={() => {
                                                     setMenuOpen(false);
                                                     router.push('/bookings');
                                                 }}
-                                                className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
+                                                className="py-4 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
                                             >
                                                 <View className="flex-row items-center">
-                                                    <Feather name="calendar" size={18} color="#737373" />
-                                                    <Text className="ml-3 text-neutral-900 font-medium text-base">My Personal Bookings</Text>
+                                                    <Feather name="calendar" size={20} color="#737373" />
+                                                    <Text className="ml-3 text-neutral-900 font-medium text-lg">My Personal Bookings</Text>
                                                 </View>
                                             </TouchableOpacity>
 
@@ -598,11 +598,11 @@ export function Header({ showBack = false, backHref, backLabel = 'Back' }: Heade
                                                     setMenuOpen(false);
                                                     router.push('/profile');
                                                 }}
-                                                className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
+                                                className="py-4 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
                                             >
                                                 <View className="flex-row items-center">
-                                                    <Feather name="user" size={18} color="#737373" />
-                                                    <Text className="ml-3 text-neutral-900 font-medium text-base">My Profile</Text>
+                                                    <Feather name="user" size={20} color="#737373" />
+                                                    <Text className="ml-3 text-neutral-900 font-medium text-lg">My Profile</Text>
                                                 </View>
                                             </TouchableOpacity>
                                         </View>
@@ -612,11 +612,11 @@ export function Header({ showBack = false, backHref, backLabel = 'Back' }: Heade
                                         <Link href="/bookings" asChild>
                                             <TouchableOpacity
                                                 onPress={() => setMenuOpen(false)}
-                                                className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
+                                                className="py-4 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
                                             >
                                                 <View className="flex-row items-center">
-                                                    <Feather name="calendar" size={18} color="#737373" />
-                                                    <Text className="ml-3 text-neutral-900 font-medium text-base">Bookings</Text>
+                                                    <Feather name="calendar" size={20} color="#737373" />
+                                                    <Text className="ml-3 text-neutral-900 font-medium text-lg">Bookings</Text>
                                                 </View>
                                             </TouchableOpacity>
                                         </Link>
@@ -624,11 +624,11 @@ export function Header({ showBack = false, backHref, backLabel = 'Back' }: Heade
                                         <Link href="/profile" asChild>
                                             <TouchableOpacity
                                                 onPress={() => setMenuOpen(false)}
-                                                className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
+                                                className="py-4 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
                                             >
                                                 <View className="flex-row items-center">
-                                                    <Feather name="user" size={18} color="#737373" />
-                                                    <Text className="ml-3 text-neutral-900 font-medium text-base">Profile</Text>
+                                                    <Feather name="user" size={20} color="#737373" />
+                                                    <Text className="ml-3 text-neutral-900 font-medium text-lg">Profile</Text>
                                                 </View>
                                             </TouchableOpacity>
                                         </Link>
@@ -640,11 +640,11 @@ export function Header({ showBack = false, backHref, backLabel = 'Back' }: Heade
                                         setMenuOpen(false);
                                         handleSignOut();
                                     }}
-                                    className="py-3 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
+                                    className="py-4 px-4 bg-neutral-50 rounded-xl active:bg-neutral-100 mb-2"
                                 >
                                     <View className="flex-row items-center">
-                                        <Feather name="log-out" size={18} color="#737373" />
-                                        <Text className="ml-3 text-neutral-900 font-medium text-base">Sign Out</Text>
+                                        <Feather name="log-out" size={20} color="#737373" />
+                                        <Text className="ml-3 text-neutral-900 font-medium text-lg">Sign Out</Text>
                                     </View>
                                 </TouchableOpacity>
                             </View>
