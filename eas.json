@@ -29,6 +29,11 @@
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "appleId": "erind.shkurti@gmail.com",
+        "ascAppId": "6761319844"
+      }
+    }
   }
 }
