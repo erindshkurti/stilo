@@ -25,30 +25,14 @@ To force the native app to compile strictly for the iOS Simulator (which bypasse
 5. Expo will now natively compile the `stilo.app` exactly for the running Simulator without searching for physical hardware.
 6. Once the app launches on the Simulator, you can safely turn your physical iPhone's Wi-Fi back on.
 
-### Manual Native Compilation (xcodebuild) Extreme Fallback
-If the above methods fail and Expo heavily insists on a code signature for a Simulator, you can forcefully build the native Xcode workspace directly from your terminal and manually inject the resulting `.app` executable.
+### Complete Simulator Compilation Bypass
+If Expo aggressively insists on a code signature because it mistakenly detected a physical iPhone on Wi-Fi, you can completely sidestep the bug using the custom wrapper script.
 
-1. Find the UDID of your running iPhone 17 Pro Simulator:
-   ```bash
-   xcrun simctl list devices | grep "iPhone 17 Pro" | grep "(Booted)"
-   ```
-   *(Copy the exact UUID string, e.g., `664A543C-F5DE-40A7-8746-582B06EE1848`)*
-
-2. Build the Xcode Workspace natively, forcing Code Signing off:
-   ```bash
-   xcodebuild -workspace ios/stilo.xcworkspace -scheme stilo -configuration Debug -sdk iphonesimulator -destination 'id=664A543C-F5DE-40A7-8746-582B06EE1848' CODE_SIGNING_ALLOWED=NO build
-   ```
-
-3. Open a new terminal tab and locate the built `.app` executable:
-   ```bash
-   find ~/Library/Developer/Xcode/DerivedData -name "stilo.app" -type d
-   ```
-
-4. Install and launch the application directly onto your Simulator:
-   ```bash
-   xcrun simctl install 664A543C-F5DE-40A7-8746-582B06EE1848 /path/to/found/stilo.app
-   xcrun simctl launch 664A543C-F5DE-40A7-8746-582B06EE1848 com.erindshkurti.stilo
-   ```
+From your terminal, simply run:
+```bash
+npm run simulator:ios
+```
+*(This entirely automates raw `xcodebuild` compilation with code signing explicitly disabled, actively tracks down your booted Simulator, and flawlessly injects the resulting `.app` executable natively without utilizing the broken Expo CLI).*
 
 ---
 

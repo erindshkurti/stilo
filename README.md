@@ -121,12 +121,10 @@ npx expo start --ios
 ```
 
 **2. Native Development Build (Recommended for Native Features)**
-This command builds and launches the native app directly on the simulator:
+This custom script bypasses the known `devicectl` Xcode 16 network bug and forces the raw native compilation specifically for your active Simulator:
 ```bash
-npx expo run:ios
+npm run simulator:ios
 ```
-*Note: If you have multiple simulators, you can specify a device ID:*
-`npx expo run:ios -d <DEVICE_ID>`
 
 #### 🛠 Troubleshooting iOS Sync Issues
 If the simulator is not reflecting your code changes (stale bundle):

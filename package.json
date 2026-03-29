@@ -7,6 +7,7 @@
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo run:android",
     "ios": "expo run:ios",
+    "simulator:ios": "xcodebuild -workspace ios/stilo.xcworkspace -scheme stilo -configuration Debug -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 17 Pro' CODE_SIGNING_ALLOWED=NO build && APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name \"stilo.app\" -type d | head -n 1) && xcrun simctl install booted \"$APP_PATH\" && xcrun simctl launch booted com.erindshkurti.stilo",
     "web": "expo start --web",
     "lint": "expo lint",
     "eas-build-pre-install": "node scripts/bump-version.js",
