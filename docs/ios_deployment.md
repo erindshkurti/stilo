@@ -1,47 +1,37 @@
-# Stilo iOS Deployment & Build Guide
+# Stilo iOS Build &Deployment Guide
 
-This comprehensive guide covers how to build Stilo for production via the Expo Cloud, and how to test the custom native app locally on an iOS Simulator.
+This comprehensive guide explicitly defines the two distinct methods you must use to build Stilo natively on your machine, depending on your target: Local Simulator Testing vs App Store Deployment.
 
 ---
 
-## 1. Local Simulator Testing (Custom Dev Client)
+## 1. Local Xcode Build for Simulator (Development)
 
-Because Stilo uses custom native modules (Firebase Native, Sign In With Apple), you cannot simply use the standard "Expo Go" app to scan a QR code. You must compile a custom iOS application capable of handling native code.
+Because Stilo relies heavily on custom native modules (Firebase Native, Sign In With Apple), you simply cannot use the standard "Expo Go" app. You must always compile a fresh custom iOS tracking application to test new code during development.
 
 ### The Apple "devicectl" Bug
-Currently, there is a known bug in newer versions of MacOS and Xcode 16 where the Expo CLI (`npx expo run:ios`) will aggressively demand a paid Apple Developer Code Signing Certificate if it detects your physical iPhone connected over Wi-Fi or USB. It will mistakenly try to install the app to your phone instead of the Simulator.
+Currently, there is a widely known bug within newer versions of MacOS and Xcode 16 where the standard Expo CLI (`npx expo run:ios`) will aggressively demand a paid Apple Developer Code Signing Certificate if it detects your personal, physical iPhone connected over Wi-Fi or USB. It will mistakenly attempt to compile and install the app to your literal phone hardware instead of your target Simulator.
 
-### How to Build & Run Locally (The Bulletproof Way)
-To force the native app to compile strictly for the iOS Simulator (which bypasses all Apple Certificate requirements):
+### The Solution: Universal Simulator Bypass
+To completely circumvent this Expo CLI bug and force raw, unsigned compilation directly for your active Simulator hardware, a custom NPM script has been provided that permanently bypasses all Apple Certificate layers for development purposes:
 
-1. Unplug your physical iPhone from your Mac and temporarily turn off its Wi-Fi if you have ever debugged it wirelessly.
-2. Open the **Simulator** app manually on your Mac (Search "Simulator" in Spotlight).
-3. In your terminal, clear out any old cached builds and start the Expo bundler:
-   ```bash
-   npx expo prebuild --clean
-   npx expo start --clear
-   ```
-4. Once the server is running and displaying the QR code in your terminal, **press the `i` key**.
-5. Expo will now natively compile the `stilo.app` exactly for the running Simulator without searching for physical hardware.
-6. Once the app launches on the Simulator, you can safely turn your physical iPhone's Wi-Fi back on.
-
-### Complete Simulator Compilation Bypass
-If Expo aggressively insists on a code signature because it mistakenly detected a physical iPhone on Wi-Fi, you can completely sidestep the bug using the custom wrapper script.
-
-From your terminal, simply run:
+From your terminal, execute:
 ```bash
 npm run simulator:ios
 ```
-*(This entirely automates raw `xcodebuild` compilation with code signing explicitly disabled, actively tracks down your booted Simulator, and flawlessly injects the resulting `.app` executable natively without utilizing the broken Expo CLI).*
+*(This strictly automates raw `xcodebuild` compilation directly to your machine's CPU with code signing explicitly disabled, dynamically locates the active Simulator's UID, and flawlessly installs the resulting `.app` executable natively).*
+
+Once the app opens on the Simulator, ensure your Metro server is running (`npx expo start --clear`) so it can connect and serve your live Javascript bundles!
 
 ---
 
-## 2. Production App Store Builds (EAS Cloud)
+## 2. EAS Local Build for App Store (Production)
 
-When you are ready to publish an official update to Apple TestFlight or the App Store, you should leverage Expo's Cloud Builders. This entirely bypasses local keychain certificate headaches.
+When you are completely ready to finally publish a polished update to Apple TestFlight / App Store Connect, you must generate a highly secure Production `.ipa` file. 
+
+Instead of waiting 15-30 minutes queuing in the busy Expo Cloud CI network, Stilo is configured to utilize `eas build --local`. This perfectly accesses your logged-in Developer Keychain and compiles the precise App Store binary entirely via your own Mac's CPU at peak speeds.
 
 ### Prerequisites (Environment Variables)
-Because iOS cloud builds cannot read your local `.env` file, you must ensure your `EXPO_PUBLIC_` variables are uploaded to EAS:
+Because iOS offline production builds cannot securely read your local `.env` file during EAS compilation, you **must** ensure your `EXPO_PUBLIC_` variables have been explicitly uploaded to Expo's remote servers:
 [Expo Projects > Stilo > Secrets](https://expo.dev/accounts/erind.shkurti/projects/stilo)
 
 **Ensure these Plaintext secrets exist**:
@@ -53,37 +43,33 @@ Because iOS cloud builds cannot read your local `.env` file, you must ensure you
 - `EXPO_PUBLIC_FIREBASE_APP_ID`
 - `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`
 
-If `GoogleService-Info.plist` is required, ensure it exists as a File Secret named `GOOGLE_SERVICES_IOS`.
+If you are ever missing the `GoogleService-Info.plist` file, you must upload its base64 string to EAS as a file secret named `GOOGLE_SERVICES_IOS`.
 
-### Triggering the Cloud Build
-Before triggering a new production build, you **must** bump your iOS native build number so Apple doesn't organically reject the duplicate file.
+### Triggering the Local Production Build
+Before triggering a new production build, you **must** organically bump your iOS native build number, or else Apple App Store Connect will immediately and forcefully reject your duplicate submission.
 
-For your convenience, this has been wrapped into a single NPM script. From your terminal, execute:
+For your convenience, this entire operation has been meticulously wrapped into a solitary master script. 
+
+From your terminal, execute:
 ```bash
 npm run deploy:ios
 ```
-*(This will safely bump `build-number.json`, ask EAS to cloud-compile the Javascript, queue a Mac Builder, and digitally sign it with your Apple Developer account automatically).*
-
-### Submitting to Apple
-If you did not use the `--auto-submit` flag (or if it skipped because it wasn't interactive), you can manually push the successfully compiled app straight to App Store Connect by running:
-
-```bash
-eas submit --platform ios
-```
-*(This will interactively ask you to select the `.ipa` from the EAS server and push it directly to TestFlight).*
+*(This perfectly automates securely incrementing your `build-number.json`, transparently authenticating your Apple Developer Keychain profile, compiling the `.ipa` executable utilizing your local blazing-fast Mac CPU to radically bypass the Cloud queue, and finally instantly auto-submits the successful result straight to Apple TestFlight!)*
 
 ---
 
-## 3. Automating Submissions
+## 3. Automating Submissions (EAS JSON Configs)
 
-If you want `eas build --auto-submit` to work completely hands-free in the background without prompting you, you can hardcode your App Store credentials in your `eas.json`.
+If you strictly want the `npm run deploy:ios` pipeline (the EAS Local Build) to function completely hands-free in the deep background without arbitrarily pausing mid-build to prompt you for an Apple API password, your App Store Connect configuration credentials must remain hardcoded in your `eas.json` file.
 
-Update `eas.json` to include:
+Update `eas.json` at any time to explicitly include:
 ```json
 "submit": {
   "production": {
-    "appleId": "your-apple-email@domain.com",
-    "ascAppId": "1234567890"  // Found in App Store Connect -> App Information
+    "ios": {
+      "appleId": "your-apple-email@domain.com",
+      "ascAppId": "1234567890"  // Found manually in App Store Connect -> App Information
+    }
   }
 }
 ```

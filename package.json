@@ -13,7 +13,7 @@
     "eas-build-pre-install": "node scripts/bump-version.js",
     "build:eas:android": "node scripts/bump-version.js && eas build --platform android --profile production --local --output=./android/app/build/outputs/bundle/release/app-release.aab",
     "build:eas:ios": "node scripts/bump-version.js && eas build --platform ios --profile production --local --output=./ios/build/stilo.ipa",
-    "deploy:ios": "node scripts/bump-version.js && eas build --platform ios --profile production --auto-submit"
+    "deploy:ios": "node scripts/bump-version.js && eas build --platform ios --profile production --local --auto-submit"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

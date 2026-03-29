@@ -245,11 +245,11 @@ The application is configured for cloud builds using Expo Application Services (
 - Ensure the app is registered in **App Store Connect** and the bundle ID has the **Sign In with Apple** capability enabled in the Apple Developer Portal.
 
 **Build & Submit to App Store Connect:**
-To natively bump the version number, compile the app on Expo servers, and automatically submit the `.ipa` to TestFlight:
+To natively bump the version number, compile the `.ipa` locally on your Mac's CPU (bypassing the slow Expo cloud queues), and automatically submit it to TestFlight:
 ```bash
 npm run deploy:ios
 ```
-This single command ensures Apple doesn't reject duplicate versions, securely injects the Firebase configuration, and pushes the binary straight to your App Store Connect account.
+This single command ensures Apple doesn't reject duplicate versions, leverages local compilation for peak speed, and pushes the binary securely straight to your App Store Connect account.
 
 ## 📄 License
 
