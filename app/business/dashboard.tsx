@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
@@ -196,19 +196,19 @@ export default function BusinessDashboard() {
 
     const renderStatsTile = () => (
         <View className="bg-neutral-50 rounded-2xl p-6 mb-6">
-            <Text className="text-lg font-semibold mb-4">This Week</Text>
+            <Text className="text-xl font-semibold mb-4">This Week</Text>
             <View className="flex-row justify-between">
                 <View>
-                    <Text className="text-2xl font-bold">0</Text>
-                    <Text className="text-neutral-600 text-sm">Bookings</Text>
+                    <Text className="text-3xl font-bold">0</Text>
+                    <Text className="text-neutral-600 text-base mt-1">Bookings</Text>
                 </View>
                 <View>
-                    <Text className="text-2xl font-bold">0</Text>
-                    <Text className="text-neutral-600 text-sm">New Clients</Text>
+                    <Text className="text-3xl font-bold">0</Text>
+                    <Text className="text-neutral-600 text-base mt-1">New Clients</Text>
                 </View>
                 <View>
-                    <Text className="text-2xl font-bold">$0</Text>
-                    <Text className="text-neutral-600 text-sm">Revenue</Text>
+                    <Text className="text-3xl font-bold">$0</Text>
+                    <Text className="text-neutral-600 text-base mt-1">Revenue</Text>
                 </View>
             </View>
         </View>
@@ -237,10 +237,10 @@ export default function BusinessDashboard() {
                 <View className="px-6 md:px-8 py-8 mx-auto w-full" style={{ maxWidth: 1200 }}>
                     {/* Welcome Section */}
                     <View className="mb-8">
-                        <Text className="text-3xl font-bold mb-2">
+                        <Text className="text-4xl font-bold mb-2">
                             {business ? `Welcome back, ${business.name}!` : 'Business Dashboard'}
                         </Text>
-                        <Text className="text-neutral-600">
+                        <Text className="text-neutral-600 text-lg">
                             Manage your business and bookings
                         </Text>
                     </View>
@@ -261,31 +261,31 @@ export default function BusinessDashboard() {
                                     {/* Business Overview */}
                                     <View className="bg-neutral-50 rounded-2xl p-6 mb-6">
                                         <View className="flex-row items-center justify-between mb-4">
-                                            <Text className="text-lg font-semibold">Business Overview</Text>
+                                            <Text className="text-xl font-semibold">Business Overview</Text>
                                             <TouchableOpacity
                                                 onPress={() => router.push('/business/edit/details')}
-                                                className="w-8 h-8 bg-white rounded-full items-center justify-center border border-neutral-200"
+                                                className="w-10 h-10 bg-white rounded-full items-center justify-center border border-neutral-200"
                                             >
-                                                <Feather name="edit-2" size={14} color="#737373" />
+                                                <Feather name="edit-2" size={16} color="#737373" />
                                             </TouchableOpacity>
                                         </View>
                                         <View>
                                             <View className="flex-row items-center mb-3">
-                                                <Feather name="map-pin" size={18} color="#737373" />
-                                                <Text className="ml-3 text-neutral-700">
+                                                <Feather name="map-pin" size={20} color="#737373" />
+                                                <Text className="ml-3 text-neutral-700 text-base">
                                                     {business.address}, {business.city}
                                                 </Text>
                                             </View>
                                             {!!business.phone && (
                                                 <View className="flex-row items-center mb-3">
-                                                    <Feather name="phone" size={18} color="#737373" />
-                                                    <Text className="ml-3 text-neutral-700">{business.phone}</Text>
+                                                    <Feather name="phone" size={20} color="#737373" />
+                                                    <Text className="ml-3 text-neutral-700 text-base">{business.phone}</Text>
                                                 </View>
                                             )}
                                             {!!business.email && (
                                                 <View className="flex-row items-center">
-                                                    <Feather name="mail" size={18} color="#737373" />
-                                                    <Text className="ml-3 text-neutral-700">{business.email}</Text>
+                                                    <Feather name="mail" size={20} color="#737373" />
+                                                    <Text className="ml-3 text-neutral-700 text-base">{business.email}</Text>
                                                 </View>
                                             )}
                                         </View>
@@ -293,21 +293,21 @@ export default function BusinessDashboard() {
 
                                     {/* Business Hours */}
                                     <View className="bg-neutral-50 rounded-2xl p-6 mb-6">
-                                        <View className="flex-row items-center justify-between mb-4">
-                                            <Text className="text-lg font-semibold">Business Hours</Text>
+                                        <View className="flex-row items-center justify-between mb-5">
+                                            <Text className="text-xl font-semibold">Business Hours</Text>
                                             <TouchableOpacity
                                                 onPress={() => router.push('/business/edit/hours')}
-                                                className="w-8 h-8 bg-white rounded-full items-center justify-center border border-neutral-200"
+                                                className="w-10 h-10 bg-white rounded-full items-center justify-center border border-neutral-200"
                                             >
-                                                <Feather name="edit-2" size={14} color="#737373" />
+                                                <Feather name="edit-2" size={16} color="#737373" />
                                             </TouchableOpacity>
                                         </View>
                                         {hours.length > 0 ? (
                                             <>
                                                 {hours.map((hour) => (
-                                                    <View key={hour.id} className="flex-row justify-between mb-2">
-                                                        <Text className="text-neutral-700 font-medium">{DAYS[hour.day_of_week]}</Text>
-                                                        <Text className="text-neutral-600">
+                                                    <View key={hour.id} className="flex-row justify-between flex-1 mb-3">
+                                                        <Text className="text-neutral-700 font-medium text-base">{DAYS[hour.day_of_week]}</Text>
+                                                        <Text className="text-neutral-600 text-base">
                                                             {hour.is_closed ? 'Closed' : `${hour.open_time} - ${hour.close_time}`}
                                                         </Text>
                                                     </View>
@@ -315,40 +315,40 @@ export default function BusinessDashboard() {
                                             </>
                                         ) : (
                                             <View className="py-4 items-center">
-                                                <Text className="text-neutral-500">No business hours set</Text>
+                                                <Text className="text-neutral-500 text-base">No business hours set</Text>
                                             </View>
                                         )}
                                     </View>
 
                                     {/* Team Members */}
                                     <View className="bg-neutral-50 rounded-2xl p-6 mb-6">
-                                        <View className="flex-row items-center justify-between mb-4">
-                                            <Text className="text-lg font-semibold">Team Members ({stylists.length})</Text>
+                                        <View className="flex-row items-center justify-between mb-5">
+                                            <Text className="text-xl font-semibold">Team Members ({stylists.length})</Text>
                                             <TouchableOpacity
                                                 onPress={() => router.push('/business/edit/team')}
-                                                className="w-8 h-8 bg-white rounded-full items-center justify-center border border-neutral-200"
+                                                className="w-10 h-10 bg-white rounded-full items-center justify-center border border-neutral-200"
                                             >
-                                                <Feather name="edit-2" size={14} color="#737373" />
+                                                <Feather name="edit-2" size={16} color="#737373" />
                                             </TouchableOpacity>
                                         </View>
                                         {stylists.length > 0 ? (
-                                            <View className="flex-row flex-wrap gap-2">
+                                            <View className="flex-row flex-wrap gap-3">
                                                 {stylists.map((stylist) => (
-                                                    <View key={stylist.id} className="bg-white border border-neutral-200 rounded-full py-1.5 px-1.5 pr-4 flex-row items-center">
+                                                    <View key={stylist.id} className="bg-white shadow-sm border border-neutral-100 rounded-full py-2 px-2 pr-5 flex-row items-center">
                                                         {stylist.image_url ? (
-                                                            <Image source={{ uri: stylist.image_url }} className="w-6 h-6 rounded-full mr-2 bg-neutral-100" />
+                                                            <Image source={{ uri: stylist.image_url }} className="w-8 h-8 rounded-full mr-3 bg-neutral-100" />
                                                         ) : (
-                                                            <View className="w-6 h-6 rounded-full mr-2 bg-neutral-100 items-center justify-center">
-                                                                <Feather name="user" size={12} color="#737373" />
+                                                            <View className="w-8 h-8 rounded-full mr-3 bg-neutral-100 items-center justify-center">
+                                                                <Feather name="user" size={16} color="#737373" />
                                                             </View>
                                                         )}
-                                                        <Text className="font-medium text-neutral-900">{stylist.name}</Text>
+                                                        <Text className="font-medium text-neutral-900 text-base">{stylist.name}</Text>
                                                     </View>
                                                 ))}
                                             </View>
                                         ) : (
                                             <View className="py-4 items-center">
-                                                <Text className="text-neutral-500">No team members added yet</Text>
+                                                <Text className="text-neutral-500 text-base">No team members added yet</Text>
                                             </View>
                                         )}
                                     </View>
@@ -356,30 +356,30 @@ export default function BusinessDashboard() {
 
                                     {/* Services */}
                                     <View className="bg-neutral-50 rounded-2xl p-6 mb-6">
-                                        <View className="flex-row items-center justify-between mb-4">
-                                            <Text className="text-lg font-semibold">Services ({services.length})</Text>
+                                        <View className="flex-row items-center justify-between mb-5">
+                                            <Text className="text-xl font-semibold">Services ({services.length})</Text>
                                             <TouchableOpacity
                                                 onPress={() => router.push('/business/edit/services')}
-                                                className="w-8 h-8 bg-white rounded-full items-center justify-center border border-neutral-200"
+                                                className="w-10 h-10 bg-white rounded-full items-center justify-center border border-neutral-200"
                                             >
-                                                <Feather name="edit-2" size={14} color="#737373" />
+                                                <Feather name="edit-2" size={16} color="#737373" />
                                             </TouchableOpacity>
                                         </View>
                                         {services.length > 0 ? (
                                             <>
                                                 {services.map((service) => (
-                                                    <View key={service.id} className="flex-row justify-between items-center mb-3">
+                                                    <View key={service.id} className="flex-row justify-between items-center mb-4">
                                                         <View className="flex-1">
-                                                            <Text className="font-semibold text-neutral-900">{service.name}</Text>
-                                                            <Text className="text-sm text-neutral-600">{service.duration_minutes} min</Text>
+                                                            <Text className="font-semibold text-neutral-900 text-lg mb-0.5">{service.name}</Text>
+                                                            <Text className="text-base text-neutral-600">{service.duration_minutes} min</Text>
                                                         </View>
-                                                        <Text className="font-semibold text-lg">${service.price}</Text>
+                                                        <Text className="font-bold text-xl ml-4">${service.price}</Text>
                                                     </View>
                                                 ))}
                                             </>
                                         ) : (
                                             <View className="py-4 items-center">
-                                                <Text className="text-neutral-500">No services added yet</Text>
+                                                <Text className="text-neutral-500 text-base">No services added yet</Text>
                                             </View>
                                         )}
                                     </View>
@@ -392,8 +392,8 @@ export default function BusinessDashboard() {
 
                                     {/* Cover Image */}
                                     <View className="bg-neutral-50 rounded-2xl p-6 mb-6">
-                                        <Text className="text-lg font-semibold mb-4">Cover Image</Text>
-                                        <Text className="text-sm text-neutral-600 mb-4">
+                                        <Text className="text-xl font-semibold mb-2">Cover Image</Text>
+                                        <Text className="text-base text-neutral-600 mb-6">
                                             Upload a cover image for your business profile (16:9 aspect ratio recommended).
                                         </Text>
 
@@ -429,11 +429,11 @@ export default function BusinessDashboard() {
 
                                     {/* Portfolio Gallery */}
                                     <View className="bg-neutral-50 rounded-2xl p-6 mb-6">
-                                        <Text className="text-lg font-semibold mb-4">Portfolio Gallery</Text>
-                                        <Text className="text-sm text-neutral-600 mb-4">
+                                        <Text className="text-xl font-semibold mb-2">Portfolio Gallery</Text>
+                                        <Text className="text-base text-neutral-600 mb-6">
                                             Showcase your work. Select one image as featured to display on your business profile.
                                         </Text>
-
+                                        
                                         {portfolioImages.length > 0 ? (
                                             <View className="mb-4">
                                                 <View className="flex-row flex-wrap gap-3">
@@ -452,17 +452,17 @@ export default function BusinessDashboard() {
                                                             />
 
                                                             {/* Action Buttons */}
-                                                            <View className="absolute top-2 right-2 flex-row gap-1">
+                                                            <View className="absolute top-2 right-2 flex-row gap-2">
                                                                 <TouchableOpacity
                                                                     onPress={() => {
                                                                         if (!image.is_featured) setFeaturedImage(image.id);
                                                                     }}
-                                                                    className="bg-white p-2 rounded-lg items-center justify-center"
-                                                                    style={{ opacity: 0.9 }}
+                                                                    className="bg-white p-2.5 rounded-[10px] items-center justify-center"
+                                                                    style={{ opacity: 0.95, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 }}
                                                                 >
                                                                     <Feather 
                                                                         name="star" 
-                                                                        size={16} 
+                                                                        size={18} 
                                                                         color={image.is_featured ? "#eab308" : "#000"} 
                                                                     />
                                                                 </TouchableOpacity>
