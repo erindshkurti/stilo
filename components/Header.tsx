@@ -190,7 +190,7 @@ export function Header({ showBack = false, backHref, backLabel = 'Back' }: Heade
                         ) : (
                             <Link href="/" asChild>
                                 <TouchableOpacity onPress={() => setMenuOpen(false)}>
-                                    <Text className="text-2xl font-bold text-neutral-900">Stilo</Text>
+                                    <Text className="text-3xl font-bold text-neutral-900">Stilo</Text>
                                 </TouchableOpacity>
                             </Link>
                         )}
@@ -438,23 +438,23 @@ export function Header({ showBack = false, backHref, backLabel = 'Back' }: Heade
                             activeOpacity={0.7}
                         >
                             {menuOpen ? (
-                                <View className="w-8 h-8 items-center justify-center">
-                                    <Feather name="x" size={24} color="#000" />
+                                <View className="w-10 h-10 items-center justify-center">
+                                    <Feather name="x" size={28} color="#000" />
                                 </View>
                             ) : user ? (
-                                <View className="w-8 h-8 rounded-full overflow-hidden bg-neutral-100 items-center justify-center border border-neutral-200">
+                                <View className="w-10 h-10 rounded-full overflow-hidden bg-neutral-100 items-center justify-center border border-neutral-200">
                                     {avatarUrl ? (
                                         <Image
                                             source={{ uri: avatarUrl }}
                                             className="w-full h-full"
                                         />
                                     ) : (
-                                        <Feather name="user" size={16} color="#000" />
+                                        <Feather name="user" size={20} color="#000" />
                                     )}
                                 </View>
                             ) : (
-                                <View className="w-8 h-8 items-center justify-center">
-                                    <Feather name="menu" size={24} color="#000" />
+                                <View className="w-10 h-10 items-center justify-center">
+                                    <Feather name="menu" size={28} color="#000" />
                                 </View>
                             )}
                         </TouchableOpacity>

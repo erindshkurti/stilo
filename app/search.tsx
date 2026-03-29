@@ -222,19 +222,19 @@ export default function SearchScreen() {
                             /* Mobile: Search Bar Summary -> Opens Modal */
                             <TouchableOpacity
                                 onPress={() => setIsFilterModalVisible(true)}
-                                className="flex-row items-center bg-white border border-neutral-200 rounded-full shadow-sm px-4 py-3 my-2"
+                                className="flex-row items-center bg-white border border-neutral-200 rounded-full shadow-sm px-4 py-4 my-2"
                             >
-                                <Feather name="search" size={20} color="#000" />
+                                <Feather name="search" size={24} color="#000" />
                                 <View className="ml-4 flex-1">
-                                    <Text className="font-semibold text-neutral-900 text-sm" numberOfLines={1}>
+                                    <Text className="font-semibold text-neutral-900 text-lg" numberOfLines={1}>
                                         {location || 'Anywhere'}
                                     </Text>
-                                    <Text className="text-neutral-500 text-xs" numberOfLines={1}>
+                                    <Text className="text-neutral-500 text-base" numberOfLines={1}>
                                         {service || 'Any service'} • {date || 'Any week'}
                                     </Text>
                                 </View>
-                                <View className="bg-neutral-100 p-2 rounded-full border border-neutral-200">
-                                    <Feather name="sliders" size={16} color="#000" />
+                                <View className="bg-neutral-100 p-2.5 rounded-full border border-neutral-200">
+                                    <Feather name="sliders" size={20} color="#000" />
                                 </View>
                             </TouchableOpacity>
                         )}
