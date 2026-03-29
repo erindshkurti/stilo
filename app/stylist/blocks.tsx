@@ -163,10 +163,10 @@ export default function StaffBlocksScreen() {
                     <View className="px-6 py-4 items-center">
                         <View style={{ maxWidth, width: '100%' }}>
                         <View className="mb-8">
-                            <Text className={`font-bold mb-2 ${isLargeScreen ? 'text-3xl' : 'text-2xl'}`}>
+                            <Text className={`font-bold mb-2 ${isLargeScreen ? 'text-5xl' : 'text-4xl'}`}>
                                 Time Blocks
                             </Text>
-                            <Text className="text-neutral-600">
+                            <Text className="text-neutral-600 text-lg">
                                 Mark specific times as unavailable
                             </Text>
                         </View>
@@ -183,7 +183,7 @@ export default function StaffBlocksScreen() {
                         >
                             <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
                                 <View className="flex-row items-center justify-between px-6 py-4 border-b border-neutral-100">
-                                    <Text className="text-xl font-bold">{editingBlockId ? 'Edit Block' : 'Add Block'}</Text>
+                                    <Text className="text-2xl font-bold">{editingBlockId ? 'Edit Block' : 'Add Block'}</Text>
                                     <TouchableOpacity 
                                         onPress={() => {
                                             setShowForm(false);
@@ -203,7 +203,7 @@ export default function StaffBlocksScreen() {
                                 
                                 <ScrollView className="flex-1 px-6 pt-8">
                                     <View className="mb-6" style={{ zIndex: 30 }}>
-                                        <Text className="text-sm font-medium text-neutral-500 uppercase mb-2 tracking-wider">Date</Text>
+                                        <Text className="text-base font-medium text-neutral-700 mb-2">Date</Text>
                                         <DatePicker 
                                             isInline
                                             value={newBlock.date}
@@ -214,7 +214,7 @@ export default function StaffBlocksScreen() {
 
                                     <View className="flex-row gap-4 mb-8" style={{ zIndex: 20 }}>
                                         <View className="flex-1">
-                                            <Text className="text-sm font-medium text-neutral-500 uppercase mb-2 tracking-wider">Start Time</Text>
+                                            <Text className="text-base font-medium text-neutral-700 mb-2">Start Time</Text>
                                             <TimePicker 
                                                 isInline
                                                 value={newBlock.start_time}
@@ -223,7 +223,7 @@ export default function StaffBlocksScreen() {
                                             />
                                         </View>
                                         <View className="flex-1">
-                                            <Text className="text-sm font-medium text-neutral-500 uppercase mb-2 tracking-wider">End Time</Text>
+                                            <Text className="text-base font-medium text-neutral-700 mb-2">End Time</Text>
                                             <TimePicker 
                                                 isInline
                                                 value={newBlock.end_time}
@@ -234,7 +234,7 @@ export default function StaffBlocksScreen() {
                                     </View>
 
                                     <View className="mb-10">
-                                        <Text className="text-sm font-medium text-neutral-500 uppercase mb-2 tracking-wider">Reason</Text>
+                                        <Text className="text-base font-medium text-neutral-700 mb-2">Reason</Text>
                                         <FormInput 
                                             value={newBlock.reason}
                                             onChangeText={(t) => setNewBlock(prev => ({ ...prev, reason: t }))}
@@ -252,7 +252,7 @@ export default function StaffBlocksScreen() {
                                         ) : (
                                             <>
                                                 <Feather name="check" size={20} color="white" />
-                                                <Text className="text-white font-bold ml-2 text-lg">
+                                                <Text className="text-white font-bold ml-2 text-xl">
                                                     {editingBlockId ? 'Save Changes' : 'Add Block'}
                                                 </Text>
                                             </>
@@ -268,13 +268,13 @@ export default function StaffBlocksScreen() {
                                 blocks.map(block => (
                                     <View key={block.id} className="bg-white border border-neutral-100 p-5 rounded-2xl flex-row items-center mb-4">
                                         <View className="flex-1">
-                                            <Text className="font-bold text-lg text-neutral-900">{block.reason}</Text>
+                                            <Text className="font-bold text-xl text-neutral-900">{block.reason}</Text>
                                             <View className="flex-row items-center mt-1">
                                                 <Feather name="calendar" size={14} color="#737373" />
-                                                <Text className="text-neutral-500 ml-1.5 text-sm">{block.date}</Text>
+                                                <Text className="text-neutral-500 ml-1.5 text-base">{block.date}</Text>
                                                 <View className="w-1 h-1 rounded-full bg-neutral-300 mx-2" />
                                                 <Feather name="clock" size={14} color="#737373" />
-                                                <Text className="text-neutral-500 ml-1.5 text-sm">{block.start_time} - {block.end_time}</Text>
+                                                <Text className="text-neutral-500 ml-1.5 text-base">{block.start_time} - {block.end_time}</Text>
                                             </View>
                                         </View>
                                         <View className="flex-row items-center gap-1">
@@ -309,7 +309,7 @@ export default function StaffBlocksScreen() {
                     className="bg-black py-4 rounded-2xl items-center shadow-lg"
                     activeOpacity={0.8}
                 >
-                    <Text className="text-white font-bold text-lg">Add Time Block</Text>
+                    <Text className="text-white font-bold text-xl">Add Time Block</Text>
                 </TouchableOpacity>
             </View>
 
