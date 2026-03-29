@@ -153,28 +153,28 @@ export default function EditServicesScreen() {
                                 <View className="space-y-4">
                                     {services.map((service) => (
                                         <View key={service.id} className="bg-neutral-50 rounded-2xl p-5 mb-3">
-                                            <View className="flex-row items-start justify-between mb-4">
+                                            <View className="flex-row items-start justify-between mb-2">
                                                 <View className="flex-1">
-                                                    <Text className="font-bold text-lg text-neutral-900">{service.name}</Text>
+                                                    <Text className="font-bold text-xl text-neutral-900" numberOfLines={1}>{service.name}</Text>
                                                     <View className="flex-row items-center mt-1">
                                                         <View className="bg-neutral-200 px-2 py-0.5 rounded-md">
-                                                            <Text className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">{service.category}</Text>
+                                                            <Text className="text-xs font-bold text-neutral-600 tracking-wide">{service.category}</Text>
                                                         </View>
                                                         <View className="w-1 h-1 rounded-full bg-neutral-300 mx-2" />
-                                                        <Text className="text-sm text-neutral-500">{service.duration_minutes} min</Text>
+                                                        <Text className="text-base text-neutral-500">{service.duration_minutes} min</Text>
                                                     </View>
                                                 </View>
                                                 <View className="flex-row items-center gap-1">
                                                     <TouchableOpacity onPress={() => handleEditClick(service)} className="p-2">
-                                                        <Feather name="edit-2" size={18} color="#737373" />
+                                                        <Feather name="edit-2" size={22} color="#737373" />
                                                     </TouchableOpacity>
                                                     <TouchableOpacity onPress={() => removeService(service.id)} className="p-2">
-                                                        <Feather name="trash-2" size={18} color="#ef4444" />
+                                                        <Feather name="trash-2" size={22} color="#ef4444" />
                                                     </TouchableOpacity>
                                                 </View>
                                             </View>
-                                            <View className="flex-row items-center justify-between border-t border-neutral-100 pt-4">
-                                                <Text className="text-neutral-500 text-sm">Base Price</Text>
+                                            <View className="flex-row items-center justify-between border-t border-neutral-100 pt-3">
+                                                <Text className="text-neutral-500 text-base font-medium">Base Price</Text>
                                                 <Text className="font-bold text-2xl text-neutral-900">${service.price}</Text>
                                             </View>
                                         </View>

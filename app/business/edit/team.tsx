@@ -367,7 +367,7 @@ export default function EditTeamScreen() {
                                 autoCapitalize="none"
                                 keyboardType="email-address"
                             />
-                            <Text className="text-xs text-neutral-500 mt-1">Linking an email allows the stylist to log in and manage their own schedule.</Text>
+                            <Text className="text-sm text-neutral-500 mt-2">Linking an email allows the stylist to log in and manage their own schedule.</Text>
                         </View>
 
                         <View className="mb-8">
