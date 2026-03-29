@@ -69,12 +69,12 @@ export function TimePicker({ value, onChange, placeholder, className, isInline, 
             >
                 <SafeAreaView className="flex-1 bg-white">
                     <View className="h-16 flex-row items-center justify-between px-6 border-b border-neutral-100">
-                        <Text className="text-xl font-bold text-neutral-900">Select Time</Text>
+                        <Text className="text-2xl font-bold text-neutral-900">Select Time</Text>
                         <TouchableOpacity 
                             onPress={() => setIsOpen(false)}
                             className="h-10 w-10 items-center justify-center rounded-full bg-neutral-100"
                         >
-                            <Feather name="x" size={20} color="#171717" />
+                            <Feather name="x" size={24} color="#171717" />
                         </TouchableOpacity>
                     </View>
                     
