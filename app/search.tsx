@@ -296,7 +296,7 @@ export default function SearchScreen() {
                 >
                     <SafeAreaView className="flex-1 bg-white">
                         <View className="flex-row items-center justify-between px-6 py-4 border-b border-neutral-100">
-                            <Text className="text-xl font-bold">Filters</Text>
+                            <Text className="text-2xl font-bold">Filters</Text>
                             <TouchableOpacity onPress={() => setIsFilterModalVisible(false)}>
                                 <Feather name="x" size={24} color="#000" />
                             </TouchableOpacity>
@@ -307,10 +307,10 @@ export default function SearchScreen() {
                             contentContainerStyle={{ paddingBottom: 350 }}
                             keyboardShouldPersistTaps="handled"
                         >
-                            <View className="gap-8 flex-col">
+                            <View className="gap-6 flex-col">
                                 {/* Location */}
                                 <View style={{ zIndex: 30 }}>
-                                    <Text className="font-semibold text-lg mb-3">Where to?</Text>
+                                    <Text className="text-base font-medium text-neutral-700 mb-2">Where to?</Text>
                                     <AutocompleteInput
                                         placeholder="City"
                                         value={location}
@@ -330,7 +330,7 @@ export default function SearchScreen() {
 
                                 {/* Service */}
                                 <View style={{ zIndex: 20 }}>
-                                    <Text className="font-semibold text-lg mb-3">Service</Text>
+                                    <Text className="text-base font-medium text-neutral-700 mb-2">Service</Text>
                                     <AutocompleteInput
                                         placeholder="Haircut, Color, Styling..."
                                         value={service}
@@ -350,7 +350,7 @@ export default function SearchScreen() {
 
                                 {/* Date */}
                                 <View style={{ zIndex: 10 }}>
-                                    <Text className="font-semibold text-lg mb-3">When?</Text>
+                                    <Text className="text-base font-medium text-neutral-700 mb-2">When?</Text>
                                     <DatePicker
                                         placeholder="Add dates"
                                         value={date}
@@ -370,7 +370,7 @@ export default function SearchScreen() {
                                 }}
                                 className="bg-black py-4 rounded-xl items-center"
                             >
-                                <Text className="text-white font-bold text-lg">
+                                <Text className="text-white font-bold text-xl">
                                     Show Results
                                 </Text>
                             </TouchableOpacity>
