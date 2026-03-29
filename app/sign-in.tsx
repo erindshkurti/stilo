@@ -6,7 +6,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View, Platform, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { GoogleAuthProvider, signInWithCredential, signInWithEmailAndPassword, signInWithPopup, createUserWithEmailAndPassword } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithCredential, signInWithEmailAndPassword, signInWithPopup, createUserWithEmailAndPassword, OAuthProvider } from 'firebase/auth';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import * as Crypto from 'expo-crypto';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Button } from '../components/Button';
 import { GoogleLogo } from '../components/GoogleLogo';
 import { FormInput } from '../components/FormInput';
@@ -21,6 +24,7 @@ export default function SignInScreen() {
     const params = useLocalSearchParams();
     const returnTo = params.returnTo as string | undefined;
 
+    const [isAppleAvailable, setIsAppleAvailable] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [fullName, setFullName] = useState('');
@@ -111,6 +115,20 @@ export default function SignInScreen() {
 
         handleAuthRedirect();
     }, [user, router, returnTo]);
+
+    useEffect(() => {
+        async function checkApple() {
+            try {
+                const available = await AppleAuthentication.isAvailableAsync();
+                setIsAppleAvailable(available);
+            } catch (e) {
+                setIsAppleAvailable(false);
+            }
+        }
+        if (Platform.OS === 'ios') {
+            checkApple();
+        }
+    }, []);
 
     async function handleEmailAuth() {
         setLoading(true);
@@ -233,6 +251,67 @@ export default function SignInScreen() {
         }
     }
 
+    async function handleAppleAuth() {
+        try {
+            setLoading(true);
+            setError('');
+
+            if (returnTo) {
+                await AsyncStorage.setItem('auth_return_url', returnTo as string);
+            } else {
+                await AsyncStorage.removeItem('auth_return_url');
+            }
+
+            // 1. Generate Nonce for Firebase (matched to flexilist pattern)
+            const rawNonce = Math.random().toString(36).substring(2, 10) + 
+                             Math.random().toString(36).substring(2, 10);
+            const hashedNonce = await Crypto.digestStringAsync(
+                Crypto.CryptoDigestAlgorithm.SHA256,
+                rawNonce
+            );
+
+            // 2. Request Apple Credentials
+            const credential = await AppleAuthentication.signInAsync({
+                requestedScopes: [
+                    AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+                    AppleAuthentication.AppleAuthenticationScope.EMAIL,
+                ],
+                nonce: hashedNonce,
+            });
+
+            // 3. Authenticate with Firebase
+            const provider = new OAuthProvider('apple.com');
+            const firebaseCredential = provider.credential({
+                idToken: credential.identityToken!,
+                rawNonce: rawNonce,
+            });
+
+            const cred = await signInWithCredential(auth, firebaseCredential);
+
+            // 4. Ensure profile exists
+            const profileSnap = await getDoc(doc(db, 'profiles', cred.user.uid));
+            if (!profileSnap.exists()) {
+                await setDoc(doc(db, 'profiles', cred.user.uid), {
+                    user_type: 'customer',
+                    email: cred.user.email,
+                    full_name: credential.fullName 
+                        ? `${credential.fullName.givenName || ''} ${credential.fullName.familyName || ''}`.trim()
+                        : cred.user.displayName || null,
+                    created_at: new Date().toISOString(),
+                }, { merge: true });
+            }
+        } catch (error: any) {
+            if (error.code === 'ERR_CANCELED') {
+                // Ignore User Cancellation
+            } else {
+                console.error('Apple auth error:', error);
+                setError(error.message || 'Failed to sign in with Apple');
+            }
+        } finally {
+            setLoading(false);
+        }
+    }
+
     // Show loading screen while checking auth or redirecting in the effect
     if (user && !error) {
         return (
@@ -267,6 +346,16 @@ export default function SignInScreen() {
                             icon={<GoogleLogo size={20} />}
                             onPress={handleGoogleAuth}
                         />
+
+                        {isAppleAvailable && (
+                            <Button
+                                variant="primary"
+                                label="Continue with Apple"
+                                onPress={handleAppleAuth}
+                                icon={<Ionicons name="logo-apple" size={20} color="white" />}
+                                className="mt-4"
+                            />
+                        )}
 
                         <View className="flex-row items-center my-6">
                             <View className="flex-1 h-[1px] bg-neutral-100" />

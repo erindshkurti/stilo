@@ -21,8 +21,9 @@ export default {
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.erindshkurti.stilo",
+      "usesAppleSignIn": true,
       "buildNumber": buildNumber.toString(),
-      "googleServicesFile": "./GoogleService-Info.plist",
+      "googleServicesFile": process.env.GOOGLE_SERVICES_IOS || "./GoogleService-Info.plist",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -63,11 +64,12 @@ export default {
           }
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-apple-authentication"
     ].filter(Boolean),
     "experiments": {
       "typedRoutes": true,
-      "reactCompiler": true
+      "reactCompiler": false
     },
     "extra": {
       "eas": {

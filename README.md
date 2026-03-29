@@ -235,9 +235,23 @@ For deployment of database rules and configuration:
 
 > **Note**: Legacy Supabase documentation remains in `docs/` for historical context only. The application is now fully reliant on Firebase.
 
-### Mobile Deployment
+### Mobile Deployment (iOS)
 
-For iOS and Android deployment using Expo Application Services (EAS), refer to the Expo EAS documentation.
+The application is configured for cloud builds using Expo Application Services (EAS). Building locally is not recommended due to complex certificate and keychain management.
+
+**Prerequisites:**
+- Ensure `GoogleService-Info.plist` is uploaded as an EAS secret.
+  ```bash
+  eas secret:create --scope project --name GOOGLE_SERVICES_IOS --type file --value ./GoogleService-Info.plist
+  ```
+- Ensure the app is registered in **App Store Connect** and the bundle ID has the **Sign In with Apple** capability enabled in the Apple Developer Portal.
+
+**Build & Submit to App Store Connect:**
+To build the app and automatically submit the `.ipa` to TestFlight:
+```bash
+eas build --platform ios --profile production --auto-submit
+```
+This command automatically increments the build number, securely injects the Firebase configuration, compiles the app on Expo servers, and pushes it to your App Store Connect account.
 
 ## 📄 License
 
