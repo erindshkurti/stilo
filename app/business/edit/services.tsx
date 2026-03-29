@@ -228,7 +228,7 @@ export default function EditServicesScreen() {
                         style={isLargeScreen ? { width: 600, maxHeight: '90%', borderRadius: 24, overflow: 'hidden' } : { width: '100%' }}
                     >
                         <View className="flex-row items-center justify-between px-6 py-4 border-b border-neutral-100">
-                            <Text className="text-xl font-bold">
+                            <Text className="text-2xl font-bold">
                                 {isEditing ? 'Edit Service' : 'Add Service'}
                             </Text>
                             <TouchableOpacity onPress={() => setIsModalVisible(false)} className="p-2 -mr-2">
@@ -238,7 +238,7 @@ export default function EditServicesScreen() {
 
                         <ScrollView className="flex-1 px-6 pt-8">
                             <View className="mb-6">
-                                <Text className="text-sm font-medium text-neutral-500 uppercase mb-3 tracking-wider">Category</Text>
+                                <Text className="text-base font-medium text-neutral-700 mb-2">Category</Text>
                                 <View className="flex-row flex-wrap gap-2">
                                     {CATEGORIES.map((cat) => (
                                         <TouchableOpacity
@@ -258,7 +258,7 @@ export default function EditServicesScreen() {
                             </View>
 
                             <View className="mb-6">
-                                <Text className="text-sm font-medium text-neutral-500 uppercase mb-2 tracking-wider">Service Name</Text>
+                                <Text className="text-base font-medium text-neutral-700 mb-2">Service Name</Text>
                                 <FormInput
                                     placeholder="e.g., Women's Haircut"
                                     value={currentService.name}
@@ -268,7 +268,7 @@ export default function EditServicesScreen() {
 
                             <View className="flex-row gap-4 mb-6">
                                 <View className="flex-1">
-                                    <Text className="text-sm font-medium text-neutral-500 uppercase mb-2 tracking-wider">Duration (min)</Text>
+                                    <Text className="text-base font-medium text-neutral-700 mb-2">Duration (min)</Text>
                                     <FormInput
                                         placeholder="60"
                                         value={currentService.duration_minutes > 0 ? currentService.duration_minutes.toString() : ''}
@@ -278,7 +278,7 @@ export default function EditServicesScreen() {
                                 </View>
 
                                 <View className="flex-1">
-                                    <Text className="text-sm font-medium text-neutral-500 uppercase mb-2 tracking-wider">Price ($)</Text>
+                                    <Text className="text-base font-medium text-neutral-700 mb-2">Price ($)</Text>
                                     <FormInput
                                         placeholder="50"
                                         value={currentService.price > 0 ? currentService.price.toString() : ''}
@@ -289,7 +289,7 @@ export default function EditServicesScreen() {
                             </View>
 
                             <View className="mb-10">
-                                <Text className="text-sm font-medium text-neutral-500 uppercase mb-2 tracking-wider">Description (Optional)</Text>
+                                <Text className="text-base font-medium text-neutral-700 mb-2">Description (optional)</Text>
                                 <TextInput
                                     placeholder="Brief description of what's included..."
                                     value={currentService.description}
@@ -313,7 +313,7 @@ export default function EditServicesScreen() {
                                 ) : (
                                     <Feather name={isEditing ? "save" : "check"} size={20} color="white" />
                                 )}
-                                <Text className="text-white font-bold ml-2 text-lg">
+                                <Text className="text-white font-bold ml-2 text-xl">
                                     {actionLoading ? 'Saving...' : isEditing ? 'Save Service' : 'Add Service'}
                                 </Text>
                             </TouchableOpacity>

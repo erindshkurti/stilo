@@ -313,7 +313,7 @@ export default function EditTeamScreen() {
                         style={isLargeScreen ? { width: 600, maxHeight: '90%', borderRadius: 24, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 30 } : { width: '100%' }}
                     >
                         <View className="flex-row items-center justify-between px-6 py-4 border-b border-neutral-100">
-                        <Text className="text-xl font-bold">
+                        <Text className="text-2xl font-bold">
                             {isEditing ? 'Edit Stylist' : 'Add Stylist'}
                         </Text>
                         <TouchableOpacity onPress={cancelEdit} className="p-2 -mr-2">
@@ -344,13 +344,13 @@ export default function EditTeamScreen() {
                                     onPress={() => setCurrentStylist({ ...currentStylist, local_image_uri: undefined, has_new_image: true })}
                                     className="mt-4 bg-red-50 px-4 py-2 rounded-full"
                                 >
-                                    <Text className="text-sm text-red-600 font-medium">Remove Photo</Text>
+                                    <Text className="text-base text-red-600 font-medium">Remove Photo</Text>
                                 </TouchableOpacity>
                             )}
                         </View>
 
                         <View className="mb-5">
-                            <Text className="text-sm font-medium text-neutral-700 mb-2">Stylist Name</Text>
+                            <Text className="text-base font-medium text-neutral-700 mb-2">Stylist Name</Text>
                             <FormInput
                                 placeholder="e.g., Sarah Johnson"
                                 value={currentStylist.name}
@@ -359,7 +359,7 @@ export default function EditTeamScreen() {
                         </View>
 
                         <View className="mb-5">
-                            <Text className="text-sm font-medium text-neutral-700 mb-2">Email Address (Optional)</Text>
+                            <Text className="text-base font-medium text-neutral-700 mb-2">Email Address (Optional)</Text>
                             <FormInput
                                 placeholder="stylist@example.com"
                                 value={currentStylist.email}
@@ -371,7 +371,7 @@ export default function EditTeamScreen() {
                         </View>
 
                         <View className="mb-8">
-                            <Text className="text-sm font-medium text-neutral-700 mb-2">Short Bio (Optional)</Text>
+                            <Text className="text-base font-medium text-neutral-700 mb-2">Short Bio (Optional)</Text>
                             <TextInput
                                 placeholder="Brief description to help clients get to know them..."
                                 value={currentStylist.bio}
@@ -395,7 +395,7 @@ export default function EditTeamScreen() {
                             ) : (
                                 <Feather name={isEditing ? "save" : "check"} size={20} color={currentStylist.name.trim() ? "white" : "#a3a3a3"} />
                             )}
-                            <Text className={`${currentStylist.name.trim() && !actionLoading ? 'text-white' : 'text-neutral-500'} font-semibold ml-2 text-base`}>
+                            <Text className={`${currentStylist.name.trim() && !actionLoading ? 'text-white' : 'text-neutral-500'} font-bold ml-2 text-xl`}>
                                 {actionLoading ? 'Saving...' : isEditing ? 'Save Stylist' : 'Add Stylist'}
                             </Text>
                         </TouchableOpacity>
