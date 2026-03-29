@@ -223,6 +223,7 @@ export default function BusinessSignUpScreen() {
                             <Button
                                 label="Continue with Google"
                                 variant="google"
+                                size="lg"
                                 icon={<GoogleLogo size={20} />}
                                 onPress={handleGoogleAuth}
                             />
@@ -264,6 +265,7 @@ export default function BusinessSignUpScreen() {
                         <Button
                             label="Create Business Account"
                             loading={loading}
+                            size="lg"
                             onPress={handleSignUp}
                             className="mt-6"
                         />

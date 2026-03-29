@@ -255,7 +255,7 @@ export default function StaffHoursScreen() {
                         disabled={saving}
                         className={`py-4 rounded-xl ${saving ? 'bg-neutral-300' : 'bg-black'}`}
                     >
-                        <Text className="text-white font-medium text-center text-base">
+                        <Text className="text-white font-bold text-center text-xl">
                             {saving ? 'Saving...' : 'Save My Hours'}
                         </Text>
                     </TouchableOpacity>

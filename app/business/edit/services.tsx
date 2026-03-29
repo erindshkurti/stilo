@@ -198,14 +198,14 @@ export default function EditServicesScreen() {
                 {!loading && (
                     <View className="p-6 border-t border-neutral-100 bg-white items-center">
                         <View style={{ maxWidth, width: '100%' }}>
-                            <TouchableOpacity 
-                                onPress={handleAddClick} 
-                                className="bg-black py-4 rounded-2xl items-center flex-row justify-center shadow-lg"
+                            <TouchableOpacity
+                                onPress={handleAddClick}
+                                disabled={actionLoading}
+                                className={`py-4 rounded-xl items-center justify-center shadow-lg ${actionLoading ? 'bg-neutral-300' : 'bg-black'}`}
                                 activeOpacity={0.8}
                             >
-                                <Feather name="plus" size={20} color="white" />
-                                <Text className="text-white font-bold ml-2 text-lg">
-                                    Add Service
+                                <Text className="text-white font-bold text-lg">
+                                    {actionLoading ? 'Saving...' : 'Add Service'}
                                 </Text>
                             </TouchableOpacity>
                         </View>
@@ -313,7 +313,7 @@ export default function EditServicesScreen() {
                                 ) : (
                                     <Feather name={isEditing ? "save" : "check"} size={20} color="white" />
                                 )}
-                                <Text className="text-white font-bold ml-2 text-xl">
+                                <Text className="text-white font-bold ml-2 text-lg">
                                     {actionLoading ? 'Saving...' : isEditing ? 'Save Service' : 'Add Service'}
                                 </Text>
                             </TouchableOpacity>

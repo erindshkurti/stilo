@@ -252,7 +252,7 @@ export default function StaffBlocksScreen() {
                                         ) : (
                                             <>
                                                 <Feather name="check" size={20} color="white" />
-                                                <Text className="text-white font-bold ml-2 text-xl">
+                                                <Text className="text-white font-bold ml-2 text-lg">
                                                     {editingBlockId ? 'Save Changes' : 'Add Block'}
                                                 </Text>
                                             </>
@@ -309,7 +309,7 @@ export default function StaffBlocksScreen() {
                     className="bg-black py-4 rounded-2xl items-center shadow-lg"
                     activeOpacity={0.8}
                 >
-                    <Text className="text-white font-bold text-xl">Add Time Block</Text>
+                    <Text className="text-white font-bold text-lg">Add Time Block</Text>
                 </TouchableOpacity>
             </View>
 

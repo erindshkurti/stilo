@@ -413,6 +413,7 @@ export default function BusinessOnboardingScreen() {
                             <Button
                                 label="Back"
                                 variant="outline"
+                                size="lg"
                                 onPress={handleBack}
                                 className="flex-1"
                             />
@@ -421,6 +422,7 @@ export default function BusinessOnboardingScreen() {
                             label={currentStep === STEPS.length ? 'Complete' : 'Next'}
                             onPress={handleNext}
                             loading={loading}
+                            size={currentStep === STEPS.length ? 'xl' : 'lg'}
                             className="flex-1"
                             disabled={!canProceed()} // Visually disable the button as well
                         />

@@ -343,6 +343,7 @@ export default function SignInScreen() {
                         <Button
                             label="Continue with Google"
                             variant="google"
+                            size="lg"
                             icon={<GoogleLogo size={20} />}
                             onPress={handleGoogleAuth}
                         />
@@ -351,6 +352,7 @@ export default function SignInScreen() {
                             <Button
                                 variant="primary"
                                 label="Continue with Apple"
+                                size="lg"
                                 onPress={handleAppleAuth}
                                 icon={<Ionicons name="logo-apple" size={20} color="white" />}
                                 className="mt-4"
@@ -401,6 +403,7 @@ export default function SignInScreen() {
                         <Button
                             label={isSignUp ? "Create account" : "Sign in"}
                             loading={loading}
+                            size="lg"
                             onPress={handleEmailAuth}
                             className="mt-6"
                         />

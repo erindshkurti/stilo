@@ -116,6 +116,7 @@ export default function StylistInviteScreen() {
                         <Button
                             label={accepting ? "Accepting..." : "Accept Invitation"}
                             variant="primary"
+                            size="lg"
                             onPress={handleAccept}
                             disabled={accepting}
                         />

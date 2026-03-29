@@ -267,6 +267,7 @@ export default function ProfileScreen() {
                             label={saving ? "Saving..." : "Save Profile"}
                             onPress={handleSave}
                             variant="primary"
+                            size="lg"
                             disabled={saving}
                         />
                     </View>

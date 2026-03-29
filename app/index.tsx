@@ -350,7 +350,7 @@ export default function LandingPage() {
                                             <Button
                                                 label="Search"
                                                 variant="primary"
-                                                size="md"
+                                                size="xl"
                                                 onPress={() => {
                                                     router.push({
                                                         pathname: '/search',

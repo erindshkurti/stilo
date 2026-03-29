@@ -220,10 +220,10 @@ export default function EditBusinessDetailsScreen() {
                             <TouchableOpacity
                                 onPress={handleSave}
                                 disabled={saving}
-                                className={`py-4 rounded-2xl items-center justify-center shadow-lg ${saving ? 'bg-neutral-300' : 'bg-black'}`}
+                                className={`py-4 rounded-xl items-center justify-center shadow-lg ${saving ? 'bg-neutral-300' : 'bg-black'}`}
                                 activeOpacity={0.8}
                             >
-                                <Text className="text-white font-bold text-xl">
+                                <Text className="text-white font-bold text-lg">
                                     {saving ? 'Saving...' : 'Save Changes'}
                                 </Text>
                             </TouchableOpacity>

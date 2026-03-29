@@ -223,7 +223,7 @@ export default function EditHoursScreen() {
                             {saving ? (
                                 <ActivityIndicator color="white" />
                             ) : (
-                                <Text className="text-white font-medium text-center text-base">Save Hours</Text>
+                                <Text className="text-white font-bold text-center text-xl">Save Hours</Text>
                             )}
                         </TouchableOpacity>
                     </View>

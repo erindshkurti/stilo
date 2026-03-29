@@ -395,7 +395,7 @@ export default function EditTeamScreen() {
                             ) : (
                                 <Feather name={isEditing ? "save" : "check"} size={20} color={currentStylist.name.trim() ? "white" : "#a3a3a3"} />
                             )}
-                            <Text className={`${currentStylist.name.trim() && !actionLoading ? 'text-white' : 'text-neutral-500'} font-bold ml-2 text-xl`}>
+                            <Text className={`${currentStylist.name.trim() && !actionLoading ? 'text-white' : 'text-neutral-500'} font-bold ml-2 text-lg`}>
                                 {actionLoading ? 'Saving...' : isEditing ? 'Save Stylist' : 'Add Stylist'}
                             </Text>
                         </TouchableOpacity>

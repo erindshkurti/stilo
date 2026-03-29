@@ -4,7 +4,7 @@ import { ActivityIndicator, Platform, Text, TouchableOpacity, View } from 'react
 
 interface ButtonProps extends React.ComponentProps<typeof TouchableOpacity> {
     variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'google';
-    size?: 'sm' | 'md' | 'lg';
+    size?: 'sm' | 'md' | 'lg' | 'xl';
     label: string;
     loading?: boolean;
     icon?: React.ReactNode;
@@ -35,12 +35,14 @@ export const Button = forwardRef<React.ElementRef<typeof TouchableOpacity>, Butt
             sm: "h-10 px-4",
             md: "h-14 px-6",
             lg: "h-16 px-8",
+            xl: "h-16 px-10",
         };
 
         const textSizes = {
             sm: "text-sm font-medium",
-            md: "text-base font-medium",
-            lg: "text-lg font-semibold",
+            md: "text-base font-bold",
+            lg: "text-lg font-bold",
+            xl: "text-xl font-bold",
         };
 
         return (

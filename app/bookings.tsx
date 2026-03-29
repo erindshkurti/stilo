@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Image, ScrollView, Text, TouchableOpacity, useWindowDimensions, View, Alert, Modal, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Button } from '../components/Button';
 import { Header } from '../components/Header';
 import { useAuth } from '../lib/auth';
 import { db } from '../lib/firebase';
@@ -288,13 +289,13 @@ export default function BookingsScreen() {
                                                 : "You haven't completed any appointments yet."}
                                         </Text>
                                     </View>
-                                    <TouchableOpacity 
-                                        onPress={() => router.push('/')}
-                                        className="bg-black px-10 py-4 rounded-2xl flex-row items-center shadow-lg"
-                                    >
-                                        <Feather name="search" size={20} color="white" />
-                                        <Text className="text-white font-bold text-lg ml-3">Find a Stylist</Text>
-                                    </TouchableOpacity>
+                                            <Button
+                                                label="Find a Stylist"
+                                                variant="primary"
+                                                size="lg"
+                                                icon={<Feather name="search" size={20} color="white" />}
+                                                onPress={() => router.push('/')}
+                                            />
                                 </View>
                             )}
                         </View>
