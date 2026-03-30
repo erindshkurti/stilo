@@ -180,7 +180,7 @@ export default function BusinessPage() {
                 <View className="w-full items-center pb-32">
                     <View style={{ width: '100%', maxWidth: 1200 }}>
                         {/* Cover Image Section */}
-                        <View className="relative w-full h-72 bg-neutral-200">
+                        <View className={`relative w-full h-72 bg-neutral-200 ${isLargeScreen ? 'rounded-b-3xl overflow-hidden' : ''}`}>
                             {business.cover_image_url ? (
                                 <Image
                                     source={{ uri: business.cover_image_url }}
