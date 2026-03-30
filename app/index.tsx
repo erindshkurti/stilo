@@ -1,3 +1,4 @@
+import { clsx } from 'clsx';
 import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -358,6 +359,7 @@ export default function LandingPage() {
                                                     });
                                                 }}
                                                 className={isLargeScreen ? '' : 'w-full'}
+                                                style={Platform.OS === 'web' ? { height: 56 } : undefined}
                                             />
                                         </View>
                                     </View>
