@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, View, Text, TouchableOpacity, ScrollView, Alert, Image, Linking, StyleSheet } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, ScrollView, Alert, Image, Linking, StyleSheet, useWindowDimensions, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { db } from '@/lib/firebase';
@@ -34,6 +34,8 @@ interface Props {
 }
 
 export function BookingDetailModal({ visible, onClose, booking, onUpdate, isStylistView }: Props) {
+    const { width } = useWindowDimensions();
+    const isDesktop = Platform.OS === 'web' && width > 700;
     const [isRescheduling, setIsRescheduling] = React.useState(false);
     const [resDate, setResDate] = React.useState('');
     const [resTime, setResTime] = React.useState('');
@@ -113,19 +115,21 @@ export function BookingDetailModal({ visible, onClose, booking, onUpdate, isStyl
     return (
         <Modal
             visible={visible}
-            animationType="slide"
-            presentationStyle="pageSheet"
+            animationType={isDesktop ? 'fade' : 'slide'}
+            presentationStyle={isDesktop ? 'overFullScreen' : 'pageSheet'}
+            transparent={isDesktop}
             onRequestClose={onClose}
         >
-            <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
-                <View style={s.header}>
-                    <Text style={s.headerTitle}>Appointment Details</Text>
-                    <TouchableOpacity onPress={onClose} style={s.closeButton}>
-                        <Feather name="x" size={24} color="#000" />
-                    </TouchableOpacity>
-                </View>
+            <View style={isDesktop ? s.webOverlay : { flex: 1 }}>
+                <SafeAreaView style={isDesktop ? s.webCard : s.modalContainer}>
+                    <View style={s.header}>
+                        <Text style={s.headerTitle}>Appointment Details</Text>
+                        <TouchableOpacity onPress={onClose} style={s.closeButton}>
+                            <Feather name="x" size={24} color="#000" />
+                        </TouchableOpacity>
+                    </View>
 
-                <ScrollView style={s.scrollContent}>
+                    <ScrollView style={s.scrollContent}>
                     {isRescheduling ? (
                         <View>
                             <View style={s.fieldGroup}>
@@ -284,12 +288,36 @@ export function BookingDetailModal({ visible, onClose, booking, onUpdate, isStyl
                         </>
                     )}
                 </ScrollView>
-            </SafeAreaView>
+                </SafeAreaView>
+            </View>
         </Modal>
     );
 }
 
 const s = StyleSheet.create({
+    webOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContainer: {
+        flex: 1,
+        backgroundColor: 'white',
+    },
+    webCard: {
+        width: '90%',
+        maxWidth: 600,
+        maxHeight: '90%',
+        backgroundColor: 'white',
+        borderRadius: 24,
+        overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.1,
+        shadowRadius: 20,
+        elevation: 5,
+    },
     header: {
         paddingHorizontal: 24,
         paddingVertical: 20,

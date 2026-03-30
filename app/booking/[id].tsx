@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Image, ScrollView, Text, TouchableOpacity, View, useWindowDimensions, Platform } from 'react-native';
+import { ActivityIndicator, Alert, Image, ScrollView, Text, TouchableOpacity, View, useWindowDimensions, Platform, Modal, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../lib/auth';
 import { db } from '../../lib/firebase';
@@ -522,45 +522,61 @@ export default function BookingScreen() {
         </ScrollView>
     );
 
-    const renderStep5_Success = () => (
-        <View className="flex-1 px-6 items-center justify-center" style={{ paddingTop: Platform.OS === 'ios' ? insets.top : 0, marginTop: -80 }}>
-            <View className="w-24 h-24 bg-green-100 rounded-full items-center justify-center mb-6">
-                <Feather name="check" size={48} color="#16a34a" />
-            </View>
-            <Text className="text-2xl font-bold text-neutral-900 mb-2 text-center">{rescheduleId ? 'Successfully Rescheduled!' : 'Booking Confirmed!'}</Text>
-            <Text className="text-neutral-500 text-center mb-8 leading-6">
-                Your appointment has been successfully scheduled.
-            </Text>
+    const renderStep5_Success = () => {
+        const content = (
+            <View className={isLargeScreen ? "items-center justify-center py-4" : "flex-1 px-6 items-center justify-center"} style={!isLargeScreen ? { paddingTop: Platform.OS === 'ios' ? insets.top : 0, marginTop: -80 } : {}}>
+                <View className="w-24 h-24 bg-green-100 rounded-full items-center justify-center mb-6">
+                    <Feather name="check" size={48} color="#16a34a" />
+                </View>
+                <Text className="text-2xl font-bold text-neutral-900 mb-2 text-center">{rescheduleId ? 'Successfully Rescheduled!' : 'Booking Confirmed!'}</Text>
+                <Text className="text-neutral-500 text-center mb-8 leading-6">
+                    Your appointment has been successfully scheduled.
+                </Text>
 
-            <View className="w-full bg-neutral-50 p-6 rounded-2xl border border-neutral-100 mb-8">
-                <View className="flex-row justify-between mb-2">
-                    <Text className="text-neutral-500">Service</Text>
-                    <Text className="font-semibold text-neutral-900">{selectedService?.name}</Text>
+                <View className="w-full bg-neutral-50 p-6 rounded-2xl border border-neutral-100 mb-8">
+                    <View className="flex-row justify-between mb-2">
+                        <Text className="text-neutral-500">Service</Text>
+                        <Text className="font-semibold text-neutral-900">{selectedService?.name}</Text>
+                    </View>
+
+                    <View className="flex-row justify-between mb-2">
+                        <Text className="text-neutral-500">Date</Text>
+                        <Text className="font-semibold text-neutral-900">
+                            {selectedDate?.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at {selectedTime}
+                        </Text>
+                    </View>
                 </View>
 
-                <View className="flex-row justify-between mb-2">
-                    <Text className="text-neutral-500">Date</Text>
-                    <Text className="font-semibold text-neutral-900">
-                        {selectedDate?.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at {selectedTime}
-                    </Text>
-                </View>
+                <TouchableOpacity
+                    onPress={() => router.push('/bookings')}
+                    className="w-full bg-black py-4 rounded-xl items-center mb-4"
+                >
+                    <Text className="text-white font-bold text-lg">View My Appointments</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    onPress={() => router.replace(`/business/${businessId}`)}
+                    className="py-4"
+                >
+                    <Text className="text-neutral-900 font-semibold">Done</Text>
+                </TouchableOpacity>
             </View>
+        );
 
-            <TouchableOpacity
-                onPress={() => router.push('/bookings')}
-                className="w-full bg-black py-4 rounded-xl items-center mb-4"
-            >
-                <Text className="text-white font-bold text-lg">View My Appointments</Text>
-            </TouchableOpacity>
+        if (isLargeScreen) {
+            return (
+                <Modal visible={step === 5} transparent animationType="fade">
+                    <View style={s.webOverlay}>
+                        <View style={s.webModalContent}>
+                            {content}
+                        </View>
+                    </View>
+                </Modal>
+            );
+        }
 
-            <TouchableOpacity
-                onPress={() => router.replace(`/business/${businessId}`)}
-                className="py-4"
-            >
-                <Text className="text-neutral-900 font-semibold">Done</Text>
-            </TouchableOpacity>
-        </View>
-    );
+        return content;
+    };
 
     if (loading) return <View className="flex-1 bg-white items-center justify-center"><ActivityIndicator color="#000" /></View>;
 
@@ -682,3 +698,24 @@ export default function BookingScreen() {
         </View>
     );
 }
+
+const s = StyleSheet.create({
+    webOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    webModalContent: {
+        width: '90%',
+        maxWidth: 500,
+        backgroundColor: 'white',
+        borderRadius: 24,
+        padding: 24,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.1,
+        shadowRadius: 20,
+        elevation: 5,
+    }
+});
