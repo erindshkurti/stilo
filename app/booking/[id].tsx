@@ -548,14 +548,20 @@ export default function BookingScreen() {
                 </View>
 
                 <TouchableOpacity
-                    onPress={() => router.push('/bookings')}
+                    onPress={() => {
+                        setStep(1);
+                        router.push('/bookings');
+                    }}
                     className="w-full bg-black py-4 rounded-xl items-center mb-4"
                 >
                     <Text className="text-white font-bold text-lg">View My Appointments</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                    onPress={() => router.replace(`/business/${businessId}`)}
+                    onPress={() => {
+                        setStep(1);
+                        router.replace(`/business/${businessId}`);
+                    }}
                     className="py-4"
                 >
                     <Text className="text-neutral-900 font-semibold">Done</Text>
