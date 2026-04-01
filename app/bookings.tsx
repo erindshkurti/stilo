@@ -210,6 +210,7 @@ export default function BookingsScreen() {
                                             key={booking.id}
                                             className="bg-white rounded-2xl p-5 border border-neutral-100 shadow-sm"
                                         >
+                                            {/* Header: Image + Business Name + Status */}
                                             <View className="flex-row items-center mb-4">
                                                 <Image
                                                     source={{ uri: booking.imageUrl }}
@@ -217,11 +218,11 @@ export default function BookingsScreen() {
                                                 />
                                                 <View className="flex-1">
                                                     <View className="flex-row justify-between items-center mb-0.5">
-                                                        <Text className="font-bold text-xl text-neutral-900 pr-2 flex-1" numberOfLines={1}>
+                                                        <Text className={`font-bold text-neutral-900 pr-2 flex-1 ${isLargeScreen ? 'text-2xl' : 'text-xl'}`} numberOfLines={1}>
                                                             {booking.businessName}
                                                         </Text>
-                                                        {/* Status Badge - Stable Version */}
-                                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                        {/* Status Badge */}
+                                                        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: isLargeScreen ? (booking.status === 'confirmed' ? '#DCFCE7' : '#F5F5F5') : 'transparent', paddingHorizontal: isLargeScreen ? 10 : 0, paddingVertical: isLargeScreen ? 6 : 0, borderRadius: 12 }}>
                                                             <View style={{ width: 8, height: 8, borderRadius: 4, marginRight: 8, backgroundColor: booking.status === 'confirmed' ? '#22C55E' : '#D4D4D4' }} />
                                                             <Text style={{ fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, color: booking.status === 'confirmed' ? '#16A34A' : '#737373' }}>
                                                                 {booking.status}
@@ -230,34 +231,36 @@ export default function BookingsScreen() {
                                                     </View>
                                                     <View className="flex-row items-center">
                                                         <Feather name="scissors" size={13} color="#737373" />
-                                                        <Text className="text-neutral-600 font-medium text-base ml-1.5">{booking.service}</Text>
+                                                        <Text className={`text-neutral-600 font-medium ml-1.5 ${isLargeScreen ? 'text-lg' : 'text-base'}`}>{booking.service}</Text>
                                                     </View>
                                                 </View>
                                             </View>
 
-                                            <View className="flex-row items-center justify-between mb-5 bg-neutral-50/50 py-3 px-4 rounded-2xl border border-neutral-100/50">
+                                            {/* Details Bar: Date and Location */}
+                                            <View className="flex-row items-center justify-between mb-5 bg-neutral-50/50 py-3.5 px-4 rounded-2xl border border-neutral-100/50">
                                                 <View className="flex-row items-center">
-                                                    <Feather name="calendar" size={14} color="#000" />
-                                                    <Text className="ml-2 text-neutral-900 font-bold text-[15px]">{booking.date}</Text>
+                                                    <Feather name="calendar" size={16} color="#000" />
+                                                    <Text className={`ml-2 text-neutral-900 font-bold ${isLargeScreen ? 'text-lg' : 'text-[15px]'}`}>{booking.date}</Text>
                                                 </View>
                                                 <View className="flex-row items-center">
-                                                    <Feather name="map-pin" size={12} color="#737373" />
-                                                    <Text className="ml-1.5 text-neutral-500 font-medium text-[13px]">{booking.location.split(',')[0]}</Text>
+                                                    <Feather name="map-pin" size={13} color="#737373" />
+                                                    <Text className={`ml-1.5 text-neutral-500 font-medium ${isLargeScreen ? 'text-[15px]' : 'text-[13px]'}`}>{booking.location.split(',')[0]}</Text>
                                                 </View>
                                             </View>
 
-                                            <View className="flex-row gap-3">
+                                            {/* Action Buttons */}
+                                            <View className={`flex-row gap-4 ${isLargeScreen ? 'justify-center' : ''}`}>
                                                 {activeTab === 'upcoming' ? (
                                                     <>
                                                         <TouchableOpacity 
                                                             onPress={() => router.push(`/booking/${booking.businessId}?serviceId=${booking.serviceId}&rescheduleId=${booking.id}`)}
-                                                            className="flex-1 bg-black py-4 rounded-2xl items-center"
+                                                            className={`bg-black py-4 rounded-2xl items-center ${isLargeScreen ? 'w-44' : 'flex-1'}`}
                                                         >
                                                             <Text className="text-white font-bold text-[15px]">Reschedule</Text>
                                                         </TouchableOpacity>
                                                         <TouchableOpacity 
                                                             onPress={() => handleCancel(booking.id)}
-                                                            className="px-6 py-4 rounded-2xl items-center bg-red-50"
+                                                            className={`py-4 rounded-2xl items-center bg-red-50 ${isLargeScreen ? 'w-44' : 'flex-1'}`}
                                                         >
                                                             <Text className="text-red-500 font-bold text-[15px]">Cancel</Text>
                                                         </TouchableOpacity>
@@ -265,7 +268,7 @@ export default function BookingsScreen() {
                                                 ) : (
                                                     <TouchableOpacity 
                                                         onPress={() => router.push(`/booking/${booking.businessId}?serviceId=${booking.serviceId}`)}
-                                                        className="w-full bg-black py-4 rounded-2xl items-center"
+                                                        className={`bg-black py-4 rounded-2xl items-center ${isLargeScreen ? 'w-64' : 'w-full'}`}
                                                     >
                                                         <Text className="text-white font-bold text-[15px]">Rebook Service</Text>
                                                     </TouchableOpacity>
