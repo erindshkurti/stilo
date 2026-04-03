@@ -254,13 +254,13 @@ export default function BookingsScreen() {
                                                     <>
                                                         <TouchableOpacity 
                                                             onPress={() => router.push(`/booking/${booking.businessId}?serviceId=${booking.serviceId}&rescheduleId=${booking.id}`)}
-                                                            className={`bg-black py-4 rounded-2xl items-center ${isLargeScreen ? 'w-44' : 'flex-1'}`}
+                                                            className={`bg-black py-4 rounded-2xl items-center ${isLargeScreen ? 'w-60' : 'flex-1'}`}
                                                         >
                                                             <Text className="text-white font-bold text-[15px]">Reschedule</Text>
                                                         </TouchableOpacity>
                                                         <TouchableOpacity 
                                                             onPress={() => handleCancel(booking.id)}
-                                                            className={`py-4 rounded-2xl items-center bg-red-50 ${isLargeScreen ? 'w-44' : 'flex-1'}`}
+                                                            className={`py-4 rounded-2xl items-center bg-red-50 ${isLargeScreen ? 'w-60' : 'flex-1'}`}
                                                         >
                                                             <Text className="text-red-500 font-bold text-[15px]">Cancel</Text>
                                                         </TouchableOpacity>
@@ -268,7 +268,7 @@ export default function BookingsScreen() {
                                                 ) : (
                                                     <TouchableOpacity 
                                                         onPress={() => router.push(`/booking/${booking.businessId}?serviceId=${booking.serviceId}`)}
-                                                        className={`bg-black py-4 rounded-2xl items-center ${isLargeScreen ? 'w-64' : 'w-full'}`}
+                                                        className={`bg-black py-4 rounded-2xl items-center ${isLargeScreen ? 'w-60' : 'w-full'}`}
                                                     >
                                                         <Text className="text-white font-bold text-[15px]">Rebook Service</Text>
                                                     </TouchableOpacity>
